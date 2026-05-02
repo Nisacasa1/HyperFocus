@@ -68,7 +68,7 @@ Completed practices are logged per day and a history is shown below the cards.
 
 ```bash
 # Clone the repo
-git clone https://github.com/nisacasa2/HyperFocus.git
+git clone https://github.com/nisacasa1/HyperFocus.git
 
 # Open the app — no build step needed
 open HyperFocus.html   # macOS
