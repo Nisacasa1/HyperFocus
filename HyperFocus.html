@@ -1,0 +1,1984 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hyper Focus</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='28' stroke='%2312110E' stroke-width='1.5' fill='none'/><circle cx='32' cy='32' r='16' stroke='%2312110E' stroke-width='1.5' fill='none'/><circle cx='32' cy='32' r='3' fill='%2312110E'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+input, textarea, select { font: inherit; color: inherit; }
+
+/* ── Tokens ── */
+:root {
+  --hf-bone-50:  #FBFAF7; --hf-bone-100: #F5F3EE; --hf-bone-200: #EBE8E0;
+  --hf-bone-300: #D9D5CA; --hf-bone-400: #A8A497; --hf-bone-500: #7A7668;
+  --hf-bone-600: #55524A; --hf-bone-700: #3A3832; --hf-bone-800: #26251F; --hf-bone-900: #12110E;
+  --hf-sand-50:  #F7F1E6; --hf-sand-200: #E0CDA8; --hf-sand-300: #D3B887;
+  --hf-sand-400: #C8A97E; --hf-sand-500: #B08E5C; --hf-sand-600: #8F7247; --hf-sand-700: #6B5534;
+  --hf-success:  #6B8E5A;
+  --hf-bg:            #FBFAF7; --hf-bg-raised: #FFFFFF; --hf-bg-subtle: #F5F3EE;
+  --hf-fg:            #12110E; --hf-fg-body:   #3A3832; --hf-fg-muted:  #7A7668; --hf-fg-subtle: #A8A497;
+  --hf-border:        #EBE8E0; --hf-border-strong: #D9D5CA; --hf-accent: #C8A97E;
+  --hf-font-serif: 'Instrument Serif', Georgia, serif;
+  --hf-font-sans:  'Geist', -apple-system, 'Helvetica Neue', sans-serif;
+  --hf-font-mono:  'JetBrains Mono', Menlo, Consolas, monospace;
+  --hf-shadow-sm: 0 1px 2px rgba(26,24,18,.05), 0 1px 1px rgba(26,24,18,.03);
+  --hf-shadow-md: 0 4px 12px -2px rgba(26,24,18,.06), 0 2px 4px -1px rgba(26,24,18,.04);
+  --hf-shadow-xl: 0 24px 56px -12px rgba(26,24,18,.16), 0 8px 16px -4px rgba(26,24,18,.06);
+  --hf-ease-out: cubic-bezier(0.22,0.61,0.36,1);
+}
+:root[data-theme="dark"] {
+  --hf-bg:#12110E; --hf-bg-raised:#1A1814; --hf-bg-subtle:#16140F;
+  --hf-fg:#F5F2EA; --hf-fg-body:#D9D4C6; --hf-fg-muted:#8B8676; --hf-fg-subtle:#5E5A4F;
+  --hf-border:#2A2823; --hf-border-strong:#3A382F; --hf-accent:#D3B887;
+  --hf-shadow-sm:0 1px 2px rgba(0,0,0,.4); --hf-shadow-md:0 4px 12px -2px rgba(0,0,0,.5);
+  --hf-shadow-xl:0 24px 56px -12px rgba(0,0,0,.7);
+}
+
+/* ── Base ── */
+body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-fg); -webkit-font-smoothing:antialiased; overflow:hidden; font-feature-settings:"ss01"; }
+#root { height:100vh; }
+
+/* ── Shell ── */
+.app { display:grid; grid-template-columns:220px 1fr; height:100vh; }
+.canvas { overflow-y:auto; position:relative; background:var(--hf-bg); }
+
+/* ── Rail ── */
+.rail { background:var(--hf-bg-raised); border-right:1px solid var(--hf-border); padding:18px 14px; display:flex; flex-direction:column; gap:2px; overflow:hidden; }
+.rail__brand { display:flex; align-items:center; gap:10px; padding:4px 6px 18px; }
+.rail__brand-name { font-family:var(--hf-font-serif); font-size:20px; letter-spacing:-0.01em; white-space:nowrap; }
+.rail__sec { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); padding:14px 8px 6px; font-weight:500; }
+.rail__item { display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:6px; font-size:13px; color:var(--hf-fg-body); transition:background 160ms var(--hf-ease-out); width:100%; text-align:left; }
+.rail__item svg { width:15px; height:15px; stroke-width:1.5; color:var(--hf-fg-muted); flex-shrink:0; }
+.rail__item:hover { background:var(--hf-bone-100); }
+.rail__item--active { background:var(--hf-sand-50); color:var(--hf-sand-700); }
+.rail__item--active svg { color:var(--hf-sand-600); }
+.rail__spacer { flex:1; }
+[data-theme="dark"] .rail__item:hover { background:#1A1814; }
+[data-theme="dark"] .rail__item--active { background:rgba(211,184,135,.1); color:var(--hf-accent); }
+[data-theme="dark"] .rail__item--active svg { color:var(--hf-accent); }
+
+/* ── Topbar ── */
+.topbar { height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; border-bottom:1px solid var(--hf-border); background:var(--hf-bg); position:sticky; top:0; z-index:5; }
+.topbar__crumb { font-size:12px; color:var(--hf-fg-muted); letter-spacing:.04em; display:flex; align-items:center; gap:6px; }
+.topbar__crumb svg { width:12px; height:12px; stroke-width:1.5; }
+.topbar__crumb b { color:var(--hf-fg); font-weight:500; }
+.topbar__actions { display:flex; gap:4px; align-items:center; }
+.iconbtn { width:30px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--hf-fg-muted); transition:all 160ms var(--hf-ease-out); }
+.iconbtn:hover { background:var(--hf-bone-100); color:var(--hf-fg); }
+.iconbtn svg { width:15px; height:15px; stroke-width:1.5; }
+[data-theme="dark"] .iconbtn:hover { background:#2A2823; }
+
+/* ── Page ── */
+.page { padding:48px 64px 64px; max-width:1100px; margin:0 auto; }
+.eyebrow { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.h-serif { font-family:var(--hf-font-serif); font-weight:400; letter-spacing:-0.01em; line-height:1.1; }
+
+/* ── Buttons ── */
+.btn { font-size:13px; font-weight:500; padding:8px 16px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; line-height:1; transition:all 160ms var(--hf-ease-out); border:1px solid transparent; }
+.btn svg { width:14px; height:14px; stroke-width:1.5; }
+.btn--primary { background:var(--hf-sand-400); color:#FBFAF7; }
+.btn--primary:hover { background:var(--hf-sand-500); }
+.btn--primary:active { background:var(--hf-sand-600); transform:translateY(1px); }
+.btn--secondary { background:var(--hf-bg-raised); color:var(--hf-fg); border-color:var(--hf-border-strong); }
+.btn--secondary:hover { border-color:var(--hf-bone-400); }
+.btn--ghost { color:var(--hf-fg-body); }
+.btn--ghost:hover { background:var(--hf-bone-100); }
+.btn--danger { color:#C0392B; }
+.btn--danger:hover { background:rgba(192,57,43,.08); }
+.btn--lg { padding:12px 22px; font-size:14px; }
+.btn--xl { padding:16px 32px; font-size:15px; border-radius:8px; }
+[data-theme="dark"] .btn--ghost:hover { background:#2A2823; }
+[data-theme="dark"] .btn--secondary { background:var(--hf-bg-raised); }
+
+/* ── Input ── */
+.input { font-size:14px; padding:9px 12px; border:1px solid var(--hf-border-strong); border-radius:6px; background:var(--hf-bg-raised); color:var(--hf-fg); transition:all 160ms var(--hf-ease-out); width:100%; }
+.input:focus { outline:none; border-color:var(--hf-sand-400); box-shadow:0 0 0 3px rgba(200,169,126,.35); }
+.input::placeholder { color:var(--hf-fg-subtle); }
+
+/* ── Card ── */
+.card-s { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; box-shadow:var(--hf-shadow-sm); padding:20px 22px; }
+
+/* ── Badge ── */
+.badge { font-size:11px; font-weight:500; padding:3px 10px; border-radius:9999px; letter-spacing:.02em; display:inline-flex; align-items:center; gap:5px; }
+.badge .dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+.badge--neutral { background:var(--hf-bone-100); color:var(--hf-fg-body); border:1px solid var(--hf-border); }
+.badge--accent  { background:var(--hf-sand-50);  color:var(--hf-sand-700); border:1px solid var(--hf-sand-200); }
+.badge--success { background:#ECEFE5; color:#3F5C30; border:1px solid #C8D1B8; }
+[data-theme="dark"] .badge--neutral { background:var(--hf-bg-raised); border-color:var(--hf-border); }
+
+/* ── Focus stage ── */
+.focus-stage { min-height:calc(100vh - 44px); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 64px; position:relative; }
+.focus-meta { position:absolute; top:32px; left:50%; transform:translateX(-50%); display:flex; gap:22px; align-items:center; font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-muted); letter-spacing:.04em; white-space:nowrap; }
+.focus-meta b { color:var(--hf-fg); font-weight:400; }
+.dur-edit { background:transparent; border:0; border-bottom:1px solid var(--hf-sand-400); color:var(--hf-fg); font-family:var(--hf-font-mono); font-size:11px; width:44px; text-align:center; outline:none; padding:0 2px; }
+.dur-target { cursor:pointer; border-bottom:1px dashed var(--hf-fg-subtle); }
+.focus-task { font-family:var(--hf-font-serif); font-size:34px; font-weight:400; letter-spacing:-0.01em; line-height:1.15; max-width:640px; text-align:center; color:var(--hf-fg); margin-bottom:40px; border:0; background:transparent; width:100%; outline:none; }
+.focus-task::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+
+/* ── Session MITs ── */
+.session-mits { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; margin:-16px 0 20px; }
+.session-mit { font-size:11px; color:var(--hf-fg-muted); padding:3px 12px; border:1px solid var(--hf-border); border-radius:9999px; font-family:var(--hf-font-sans); }
+.session-mit--done { text-decoration:line-through; opacity:0.4; }
+
+/* ── Breath options (inline in session) ── */
+.breath-opts { display:flex; gap:6px; align-items:center; margin-top:14px; }
+.breath-opts__label { font-size:11px; color:var(--hf-fg-subtle); text-transform:uppercase; letter-spacing:.12em; margin-right:2px; }
+.breath-opt { font-size:12px; padding:4px 12px; border-radius:9999px; color:var(--hf-fg-muted); border:1px solid var(--hf-border); transition:all 140ms; }
+.breath-opt:hover { border-color:var(--hf-sand-400); color:var(--hf-sand-600); background:var(--hf-sand-50); }
+
+/* ── Ring ── */
+.ring { position:relative; width:380px; height:380px; display:flex; align-items:center; justify-content:center; }
+.ring--breathing { animation:hf-breath 4s ease-in-out infinite; }
+@keyframes hf-breath { 0%,100%{transform:scale(1);}50%{transform:scale(1.035);} }
+.ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring__bg { stroke:var(--hf-bone-200); fill:none; stroke-width:1.5; }
+.ring__fg { stroke:var(--hf-sand-400); fill:none; stroke-width:1.5; stroke-linecap:round; transition:stroke-dashoffset 980ms linear; }
+.ring__fg--break { stroke:var(--hf-success); }
+.ring__inner { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
+.ring__timer { font-family:var(--hf-font-mono); font-weight:300; font-size:96px; letter-spacing:-0.02em; color:var(--hf-fg); font-feature-settings:"tnum","zero"; line-height:1; }
+.ring__label { font-size:11px; letter-spacing:0.24em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+[data-theme="dark"] .ring__bg { stroke:#2A2823; }
+.focus-actions { margin-top:40px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center; }
+
+/* ── Quote ── */
+.session-quote { margin-top:28px; text-align:center; max-width:480px; font-family:var(--hf-font-serif); font-style:italic; font-size:14px; color:var(--hf-fg-subtle); line-height:1.65; }
+.session-quote cite { display:block; margin-top:4px; font-style:normal; font-family:var(--hf-font-sans); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; }
+
+/* ── Session complete ── */
+.session-complete { display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center; padding:0 40px; }
+.session-complete__label { font-size:11px; letter-spacing:0.24em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.session-complete__task { font-family:var(--hf-font-serif); font-size:30px; color:var(--hf-fg); letter-spacing:-0.01em; line-height:1.2; max-width:500px; }
+
+/* ── KPIs ── */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.kpi { display:flex; flex-direction:column; gap:6px; }
+.kpi__label { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.kpi__value { font-family:var(--hf-font-mono); font-weight:300; font-size:38px; letter-spacing:-0.02em; color:var(--hf-fg); line-height:1; font-feature-settings:"tnum"; }
+.kpi__value small { font-size:16px; color:var(--hf-fg-muted); margin-left:3px; }
+
+/* ── Session list ── */
+.session-list { display:flex; flex-direction:column; }
+.session-row { display:grid; grid-template-columns:112px 1fr auto auto auto; gap:18px; align-items:center; padding:14px 0; border-bottom:1px solid var(--hf-border); font-size:13px; }
+.session-row__del { opacity:0; transition:opacity 140ms; }
+.session-row:hover .session-row__del { opacity:1; }
+.session-row__time { font-family:var(--hf-font-mono); color:var(--hf-fg-muted); font-size:11px; white-space:nowrap; }
+.session-row__task { color:var(--hf-fg); cursor:text; }
+.session-row__task:hover { color:var(--hf-fg); }
+.session-row__edit { border:0; background:transparent; font-size:13px; color:var(--hf-fg); outline:none; width:100%; padding:0; border-bottom:1px solid var(--hf-sand-400); font-family:var(--hf-font-sans); }
+.session-row__dur  { font-family:var(--hf-font-mono); font-size:12px; color:var(--hf-fg-body); }
+
+/* ── Stats ── */
+.stats-periods { display:flex; gap:4px; margin-bottom:28px; }
+.stats-period { font-size:12px; padding:6px 14px; border-radius:6px; color:var(--hf-fg-muted); transition:all 120ms; }
+.stats-period:hover { background:var(--hf-bone-100); }
+.stats-period--active { background:var(--hf-sand-50); color:var(--hf-sand-700); font-weight:500; }
+[data-theme="dark"] .stats-period:hover { background:#2A2823; }
+[data-theme="dark"] .stats-period--active { background:rgba(211,184,135,.1); color:var(--hf-accent); }
+.chart { height:160px; display:flex; align-items:flex-end; gap:6px; padding:0 4px; }
+.chart__bar { flex:1; background:var(--hf-sand-400); border-radius:2px 2px 0 0; min-height:2px; }
+.chart__bar--dim { background:var(--hf-bone-200); }
+.chart__bar--today { background:var(--hf-sand-500); }
+.chart__labels { display:flex; gap:6px; margin-top:8px; padding:0 4px; }
+.chart__labels span { flex:1; text-align:center; font-size:10px; color:var(--hf-fg-muted); letter-spacing:.08em; text-transform:uppercase; font-family:var(--hf-font-mono); }
+[data-theme="dark"] .chart__bar--dim { background:#2A2823; }
+
+/* ── Soundscapes ── */
+.sound-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.sound { padding:18px; border-radius:10px; background:var(--hf-bg-raised); border:1px solid var(--hf-border); transition:all 160ms var(--hf-ease-out); text-align:left; }
+.sound:hover { border-color:var(--hf-border-strong); }
+.sound--active { background:var(--hf-sand-50); border-color:var(--hf-sand-300); }
+[data-theme="dark"] .sound--active { background:rgba(211,184,135,.08); border-color:rgba(211,184,135,.3); }
+.sound__name { font-family:var(--hf-font-serif); font-size:22px; color:var(--hf-fg); line-height:1.1; }
+.sound__desc { font-size:12px; color:var(--hf-fg-muted); margin-top:6px; line-height:1.5; }
+.sound__bars { display:flex; gap:2px; margin-top:14px; align-items:flex-end; height:14px; }
+.sound__bars i { display:block; width:2px; background:var(--hf-fg-subtle); border-radius:1px; }
+.sound--active .sound__bars i { background:var(--hf-sand-400); animation:soundbar 1.2s ease-in-out infinite; }
+.sound--active .sound__bars i:nth-child(2){animation-delay:.15s;}
+.sound--active .sound__bars i:nth-child(3){animation-delay:.3s;}
+.sound--active .sound__bars i:nth-child(4){animation-delay:.45s;}
+.sound--active .sound__bars i:nth-child(5){animation-delay:.6s;}
+@keyframes soundbar{0%,100%{height:4px;}50%{height:14px;}}
+[data-theme="dark"] .sound__bars i { background:var(--hf-fg-subtle); }
+
+/* ── Planning ── */
+.mit-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--hf-border); }
+.mit-check { width:16px; height:16px; flex-shrink:0; cursor:pointer; accent-color:var(--hf-sand-400); }
+.mit-input { border:0; background:transparent; font-size:15px; color:var(--hf-fg); outline:none; flex:1; line-height:1.4; padding:0; }
+.mit-input::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+.mit-input--done { text-decoration:line-through; color:var(--hf-fg-subtle); }
+.plan-history { display:flex; flex-direction:column; gap:0; }
+.plan-day { padding:16px 0; border-bottom:1px solid var(--hf-border); }
+.plan-day__date { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:8px; }
+.plan-day__tasks { display:flex; flex-direction:column; gap:5px; }
+.plan-day__task { font-size:13px; color:var(--hf-fg-body); display:flex; align-items:center; gap:8px; }
+.plan-day__task--done { text-decoration:line-through; color:var(--hf-fg-subtle); }
+.plan-day__dot { width:4px; height:4px; border-radius:50%; background:var(--hf-sand-400); flex-shrink:0; }
+.plan-day__dot--done { background:var(--hf-fg-subtle); }
+
+/* ── Stoic ── */
+.stoic-daily { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-left:3px solid var(--hf-sand-400); border-radius:10px; padding:28px 32px; margin-bottom:36px; }
+.stoic-daily__eyebrow { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:14px; }
+.stoic-daily__quote { font-family:var(--hf-font-serif); font-size:22px; font-style:italic; color:var(--hf-fg); line-height:1.55; letter-spacing:-0.01em; }
+.stoic-daily__author { margin-top:14px; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.stoic-phil-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:36px; }
+.stoic-phil { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; overflow:hidden; transition:border-color 160ms var(--hf-ease-out); }
+.stoic-phil--open { border-color:var(--hf-sand-300); }
+[data-theme="dark"] .stoic-phil--open { border-color:rgba(211,184,135,.4); }
+.stoic-phil__head { padding:20px 20px 18px; cursor:pointer; display:flex; justify-content:space-between; align-items:flex-start; user-select:none; }
+.stoic-phil__head:hover { background:var(--hf-bg-subtle); }
+[data-theme="dark"] .stoic-phil__head:hover { background:rgba(255,255,255,.03); }
+.stoic-phil__name { font-family:var(--hf-font-serif); font-size:21px; color:var(--hf-fg); letter-spacing:-0.01em; line-height:1.1; }
+.stoic-phil__dates { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-muted); margin-top:5px; }
+.stoic-phil__role { font-size:11px; color:var(--hf-fg-subtle); margin-top:3px; }
+.stoic-phil__body { padding:0 20px 22px; border-top:1px solid var(--hf-border); }
+.stoic-phil__bio { font-size:13px; color:var(--hf-fg-body); line-height:1.7; margin:16px 0 14px; }
+.stoic-phil__story { font-size:13px; color:var(--hf-fg-body); line-height:1.7; font-style:italic; margin-bottom:16px; }
+.stoic-phil__quote { font-family:var(--hf-font-serif); font-style:italic; font-size:15px; color:var(--hf-fg); border-left:2px solid var(--hf-sand-400); padding:4px 0 4px 14px; margin:8px 0; line-height:1.6; }
+.stoic-principles { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.stoic-principle { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:22px 24px; }
+.stoic-principle__name { font-family:var(--hf-font-serif); font-size:20px; color:var(--hf-fg); letter-spacing:-0.01em; margin-bottom:10px; }
+.stoic-principle__desc { font-size:13px; color:var(--hf-fg-body); line-height:1.7; }
+
+/* ── Stoic practices ── */
+.stoic-practices { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.stoic-practice { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:22px 24px; }
+.stoic-practice__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+.stoic-practice__name { font-family:var(--hf-font-serif); font-size:19px; color:var(--hf-fg); letter-spacing:-0.01em; line-height:1.2; }
+.stoic-practice__time { font-family:var(--hf-font-mono); font-size:10px; color:var(--hf-fg-subtle); letter-spacing:.04em; margin-top:4px; white-space:nowrap; }
+.stoic-practice__desc { font-size:13px; color:var(--hf-fg-body); line-height:1.7; }
+
+/* ── Breath ── */
+.breath-stage { min-height:calc(100vh - 44px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:32px; padding:40px; background:var(--hf-bg); }
+.breath-prompt { font-family:var(--hf-font-serif); font-size:40px; color:var(--hf-fg); }
+.breath-cue { font-size:12px; letter-spacing:0.24em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.breath-circle { width:200px; height:200px; border-radius:50%; border:1.5px solid var(--hf-sand-400); display:flex; align-items:center; justify-content:center; animation:hf-breath-big 6s ease-in-out infinite; }
+.breath-dot { width:8px; height:8px; border-radius:50%; background:var(--hf-sand-400); }
+@keyframes hf-breath-big{0%,100%{transform:scale(.9);opacity:.7;}50%{transform:scale(1.1);opacity:1;}}
+
+/* ── CmdK ── */
+.cmdk-backdrop { position:fixed; inset:0; background:rgba(18,17,14,.35); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); display:flex; align-items:flex-start; justify-content:center; padding-top:120px; z-index:40; animation:fadeIn 160ms var(--hf-ease-out); }
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.cmdk { width:560px; background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; box-shadow:var(--hf-shadow-xl); overflow:hidden; }
+.cmdk__search { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--hf-border); }
+.cmdk__search svg { width:16px; height:16px; stroke-width:1.5; color:var(--hf-fg-muted); }
+.cmdk__search input { flex:1; border:0; outline:none; background:transparent; font-size:15px; }
+.cmdk__search input::placeholder { color:var(--hf-fg-subtle); }
+.cmdk__hint { font-family:var(--hf-font-mono); font-size:10px; color:var(--hf-fg-muted); letter-spacing:.04em; text-transform:uppercase; }
+.cmdk__list { padding:6px; max-height:320px; overflow-y:auto; }
+.cmdk__item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:6px; font-size:13px; width:100%; text-align:left; transition:background 80ms; }
+.cmdk__item svg { width:15px; height:15px; stroke-width:1.5; color:var(--hf-fg-muted); }
+.cmdk__item:hover,.cmdk__item--sel{background:var(--hf-bone-100);}
+[data-theme="dark"] .cmdk__item:hover,[data-theme="dark"] .cmdk__item--sel{background:#2A2823;}
+.cmdk__item .kbd{margin-left:auto;font-family:var(--hf-font-mono);font-size:10px;color:var(--hf-fg-muted);}
+
+/* ── Tracker toast ── */
+.tracker-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:var(--hf-bg-raised); border:1px solid var(--hf-border-strong); border-radius:12px; box-shadow:var(--hf-shadow-xl); padding:22px 26px; width:480px; z-index:50; animation:slideUp 200ms var(--hf-ease-out); }
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(14px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.tracker-toast__header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.tracker-toast__label { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.tracker-toast__period { font-family:var(--hf-font-mono); font-size:12px; color:var(--hf-fg-muted); }
+.tracker-toast__input { width:100%; border:0; border-bottom:1px solid var(--hf-border-strong); background:transparent; font-family:var(--hf-font-serif); font-size:22px; color:var(--hf-fg); padding:6px 0; outline:none; letter-spacing:-0.01em; transition:border-color 160ms var(--hf-ease-out); }
+.tracker-toast__input:focus { border-bottom-color:var(--hf-sand-400); }
+.tracker-toast__input::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+.tracker-toast__actions { display:flex; gap:8px; margin-top:18px; }
+
+/* ── Tracker view ── */
+.tracker-timeline { display:flex; flex-direction:column; }
+.tracker-entry { display:grid; grid-template-columns:134px 1fr 40px; gap:16px; padding:14px 0; border-bottom:1px solid var(--hf-border); align-items:start; }
+.tracker-entry__time { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-muted); padding-top:2px; white-space:nowrap; }
+.tracker-entry__text { font-size:14px; color:var(--hf-fg); line-height:1.5; }
+.tracker-entry__dur  { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-subtle); text-align:right; padding-top:2px; }
+.tracker-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+
+/* ── Star rating ── */
+.star-rate { margin-top:24px; text-align:center; }
+.star-rate__label { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:14px; }
+.star-rate__stars { display:flex; gap:4px; justify-content:center; margin-top:12px; }
+.star-btn { padding:4px; color:var(--hf-bone-300); transition:all 140ms var(--hf-ease-out); line-height:0; }
+.star-btn:hover { color:var(--hf-sand-400); transform:scale(1.15); }
+.star-btn--filled { color:var(--hf-sand-400); }
+[data-theme="dark"] .star-btn { color:var(--hf-fg-subtle); }
+[data-theme="dark"] .star-btn--filled { color:var(--hf-accent); }
+.quality-stars { color:var(--hf-sand-400); font-size:11px; letter-spacing:-1px; line-height:1; flex-shrink:0; }
+[data-theme="dark"] .quality-stars { color:var(--hf-accent); }
+
+/* ── Daily Practices ── */
+.dp-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:32px; }
+.dp-card { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:22px 24px; transition:border-color 160ms var(--hf-ease-out); }
+.dp-card__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.dp-card__name { font-family:var(--hf-font-serif); font-size:19px; color:var(--hf-fg); letter-spacing:-0.01em; line-height:1.2; }
+.dp-card__time { font-family:var(--hf-font-mono); font-size:10px; color:var(--hf-fg-subtle); letter-spacing:.04em; margin-top:4px; }
+.dp-card__desc { font-size:13px; color:var(--hf-fg-body); line-height:1.7; margin-bottom:16px; }
+.dp-card--done { border-color:var(--hf-success) !important; }
+.dp-card--done .dp-card__name { color:var(--hf-fg-muted); }
+.dp-timer__name { font-family:var(--hf-font-serif); font-size:28px; color:var(--hf-fg); letter-spacing:-0.01em; text-align:center; margin-bottom:8px; }
+.dp-timer__desc { font-size:13px; color:var(--hf-fg-muted); max-width:420px; text-align:center; line-height:1.65; margin-bottom:4px; }
+.dp-log-entry { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--hf-border); font-size:13px; }
+.dp-log-entry__check { color:var(--hf-success); flex-shrink:0; }
+.dp-log-entry__name { color:var(--hf-fg); flex:1; }
+.dp-log-entry__time { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-muted); white-space:nowrap; }
+.dp-log-entry__dur { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-subtle); white-space:nowrap; }
+
+/* ── Session MIT clickable ── */
+.session-mit--clickable { cursor:pointer; transition:all 140ms; }
+.session-mit--clickable:hover { border-color:var(--hf-sand-400); color:var(--hf-sand-600); background:var(--hf-sand-50); }
+
+/* ── Heatmap ── */
+.heatmap { margin-top:8px; }
+.heatmap__grid { display:flex; gap:3px; }
+.heatmap__col { display:flex; flex-direction:column; gap:3px; }
+.heatmap__cell { width:13px; height:13px; border-radius:2px; background:var(--hf-bone-200); flex-shrink:0; }
+.heatmap__cell--l1 { background:rgba(200,169,126,.35); }
+.heatmap__cell--l2 { background:rgba(200,169,126,.6); }
+.heatmap__cell--l3 { background:rgba(200,169,126,.85); }
+.heatmap__cell--l4 { background:var(--hf-sand-500); }
+[data-theme="dark"] .heatmap__cell { background:#2A2823; }
+[data-theme="dark"] .heatmap__cell--l1 { background:rgba(211,184,135,.25); }
+[data-theme="dark"] .heatmap__cell--l2 { background:rgba(211,184,135,.45); }
+[data-theme="dark"] .heatmap__cell--l3 { background:rgba(211,184,135,.65); }
+[data-theme="dark"] .heatmap__cell--l4 { background:var(--hf-accent); }
+.heatmap__months { display:flex; gap:3px; margin-bottom:6px; }
+.heatmap__months span { font-size:9px; color:var(--hf-fg-subtle); letter-spacing:.06em; text-transform:uppercase; font-family:var(--hf-font-mono); }
+
+/* ── Insights card ── */
+.insights { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
+.insight-chip { font-size:12px; padding:5px 12px 5px 10px; border-radius:9999px; background:var(--hf-bg-subtle); border:1px solid var(--hf-border); color:var(--hf-fg-body); font-family:var(--hf-font-mono); display:inline-flex; align-items:center; gap:6px; }
+.insight-chip svg { color:var(--hf-fg-muted); flex-shrink:0; }
+.insight-chip b { color:var(--hf-fg); font-weight:500; }
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ── Constants ── */
+const STOIC_QUOTES = [
+  { text:"Confine yourself to the present.", author:"Marcus Aurelius" },
+  { text:"The impediment to action advances action. What stands in the way becomes the way.", author:"Marcus Aurelius" },
+  { text:"You have power over your mind, not outside events. Realize this, and you will find strength.", author:"Marcus Aurelius" },
+  { text:"Begin at once to live, and count each separate day as a separate life.", author:"Seneca" },
+  { text:"He suffers more than necessary who suffers before it is necessary.", author:"Seneca" },
+  { text:"No man is free who is not master of himself.", author:"Epictetus" },
+  { text:"First say to yourself what you would be; and then do what you have to do.", author:"Epictetus" },
+  { text:"Make the best use of what is in your power, and take the rest as it happens.", author:"Epictetus" },
+  { text:"Waste no more time arguing what a good man should be. Be one.", author:"Marcus Aurelius" },
+  { text:"Receive without pride, relinquish without struggle.", author:"Marcus Aurelius" },
+  { text:"It is not things that disturb us, but our interpretation of their significance.", author:"Epictetus" },
+  { text:"What we do now echoes in eternity.", author:"Marcus Aurelius" },
+  { text:"How long are you going to wait before you demand the best for yourself?", author:"Epictetus" },
+  { text:"We suffer more in imagination than in reality.", author:"Seneca" },
+  { text:"Dwell on the beauty of life. Watch the stars, and see yourself running with them.", author:"Marcus Aurelius" },
+  { text:"The whole future lies in uncertainty: live immediately.", author:"Seneca" },
+  { text:"If it is not right, do not do it; if it is not true, do not say it.", author:"Marcus Aurelius" },
+  { text:"How does it help to make troubles heavier by bemoaning them?", author:"Seneca" },
+  { text:"Man conquers the world by conquering himself.", author:"Zeno of Citium" },
+  { text:"We have two ears and one mouth, so we should listen more than we say.", author:"Zeno of Citium" },
+  { text:"Happiness is a good flow of life.", author:"Zeno of Citium" },
+  { text:"I will govern my life and thoughts as if the whole world could see what I do.", author:"Cato the Younger" },
+  { text:"I begin to speak only when I'm certain what I'll say isn't better left unsaid.", author:"Cato the Younger" },
+  { text:"Seek not the good in external things; seek it in yourself.", author:"Epictetus" },
+  { text:"Difficulty shows what men are.", author:"Epictetus" },
+  { text:"The greatest obstacle to living is expectancy, which hangs upon tomorrow.", author:"Seneca" },
+  { text:"Every new beginning comes from some other beginning's end.", author:"Seneca" },
+  { text:"Loss is nothing else but change, and change is nature's delight.", author:"Marcus Aurelius" },
+  { text:"Never esteem anything as of advantage to you that will make you break your word or lose your self-respect.", author:"Marcus Aurelius" },
+  { text:"The best revenge is not to be like your enemy.", author:"Marcus Aurelius" },
+  { text:"You always own the option of having no opinion.", author:"Marcus Aurelius" },
+];
+
+const MODES = [
+  { id:"pomodoro", label:"Pomodoro",   dur:25*60, breakDur:5*60  },
+  { id:"deep",     label:"Deep work",  dur:90*60, breakDur:15*60 },
+  { id:"flow",     label:"Flowmodoro", dur:50*60, breakDur:10*60 },
+];
+
+const PHILOSOPHER_DATA = [
+  { id:"marcus", name:"Marcus Aurelius", dates:"121 — 180 AD", role:"Roman Emperor · Philosopher-King", work:"Meditations",
+    bio:"Emperor of Rome at its height — yet each night he wrote private reflections on virtue, impermanence, and wasted time. His Meditations were never meant to be published. They were a man holding himself to account across twenty years of war, plague, and power.",
+    story:"Facing plague, barbarian incursions, and the treachery of his closest general, Marcus spent his evenings writing not decrees but rebukes to himself. \"You could leave life right now,\" he wrote. \"Let that determine what you do and say and think.\" He slept on a hard soldier's bed his entire reign.",
+    quotes:["You have power over your mind, not outside events.","Waste no more time arguing what a good man should be. Be one.","The impediment to action advances action. What stands in the way becomes the way."] },
+  { id:"seneca", name:"Seneca", dates:"4 BC — 65 AD", role:"Statesman · Playwright · Teacher", work:"Letters to Lucilius",
+    bio:"Advisor to Emperor Nero, fabulously wealthy, and Stoicism's most eloquent voice. His Letters to Lucilius are the most human document of ancient philosophy — frank, urgent, and written with the clarity of a man who knew he had little time left.",
+    story:"Condemned to death by Nero's order, Seneca opened his veins with composure. He reportedly told his weeping friends: \"Where are your philosophical principles — those rules you have been practicing for so many years?\" He continued dictating to scribes until the end.",
+    quotes:["Begin at once to live, and count each separate day as a separate life.","We suffer more in imagination than in reality.","He suffers more than necessary who suffers before it is necessary."] },
+  { id:"epictetus", name:"Epictetus", dates:"50 — 135 AD", role:"Former slave · Philosopher · Teacher", work:"Discourses",
+    bio:"Born a slave in Hierapolis. His master once twisted his leg to test his doctrine — that the body is not under our control. Epictetus said calmly: \"You will break it.\" When it broke, he said: \"Did I not tell you?\" He founded a school whose students included the Emperor himself.",
+    story:"Epictetus owned almost nothing. His students were wealthy Romans who came to learn what he already possessed: that freedom is an internal posture, not an external condition. He never wrote a word — everything we have was transcribed by his student Arrian.",
+    quotes:["No man is free who is not master of himself.","It is not things that disturb us, but our interpretation of their significance.","First say to yourself what you would be; and then do what you have to do."] },
+  { id:"zeno", name:"Zeno of Citium", dates:"334 — 262 BC", role:"Founder of Stoicism · Philosopher", work:"Fragments (via Diogenes Laërtius)",
+    bio:"A Phoenician merchant who shipwrecked near Athens at age twenty-two and walked into a bookshop. He heard someone reading Socrates and asked where such men could be found. The bookseller pointed to a passing philosopher. Zeno ran after him. From that wreck, an entire philosophy was born.",
+    story:"Zeno taught under the Stoa Poikilê — the Painted Porch — which gave Stoicism its name. He ate only figs and bread, drank water, and slept on the ground or on a thin mat. When told his behavior was extreme, he replied: 'The purpose of a good life is not comfort, but the exercise of virtue.' He lived this way for fifty years.",
+    quotes:["Man conquers the world by conquering himself.","We have two ears and one mouth, so we should listen more than we say.","Well-being is attained by little and little, yet it is no little thing itself."] },
+  { id:"cato", name:"Cato the Younger", dates:"95 — 46 BC", role:"Roman Senator · Stoic exemplar", work:"Remembered through Plutarch's Lives",
+    bio:"The last Roman who could publicly say no to Julius Caesar. Cato used poverty as a spiritual discipline — walking barefoot through Rome, sleeping on the ground during campaigns, refusing wealth when it was offered. He became Stoicism's living proof that freedom is an internal condition, not a political one.",
+    story:"When Caesar's victory became certain, Cato retired to Utica. He spent his final evening reading Plato's Phaedo — the dialogue on the soul's immortality — calmly, twice. He refused all escape. Caesar wept when he heard of Cato's death, reportedly saying: 'Cato, I begrudge you your death, as you have begrudged me the honor of saving your life.' He had been the one man Caesar could never pardon.",
+    quotes:["I will govern my life and thoughts as if the whole world could see what I do.","I begin to speak only when I'm certain what I'll say isn't better left unsaid.","The best way to keep good acts in memory is to refresh them with new."] },
+];
+
+const PRINCIPLES = [
+  { id:"control", name:"Dichotomy of Control",    source:"Epictetus, Enchiridion I",        desc:"Some things are in our power: judgement, desire, aversion. Everything else — body, reputation, the opinions of others — belongs to another sphere. The path to tranquility begins by drawing this line and refusing to cross it." },
+  { id:"mori",    name:"Memento Mori",             source:"Marcus Aurelius, Meditations",    desc:"Remember that you will die. Not as pessimism, but as clarity. Contemplating finitude daily strips away the trivial and reveals what actually matters. \"You could leave life right now. Let that determine what you do.\"" },
+  { id:"fati",    name:"Amor Fati",                source:"Marcus Aurelius, Meditations X",  desc:"Not merely to tolerate what happens, but to love it. Every obstacle becomes material. Every setback is the next chapter. The fire that destroys the house keeps you warm tonight. Choose to want what happens." },
+  { id:"malorum", name:"Premeditatio Malorum",     source:"Seneca, Letters to Lucilius",     desc:"Seneca practiced this daily: imagine the worst that could happen. Not to despair, but to realize you could survive it — and to be grateful when it does not come. \"He robs present ills of their power who perceived their coming long before.\"" },
+  { id:"above",   name:"The View from Above",      source:"Marcus Aurelius, Meditations VII", desc:"Imagine rising above yourself — above the city, the continent, the earth — and looking at human affairs from that altitude. The petty conflict dissolves. The urgent email is invisible. The span of a life is a single breath. Not despair, but proportion." },
+  { id:"discomfort", name:"Voluntary Discomfort",  source:"Seneca, Letters to Lucilius XVIII", desc:"\"Set aside certain days,\" Seneca wrote, \"on which you will be content with the plainest food, the cheapest clothing — asking yourself: Is this what I feared?\" Practice poverty occasionally. Not to suffer, but to discover that you are far more resilient than your comfort has let you know." },
+];
+
+const PRACTICES = [
+  { id:"morning", name:"Morning preparation", time:"5 min · On waking", icon:"sun", duration:5*60,
+    desc:"Before the day begins, sit with tomorrow's schedule. Where will patience be tested? Where might you act from fear rather than principle? Name it now — the Stoics called this praemeditatio. The soldier who has already walked the battlefield in his mind is not surprised by it.",
+    instruction:"Sit quietly. Review today's schedule. For each event, ask: where could I react from fear or ego? Name one thing you can control — and one you must release." },
+  { id:"evening", name:"Evening review", time:"10 min · Before sleep", icon:"moon", duration:10*60,
+    desc:"Seneca examined each day with three questions: Where did I fall short today? What did I do well? What would I do differently? Not as self-punishment — as a craftsman reviewing his work. The goal is not guilt but calibration. Tomorrow is built from tonight's honest accounting.",
+    instruction:"Write or reflect on three questions: Where did I fall short? What did I do well? What would I do differently? No judgment — only observation." },
+  { id:"dichotomy", name:"The control audit", time:"3 min · Any moment", icon:"target", duration:3*60,
+    desc:"When you feel resistance, anxiety, or frustration — pause and ask: Is this in my control, or not? If not: release it fully and redirect your energy to your response. If yes: act, and act well. This pause, practiced until it becomes reflex, is the entire practical foundation of Stoicism.",
+    instruction:"Name one thing currently causing tension. Ask: is it in my control? If not — breathe out, release it. If yes — choose one action. Return to the present." },
+  { id:"exposure", name:"Voluntary simplicity", time:"1 day · Monthly", icon:"zap", duration:null,
+    desc:"Once a month, choose a day of deliberate plainness. Skip the amenities, eat simply, sit with discomfort when it arises. Seneca: \"I do this to test my spirit — to discover whether it says: Is this what I feared?\" The practice does not build endurance. It builds the knowledge that you already have it.",
+    instruction:"Pledge to practice voluntary simplicity today. Eat plainly, skip comforts, sit with discomfort without distraction. Ask yourself tonight: was this what I feared?" },
+];
+
+/* ── localStorage ── */
+const loadLS = (key, def) => { try { const v=localStorage.getItem(key); return v?JSON.parse(v):def; } catch(e){ return def; } };
+const saveLS = (key, val) => { try { localStorage.setItem(key,JSON.stringify(val)); } catch(e){} };
+
+/* ── Time utils ── */
+const fmt = (s) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+const nowTime    = () => new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});
+const formatHHMM = (d) => d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});
+// Always use LOCAL calendar date — avoids UTC drift for non-UTC timezones (e.g. Colombia UTC-5)
+const localDate  = (d) => { const dt=d?(d instanceof Date?d:new Date(d)):new Date(); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`; };
+const dateStr    = (d) => localDate(d instanceof Date ? d : new Date(d));
+const todayStr   = () => localDate();
+const randQuote  = () => STOIC_QUOTES[Math.floor(Math.random()*STOIC_QUOTES.length)];
+
+// Fixed 30-min clock intervals (:00 and :30 of each hour)
+const getSecsToNextHalfHour = () => {
+  const now = new Date();
+  const mins = now.getMinutes(), secs = now.getSeconds();
+  const minsToNext = mins < 30 ? (30-mins) : (60-mins);
+  return Math.max(1, minsToNext*60 - secs);
+};
+const getLastHalfHourDate = () => {
+  const now = new Date();
+  const d = new Date(now);
+  d.setSeconds(0); d.setMilliseconds(0);
+  d.setMinutes(now.getMinutes() < 30 ? 0 : 30);
+  return d;
+};
+// All complete 30-min slots from 00:00 up to (not including) the current slot — most recent first
+const getPastSlots = () => {
+  const now = new Date();
+  const curSlotStart = new Date(now);
+  curSlotStart.setSeconds(0, 0);
+  curSlotStart.setMinutes(now.getMinutes() < 30 ? 0 : 30);
+  const slots = [];
+  const dayStart = new Date(now); dayStart.setHours(0, 0, 0, 0);
+  let s = new Date(dayStart);
+  while (s < curSlotStart) {
+    const e = new Date(s); e.setMinutes(e.getMinutes() + 30);
+    slots.push({ start: new Date(s), end: new Date(e), label: `${formatHHMM(s)} — ${formatHHMM(e)}` });
+    s.setMinutes(s.getMinutes() + 30);
+  }
+  return slots.reverse();
+};
+const getWeekStart = () => {
+  const d = new Date(); const day = (d.getDay()+6)%7;
+  const monday = new Date(d); monday.setDate(d.getDate()-day);
+  return localDate(monday);
+};
+const fmtMins = (m) => m>=60?`${Math.floor(m/60)}h${m%60?` ${m%60}m`:""}`:`${m}m`;
+const fmtDur  = (s) => { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h?`${h}h ${m}m`:`${m}m`; };
+// Returns the absolute ms timestamp of the next :00 or :30 mark
+const getNextHalfHourMs = () => {
+  const now=new Date(), next=new Date(now);
+  next.setSeconds(0); next.setMilliseconds(0);
+  if(now.getMinutes()<30) next.setMinutes(30);
+  else { next.setMinutes(0); next.setHours(next.getHours()+1); }
+  return next.getTime();
+};
+// Web Notification helper (no-op if permission not granted)
+const sendNotif = (title, body) => {
+  try { if("Notification" in window && Notification.permission==="granted") new Notification(title,{body,silent:false}); } catch(e){}
+};
+
+/* ── Sound Engine ── */
+const SoundEngine = (() => {
+  let ctx=null, master=null, active=[];
+  const init = () => {
+    if(ctx) return;
+    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value=0.75; master.connect(ctx.destination);
+  };
+  const cleanup = () => { active.forEach(n=>{ try{n.stop();}catch(e){} }); active=[]; };
+  const mkNoise = (type,secs=10) => {
+    const len=ctx.sampleRate*secs, buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+    if(type==="white")  { for(let i=0;i<len;i++) d[i]=Math.random()*2-1; }
+    else if(type==="brown") { let last=0; for(let i=0;i<len;i++){ const w=Math.random()*2-1; d[i]=(last+0.02*w)/1.02; last=d[i]; d[i]*=3.5; } }
+    else if(type==="pink")  { let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0; for(let i=0;i<len;i++){ const w=Math.random()*2-1; b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856; b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980; d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926; } }
+    return buf;
+  };
+  const src = (type,secs=10) => { const s=ctx.createBufferSource(); s.buffer=mkNoise(type,secs); s.loop=true; active.push(s); return s; };
+  const flt = (type,freq,Q=1) => { const f=ctx.createBiquadFilter(); f.type=type; f.frequency.value=freq; f.Q.value=Q; return f; };
+  const gn  = (v) => { const g=ctx.createGain(); g.gain.value=v; return g; };
+  const lfo = (freq,depth,tgt) => { const osc=ctx.createOscillator(), mod=ctx.createGain(); osc.frequency.value=freq; mod.gain.value=depth; osc.connect(mod); mod.connect(tgt.gain); osc.start(); active.push(osc); };
+  const chain = (...ns) => { for(let i=0;i<ns.length-1;i++) ns[i].connect(ns[i+1]); ns[ns.length-1].connect(master); ns.forEach(n=>{ if(typeof n.start==="function") n.start(); }); };
+  const profiles = {
+    rain()  { chain(src("white"), flt("highpass",350), flt("lowpass",7000), gn(0.22)); },
+    forest(){ chain(src("brown"), flt("lowpass",650), gn(0.28)); chain(src("white"), flt("highpass",4000), flt("lowpass",9500), gn(0.07)); },
+    waves() { const g=gn(0.32); lfo(0.09,0.22,g); chain(src("brown"), flt("lowpass",700), g); },
+    cafe()  { chain(src("pink"), flt("bandpass",750,0.6), gn(0.20)); },
+    brown() { chain(src("brown"), flt("lowpass",1100), gn(0.30)); },
+    fire()  { const g=gn(0.26); lfo(2.4,0.14,g); chain(src("brown"), flt("lowpass",480), g); chain(src("white"), flt("highpass",1800), flt("lowpass",5500), gn(0.035)); },
+  };
+  return {
+    play(id){ try{ init(); cleanup(); if(ctx.state==="suspended") ctx.resume(); profiles[id]?.(); } catch(e){ console.warn("SoundEngine:",e); } },
+    stop(){ cleanup(); },
+  };
+})();
+
+function playChime() {
+  try {
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const play=(freq,t0,dur,vol=0.10)=>{
+      const osc=ctx.createOscillator(), g=ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination); osc.type="sine"; osc.frequency.value=freq;
+      g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(vol,t0+0.06); g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+      osc.start(t0); osc.stop(t0+dur);
+    };
+    const t=ctx.currentTime; play(523.25,t,0.9); play(659.25,t+0.35,1.0); play(783.99,t+0.70,1.4);
+  } catch(e){}
+}
+
+/* ── Icon ── */
+const Icon = ({ name, size=16 }) => {
+  const p = {
+    timer:        <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
+    play:         <polygon points="5 3 19 12 5 21 5 3"/>,
+    pause:        <><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></>,
+    stop:         <rect x="5" y="5" width="14" height="14" rx="1"/>,
+    calendar:     <><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></>,
+    stats:        <><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></>,
+    mic:          <><path d="M12 2a5 5 0 0 0-5 5v5a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z"/><path d="M19 10a7 7 0 0 1-14 0M12 19v3"/></>,
+    volume:       <path d="M15 8a5 5 0 0 1 0 8M18 5a9 9 0 0 1 0 14M6 9H3v6h3l5 4V5l-5 4z"/>,
+    x:            <path d="M18 6 6 18M6 6l12 12"/>,
+    plus:         <path d="M12 5v14M5 12h14"/>,
+    search:       <><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></>,
+    settings:     <><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></>,
+    moon:         <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>,
+    sun:          <><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></>,
+    chevronRight: <path d="m9 6 6 6-6 6"/>,
+    chevronDown:  <path d="m6 9 6 6 6-6"/>,
+    book:         <><path d="M4 4v16a1 1 0 0 0 1 1h15"/><path d="M16 8h-8M16 12h-8M10 16h-2"/></>,
+    coffee:       <><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>,
+    blocks:       <><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></>,
+    flag:         <><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></>,
+    check:        <polyline points="20 6 9 17 4 12"/>,
+    download:     <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
+    zap:          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
+    trend:        <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
+    target:       <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></>,
+    star:         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
+  };
+  const d=p[name]; if(!d) return null;
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
+};
+
+const Mark = ({ size=22, theme="light" }) => {
+  const c = theme==="dark"?"#F5F2EA":"#12110E";
+  return <svg width={size} height={size} viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke={c} strokeWidth="1.5"/><circle cx="32" cy="32" r="16" stroke={c} strokeWidth="1.5"/><circle cx="32" cy="32" r="3" fill={c}/></svg>;
+};
+
+/* ── Rail ── */
+const Rail = ({ current, onNav, sounds, theme }) => {
+  const nav = [
+    { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
+    { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"planning",label:"Planning",icon:"flag"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
+  ];
+  return (
+    <aside className="rail">
+      <div className="rail__brand"><Mark size={22} theme={theme}/><span className="rail__brand-name">Hyper Focus</span></div>
+      {nav.map(g=>(
+        <React.Fragment key={g.sec}>
+          <div className="rail__sec">{g.sec}</div>
+          {g.items.map(it=>(
+            <button key={it.id} className={"rail__item"+(current===it.id?" rail__item--active":"")} onClick={()=>onNav(it.id)}>
+              <Icon name={it.icon} size={15}/>{it.label}
+            </button>
+          ))}
+        </React.Fragment>
+      ))}
+      <div className="rail__spacer"/>
+      {sounds && <div className="rail__item" style={{fontSize:12,color:"var(--hf-fg-muted)"}}><Icon name="volume" size={15}/>{sounds}</div>}
+      <button className="rail__item" onClick={()=>onNav("settings")}><Icon name="settings" size={15}/>Settings</button>
+    </aside>
+  );
+};
+
+/* ── Topbar ── */
+const Topbar = ({ crumbs=[], onCmdk, onTheme, theme, running, timeStr }) => (
+  <header className="topbar">
+    <div className="topbar__crumb">
+      {crumbs.map((c,i)=>(
+        <React.Fragment key={i}>
+          {i>0&&<Icon name="chevronRight" size={12}/>}
+          {i===crumbs.length-1?<b>{c}</b>:<span>{c}</span>}
+        </React.Fragment>
+      ))}
+    </div>
+    <div className="topbar__actions">
+      {running&&<span className="badge badge--accent" style={{marginRight:8}}><span className="dot"/>Focusing · {timeStr}</span>}
+      <button className="iconbtn" onClick={onCmdk} title="Command (Ctrl+K)"><Icon name="search" size={15}/></button>
+      <button className="iconbtn" onClick={onTheme} title="Toggle theme"><Icon name={theme==="dark"?"sun":"moon"} size={15}/></button>
+    </div>
+  </header>
+);
+
+/* ── Session ── */
+const StarRating = ({ rated, onRate }) => {
+  const [hover, setHover] = useState(null);
+  return (
+    <div className="star-rate">
+      <div className="star-rate__label">How focused were you?</div>
+      <div className="star-rate__stars">
+        {[1,2,3,4,5].map(v=>{
+          const filled = hover!=null ? v<=hover : v<=(rated||0);
+          return (
+            <button key={v}
+              className={"star-btn"+(filled?" star-btn--filled":"")}
+              onMouseEnter={()=>setHover(v)}
+              onMouseLeave={()=>setHover(null)}
+              onClick={()=>onRate(v)}>
+              <svg width={32} height={32} viewBox="0 0 24 24"
+                fill={filled?"currentColor":"none"}
+                stroke="currentColor" strokeWidth="1.5"
+                strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+          );
+        })}
+      </div>
+      {rated&&<div style={{marginTop:8,fontSize:11,color:"var(--hf-fg-subtle)",letterSpacing:".06em",textTransform:"uppercase"}}>{["","1 star","2 stars","3 stars","4 stars","5 stars — Flow"][rated]}</div>}
+    </div>
+  );
+};
+
+const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick }) => {
+  const R=46, CIRC=2*Math.PI*R;
+  const [editDur, setEditDur] = useState(false);
+  const [durVal,  setDurVal]  = useState("");
+  const [rated,   setRated]   = useState(null);
+  const isIdle=phase==="idle", isFocusing=phase==="focusing", isBreak=phase==="break";
+  const isPaused=isIdle&&session.remaining<session.total;
+  const ringRemaining=isBreak?breakRemaining:session.remaining;
+  const ringTotal=isBreak?(MODES.find(m=>m.id===session.mode)?.breakDur||300):session.total;
+  const ringPct=ringTotal>0?(ringTotal-ringRemaining)/ringTotal:0;
+  const ringOffset=CIRC*(1-ringPct);
+  const applyDur=()=>{ const mins=parseInt(durVal); if(mins>=1&&mins<=480) setSession(s=>({...s,total:mins*60,remaining:mins*60})); setEditDur(false); };
+  const hasMits = mits && mits.tasks && mits.tasks.some(t=>t);
+
+  // Reset rating when we exit complete phase
+  useEffect(()=>{ if(phase!=="complete") setRated(null); },[phase]);
+
+  if (phase==="complete") {
+    const mode=MODES.find(m=>m.id===session.mode);
+    const breakMins=Math.round((mode?.breakDur||300)/60);
+    return (
+      <div className="focus-stage">
+        <div className="session-complete">
+          <div className="session-complete__label">Session recorded.</div>
+          <div className="session-complete__task">{task||"Untitled session."}</div>
+          <StarRating rated={rated} onRate={v=>{ setRated(v); onRate(v); }}/>
+          <div style={{display:"flex",gap:10,marginTop:24,flexWrap:"wrap",justifyContent:"center"}}>
+            <button className="btn btn--primary btn--lg" onClick={onStartBreak}><Icon name="coffee" size={14}/> Start break · {breakMins}m</button>
+            <button className="btn btn--secondary btn--lg" onClick={onNewSession}><Icon name="play" size={14}/> New session</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="focus-stage">
+      <div className="focus-meta">
+        <span>SESSION <b>{String(session.index).padStart(2,"0")}</b></span>
+        <span>·</span>
+        <span>MODE <b>{MODES.find(m=>m.id===session.mode)?.label}</b></span>
+        <span>·</span>
+        <span>TARGET{" "}
+          {editDur
+            ? <input className="dur-edit" type="number" min="1" max="480" value={durVal} onChange={e=>setDurVal(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"||e.key==="Escape")applyDur();}} onBlur={applyDur} autoFocus/>
+            : <b className={isIdle&&!isPaused?"dur-target":""} onClick={()=>{if(isIdle&&!isPaused){setDurVal(String(Math.floor(session.total/60)));setEditDur(true);}}}>{fmt(session.total)}</b>
+          }
+        </span>
+      </div>
+
+      {isIdle&&!isPaused
+        ? <input className="focus-task" style={{width:"100%",maxWidth:640}} placeholder="What are you working on?" value={task} onChange={e=>setTask(e.target.value)}/>
+        : <div className="focus-task" style={{fontStyle:"normal"}}>{task||"Untitled session."}</div>
+      }
+
+      {/* Today's priorities reminder — click to pre-fill task */}
+      {isIdle && !isPaused && hasMits && (
+        <div className="session-mits">
+          {mits.tasks.map((t,i)=>t?(
+            <span key={i}
+              className={"session-mit session-mit--clickable"+(mits.done[i]?" session-mit--done":"")}
+              title="Click to set as task"
+              onClick={()=>{ if(!mits.done[i]) onMitClick(t); }}>
+              {t}
+            </span>
+          ):null)}
+        </div>
+      )}
+
+      <div className={"ring"+(isFocusing?" ring--breathing":"")}>
+        <svg viewBox="0 0 100 100">
+          <circle className="ring__bg" cx="50" cy="50" r={R}/>
+          <circle className={"ring__fg"+(isBreak?" ring__fg--break":"")} cx="50" cy="50" r={R} strokeDasharray={CIRC} strokeDashoffset={ringOffset}/>
+        </svg>
+        <div className="ring__inner">
+          <div className="ring__timer">{fmt(ringRemaining)}</div>
+          <div className="ring__label">{isBreak?"Break":isFocusing?"Focusing":isPaused?"Paused":"Ready"}</div>
+        </div>
+      </div>
+
+      <div className="focus-actions">
+        {isIdle&&!isPaused&&(
+          <>
+            <div style={{display:"flex",gap:6}}>
+              {MODES.map(m=>(
+                <button key={m.id} className={"btn "+(session.mode===m.id?"btn--secondary":"btn--ghost")} style={session.mode===m.id?{borderColor:"var(--hf-sand-400)"}:{}} onClick={()=>setSession(s=>({...s,mode:m.id,total:m.dur,remaining:m.dur}))}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <button className="btn btn--primary btn--xl" onClick={onBegin}><Icon name="play" size={14}/> Begin</button>
+          </>
+        )}
+        {isFocusing&&(<>
+          <button className="btn btn--secondary btn--lg" onClick={onPause}><Icon name="pause" size={14}/> Pause</button>
+          <button className="btn btn--ghost btn--lg" onClick={onAdd5min}><Icon name="plus" size={14}/> +5 min</button>
+          <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="stop" size={14}/> End session</button>
+        </>)}
+        {isPaused&&(<>
+          <button className="btn btn--primary btn--lg" onClick={onBegin}><Icon name="play" size={14}/> Return</button>
+          <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="stop" size={14}/> End session</button>
+        </>)}
+        {isBreak&&<button className="btn btn--ghost btn--lg" onClick={onNewSession}>Skip break</button>}
+      </div>
+
+      {/* Pre-focus breath options */}
+      {isIdle && !isPaused && (
+        <div className="breath-opts">
+          <span className="breath-opts__label">Breathe</span>
+          {[1,2,3].map(m=>(
+            <button key={m} className="breath-opt" onClick={()=>onBreathe(m)}>{m} min</button>
+          ))}
+        </div>
+      )}
+
+      {isIdle&&!isPaused&&(
+        <div className="session-quote">{quote.text}<cite>— {quote.author}</cite></div>
+      )}
+    </div>
+  );
+};
+
+/* ── Today ── */
+const Today = ({ sessions, onStart, onRename, onDelete }) => {
+  const [editId,  setEditId]  = useState(null);
+  const [editVal, setEditVal] = useState("");
+  const editRef = useRef(null);
+  const total   = sessions.reduce((a,s)=>a+s.dur,0);
+  const now     = new Date();
+  const dayName = now.toLocaleDateString("en-US",{weekday:"long"});
+  const dStr    = now.toLocaleDateString("en-US",{month:"long",day:"numeric"});
+  const longest = sessions.length?Math.max(...sessions.map(s=>s.dur)):0;
+
+  const startEdit = (s) => {
+    setEditId(s.id); setEditVal(s.task);
+    setTimeout(()=>editRef.current?.select(),20);
+  };
+  const commitEdit = () => {
+    if(editId&&editVal.trim()) onRename(editId, editVal.trim());
+    setEditId(null);
+  };
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:32}}><div className="eyebrow">{dayName} · {dStr}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Today</h1></div>
+      <div className="card-s" style={{marginBottom:32}}>
+        <div className="kpi-grid">
+          <div className="kpi"><div className="kpi__label">Focused</div><div className="kpi__value">{total?fmtDur(total):<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
+          <div className="kpi"><div className="kpi__label">Sessions</div><div className="kpi__value">{sessions.length}<small>/ 4</small></div></div>
+          <div className="kpi"><div className="kpi__label">Streak</div><div className="kpi__value">—</div></div>
+          <div className="kpi"><div className="kpi__label">Longest</div><div className="kpi__value">{longest?fmtDur(longest):<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
+        </div>
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:12}}>
+        <h2 className="h-serif" style={{fontSize:24,margin:0}}>Sessions</h2>
+        <button className="btn btn--primary" onClick={onStart}><Icon name="plus" size={14}/> Begin new</button>
+      </div>
+      <div className="session-list">
+        {sessions.length===0&&<div style={{padding:"32px 0",color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic"}}>Nothing here yet.</div>}
+        {[...sessions].reverse().map((s,i)=>(
+          <div key={s.id||i} className="session-row">
+            {/* Period: "HH:MM — HH:MM" or just end time for old entries */}
+            <span className="session-row__time">
+              {s.startTime?`${s.startTime} — ${s.time}`:s.time}
+            </span>
+            {editId===s.id ? (
+              <input ref={editRef} className="session-row__edit"
+                value={editVal}
+                onChange={e=>setEditVal(e.target.value)}
+                onBlur={commitEdit}
+                onKeyDown={e=>{ if(e.key==="Enter") commitEdit(); if(e.key==="Escape"){ setEditId(null); } }}
+              />
+            ) : (
+              <span className="session-row__task"
+                style={{display:"flex",alignItems:"center",gap:7}}
+                title="Click to rename"
+                onClick={()=>startEdit(s)}>
+                {s.quality&&<span className="quality-stars" title={s.quality+" star"+(s.quality>1?"s":"")}>{"★".repeat(s.quality)}</span>}
+                {s.task}
+              </span>
+            )}
+            <span className="badge badge--neutral">{MODES.find(m=>m.id===s.mode)?.label||s.mode}</span>
+            <span className="session-row__dur">{fmtDur(s.dur)}</span>
+            <button className="iconbtn btn--danger session-row__del" title="Delete session" onClick={()=>onDelete(s.id)}>
+              <Icon name="x" size={13}/>
+            </button>
+          </div>
+        ))}
+      </div>
+      {sessions.length>0&&<p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:16,fontStyle:"italic"}}>Click a name to rename · hover to delete.</p>}
+    </div>
+  );
+};
+
+/* ── Heatmap ── */
+const Heatmap = ({ sessions }) => {
+  const dayMap = {};
+  sessions.forEach(s=>{ if(s.date){ const d=localDate(new Date(s.date)); dayMap[d]=(dayMap[d]||0)+Math.floor(s.dur/60); } });
+  const today = new Date(); today.setHours(12,0,0,0);
+  // Build 91 days (13 complete weeks), starting from the Monday 13 weeks ago
+  const startDay = new Date(today);
+  startDay.setDate(today.getDate() - today.getDay() + 1 - 12*7); // Monday 13 weeks ago
+  const cells = []; // array of 91 dates in order
+  for(let i=0;i<91;i++){
+    const d=new Date(startDay); d.setDate(startDay.getDate()+i);
+    const key=localDate(d);
+    cells.push({key,mins:dayMap[key]||0,d:new Date(d)});
+  }
+  // Group into 13 columns of 7
+  const weeks=[]; for(let w=0;w<13;w++) weeks.push(cells.slice(w*7,w*7+7));
+  const getLevel=(mins)=>{ if(mins===0)return 0; if(mins<20)return 1; if(mins<45)return 2; if(mins<90)return 3; return 4; };
+  // Month labels: one per week-column based on which month the Monday falls in
+  const monthLabels = weeks.map((wk,i)=>{
+    if(i===0) return wk[0].d.toLocaleDateString("en-US",{month:"short"});
+    const prev=weeks[i-1][0].d.getMonth();
+    const cur=wk[0].d.getMonth();
+    return cur!==prev ? wk[0].d.toLocaleDateString("en-US",{month:"short"}) : "";
+  });
+  const todayStr2 = localDate();
+  return (
+    <div className="heatmap">
+      <div className="heatmap__months">
+        {monthLabels.map((label,i)=>(
+          <div key={i} style={{width:13+3,flexShrink:0,overflow:"visible"}}>
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="heatmap__grid">
+        {weeks.map((wk,wi)=>(
+          <div key={wi} className="heatmap__col">
+            {wk.map((cell,di)=>(
+              <div key={di}
+                className={"heatmap__cell"+(getLevel(cell.mins)>0?` heatmap__cell--l${getLevel(cell.mins)}`:"")}
+                title={`${cell.key}${cell.mins>0?` · ${fmtMins(cell.mins)}`:""}`}
+                style={cell.key===todayStr2?{outline:"1.5px solid var(--hf-sand-500)",outlineOffset:"1px"}:{}}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:6,alignItems:"center",marginTop:10,justifyContent:"flex-end"}}>
+        <span style={{fontSize:10,color:"var(--hf-fg-subtle)"}}>Less</span>
+        {[0,1,2,3,4].map(l=><div key={l} className={"heatmap__cell"+(l>0?` heatmap__cell--l${l}`:"")} style={{width:11,height:11}}/>)}
+        <span style={{fontSize:10,color:"var(--hf-fg-subtle)"}}>More</span>
+      </div>
+    </div>
+  );
+};
+
+/* ── calcStreak / insights ── */
+const calcStreak = (sessions) => {
+  const days=[...new Set(sessions.map(s=>s.date?localDate(new Date(s.date)):null).filter(Boolean))].sort();
+  if(!days.length) return 0;
+  const today=localDate();
+  const yest=new Date(); yest.setDate(yest.getDate()-1);
+  const ystStr=localDate(yest);
+  if(days[days.length-1]!==today&&days[days.length-1]!==ystStr) return 0;
+  let streak=1;
+  for(let i=days.length-2;i>=0;i--){
+    const diff=Math.round((new Date(days[i+1]+"T12:00:00")-new Date(days[i]+"T12:00:00"))/(86400000));
+    if(diff===1) streak++; else break;
+  }
+  return streak;
+};
+const getBestDay = (sessions) => {
+  const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const byDay=Array(7).fill(0);
+  sessions.forEach(s=>{ if(s.date){ const d=new Date(s.date); byDay[d.getDay()]+=Math.floor(s.dur/60); } });
+  const max=Math.max(...byDay);
+  if(max===0) return null;
+  return dayNames[byDay.indexOf(max)];
+};
+const getAvgLen = (sessions) => {
+  if(!sessions.length) return null;
+  return Math.floor(sessions.reduce((a,s)=>a+s.dur,0)/sessions.length/60);
+};
+
+/* ── Stats ── */
+const Stats = ({ sessions }) => {
+  const [period, setPeriod] = useState("week");
+  const today   = todayStr();
+  const ws      = getWeekStart();
+  const monthPfx= localDate().slice(0,7);
+  const filtered = sessions.filter(s=>{
+    if(!s.date) return false;
+    const d=localDate(new Date(s.date));
+    if(period==="today") return d===today;
+    if(period==="week")  return d>=ws;
+    if(period==="month") return d.startsWith(monthPfx);
+    return true;
+  });
+  const totalSecs=filtered.reduce((a,s)=>a+s.dur,0);
+  const modeMap={};
+  filtered.forEach(s=>{ modeMap[s.mode]=(modeMap[s.mode]||0)+s.dur; });
+  const todayDayIdx=(new Date().getDay()+6)%7;
+  const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const weekMins=Array(7).fill(0);
+  const wsDate=new Date(ws+"T00:00:00");
+  sessions.filter(s=>s.date&&localDate(new Date(s.date))>=ws).forEach(s=>{
+    const sLocal=localDate(new Date(s.date));
+    const diff=Math.floor((new Date(sLocal+"T00:00:00")-wsDate)/86400000);
+    if(diff>=0&&diff<7) weekMins[diff]+=Math.floor(s.dur/60);
+  });
+  const maxMins=Math.max(...weekMins,1);
+  const showChart=period==="week"||period==="today";
+  const byMonth={};
+  sessions.forEach(s=>{ if(s.date){ const m=localDate(new Date(s.date)).slice(0,7); byMonth[m]=(byMonth[m]||0)+s.dur; } });
+
+  const streak   = calcStreak(sessions);
+  const bestDay  = getBestDay(sessions);
+  const avgLen   = getAvgLen(sessions);
+  const flowSessions = sessions.filter(s=>s.quality>=4).length;
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:16}}><div className="eyebrow">{new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"})}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Stats</h1></div>
+      {/* Insights */}
+      {sessions.length>0&&(
+        <div className="insights">
+          {streak>0&&<span className="insight-chip"><Icon name="zap" size={11}/><b>{streak}-day</b> streak</span>}
+          {bestDay&&<span className="insight-chip"><Icon name="calendar" size={11}/>Best day: <b>{bestDay}</b></span>}
+          {avgLen&&<span className="insight-chip"><Icon name="timer" size={11}/>Avg session: <b>{avgLen}m</b></span>}
+          {flowSessions>0&&<span className="insight-chip"><Icon name="star" size={11}/><b>{flowSessions}</b> {flowSessions===1?"session":"sessions"} rated 4-5★</span>}
+        </div>
+      )}
+      <div className="stats-periods">
+        {[{id:"today",label:"Today"},{id:"week",label:"This week"},{id:"month",label:"This month"},{id:"all",label:"All time"}].map(p=>(
+          <button key={p.id} className={"stats-period"+(period===p.id?" stats-period--active":"")} onClick={()=>setPeriod(p.id)}>{p.label}</button>
+        ))}
+      </div>
+      <div className="card-s" style={{marginBottom:24}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:24}}>
+          <div>
+            <div className="eyebrow">Total focused</div>
+            <div style={{fontFamily:"var(--hf-font-mono)",fontSize:52,fontWeight:300,letterSpacing:"-0.02em",lineHeight:1,marginTop:8}}>
+              {totalSecs?fmtDur(totalSecs):<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}
+            </div>
+          </div>
+          <div style={{display:"flex",gap:32,textAlign:"right"}}>
+            <div><div className="eyebrow">Sessions</div><div style={{fontFamily:"var(--hf-font-mono)",fontSize:22,fontWeight:400,marginTop:8,color:"var(--hf-fg-body)"}}>{filtered.length}</div></div>
+            <div><div className="eyebrow">Avg length</div><div style={{fontFamily:"var(--hf-font-mono)",fontSize:22,fontWeight:400,marginTop:8,color:"var(--hf-fg-body)"}}>{filtered.length?fmtDur(Math.floor(totalSecs/filtered.length)):"—"}</div></div>
+          </div>
+        </div>
+        {showChart&&(totalSecs===0?(
+          <div style={{height:160,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--hf-fg-subtle)",fontSize:13,fontStyle:"italic"}}>Nothing recorded yet.</div>
+        ):(
+          <>
+            <div className="chart">
+              {weekMins.map((m,i)=>(
+                <div key={i} className={"chart__bar"+(i===todayDayIdx?" chart__bar--today":i>todayDayIdx?" chart__bar--dim":"")} style={{height:`${(m/maxMins)*100}%`}}/>
+              ))}
+            </div>
+            <div className="chart__labels">{days.map(d=><span key={d}>{d}</span>)}</div>
+          </>
+        ))}
+        {period==="all"&&Object.keys(byMonth).length>0&&(
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,12).map(([month,secs])=>(
+              <div key={month} style={{display:"flex",justifyContent:"space-between",fontFamily:"var(--hf-font-mono)",fontSize:13}}>
+                <span style={{color:"var(--hf-fg-muted)"}}>{new Date(month+"-01").toLocaleDateString("en-US",{month:"long",year:"numeric"})}</span>
+                <span>{fmtDur(secs)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div className="card-s"><div className="eyebrow">By mode</div>
+          <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:10,fontFamily:"var(--hf-font-mono)",fontSize:13}}>
+            {MODES.map(m=><div key={m.id} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"var(--hf-fg-muted)"}}>{m.label}</span><span>{modeMap[m.id]?fmtDur(modeMap[m.id]):"—"}</span></div>)}
+          </div>
+        </div>
+        <div className="card-s"><div className="eyebrow">Recent sessions</div>
+          <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:10,fontFamily:"var(--hf-font-mono)",fontSize:13}}>
+            {filtered.length===0
+              ?<span style={{color:"var(--hf-fg-subtle)",fontFamily:"var(--hf-font-sans)",fontSize:13,fontStyle:"italic"}}>Nothing recorded yet.</span>
+              :[...filtered].reverse().slice(0,6).map((s,i)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center"}}>
+                  <span style={{color:"var(--hf-fg-muted)",flexShrink:0,whiteSpace:"nowrap"}}>{s.startTime?`${s.startTime}–${s.time}`:s.time}</span>
+                  <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:"var(--hf-fg-body)",fontSize:12,flex:1,display:"flex",alignItems:"center",gap:5}}>
+                    {s.quality&&<span className="quality-stars" style={{fontSize:10}}>{"★".repeat(s.quality)}</span>}{s.task}
+                  </span>
+                  <span style={{flexShrink:0}}>{fmtDur(s.dur)}</span>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+      {/* 90-day contribution heatmap */}
+      <div className="card-s" style={{marginTop:16}}>
+        <div className="eyebrow" style={{marginBottom:14}}>90-day activity</div>
+        <Heatmap sessions={sessions}/>
+      </div>
+    </div>
+  );
+};
+
+/* ── Soundscapes ── */
+const Soundscapes = ({ active, setActive }) => {
+  const sounds=[
+    {id:"rain",  name:"Soft rain",   desc:"Steady rainfall on leaves."},
+    {id:"forest",name:"Old forest",  desc:"Wind through pines, distant birds."},
+    {id:"waves", name:"Shoreline",   desc:"Slow ocean waves on sand."},
+    {id:"cafe",  name:"Quiet café",  desc:"Low murmur and ceramic."},
+    {id:"brown", name:"Brown noise", desc:"Warm low-frequency hush."},
+    {id:"fire",  name:"Fireplace",   desc:"Wood crackle, close."},
+  ];
+  return (
+    <div className="page">
+      <div style={{marginBottom:24}}><div className="eyebrow">Practice</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Soundscapes</h1><p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8}}>One at a time. Layering breaks focus.</p></div>
+      <div className="sound-grid">
+        {sounds.map(s=>(
+          <button key={s.id} className={"sound"+(active===s.id?" sound--active":"")} onClick={()=>setActive(active===s.id?null:s.id)}>
+            <div className="sound__name">{s.name}</div>
+            <div className="sound__desc">{s.desc}</div>
+            <div className="sound__bars">{[0,1,2,3,4].map(i=><i key={i} style={{height:active===s.id?undefined:`${4+i*2}px`}}/>)}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ── Planning ── */
+const Planning = ({ mits, setMits }) => {
+  const today = todayStr();
+  const todayPlan = mits[today] || { tasks:["","",""], done:[false,false,false] };
+  const setTask = (i,val) => setMits(m=>({ ...m, [today]:{ ...todayPlan, tasks:todayPlan.tasks.map((t,j)=>j===i?val:t) } }));
+  const toggleDone = (i) => {
+    if (!todayPlan.tasks[i]) return;
+    setMits(m=>({ ...m, [today]:{ ...todayPlan, done:todayPlan.done.map((d,j)=>j===i?!d:d) } }));
+  };
+  const pastDays = Object.entries(mits)
+    .filter(([d])=>d!==today)
+    .sort((a,b)=>b[0].localeCompare(a[0]))
+    .slice(0,7);
+  const fmtDay = (d) => new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+  const completedToday = todayPlan.tasks.filter((t,i)=>t&&todayPlan.done[i]).length;
+  const totalToday     = todayPlan.tasks.filter(t=>t).length;
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:32}}>
+        <div className="eyebrow">Practice</div>
+        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Daily planning</h1>
+        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8,lineHeight:1.6}}>Three things that would make today a success. No more.</p>
+      </div>
+
+      <div className="card-s" style={{marginBottom:10}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div className="eyebrow">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</div>
+          {totalToday>0&&<span className="badge badge--neutral">{completedToday}/{totalToday} done</span>}
+        </div>
+        {[0,1,2].map(i=>(
+          <div key={i} className="mit-row">
+            <input type="checkbox" className="mit-check" checked={todayPlan.done[i]&&!!todayPlan.tasks[i]} onChange={()=>toggleDone(i)}/>
+            <input className={"mit-input"+(todayPlan.done[i]&&todayPlan.tasks[i]?" mit-input--done":"")}
+              placeholder={["Most important task…","Second priority…","Third priority…"][i]}
+              value={todayPlan.tasks[i]}
+              onChange={e=>setTask(i,e.target.value)}/>
+          </div>
+        ))}
+        <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:16,fontStyle:"italic",lineHeight:1.6}}>
+          "It is not that we have a short time to live, but that we waste a great deal of it." — Seneca
+        </p>
+      </div>
+
+      {pastDays.length>0&&(
+        <>
+          <h2 className="h-serif" style={{fontSize:22,margin:"32px 0 14px"}}>Recent plans</h2>
+          <div className="plan-history">
+            {pastDays.map(([d,plan])=>{
+              const tasks=plan.tasks||[]; const done=plan.done||[];
+              const nonEmpty=tasks.filter(t=>t);
+              if(nonEmpty.length===0) return null;
+              return (
+                <div key={d} className="plan-day">
+                  <div className="plan-day__date">{fmtDay(d)}</div>
+                  <div className="plan-day__tasks">
+                    {tasks.map((t,i)=>t?(
+                      <div key={i} className={"plan-day__task"+(done[i]?" plan-day__task--done":"")}>
+                        <div className={"plan-day__dot"+(done[i]?" plan-day__dot--done":"")}/>
+                        {t}
+                      </div>
+                    ):null)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+/* ── Stoic ── */
+const Stoic = () => {
+  const [dailyQuote] = useState(()=>randQuote());
+  const [openPhil, setOpenPhil] = useState(null);
+  return (
+    <div className="page">
+      <div style={{marginBottom:32}}>
+        <div className="eyebrow">Philosophy</div>
+        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Stoicism</h1>
+        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8}}>The art of living well under any condition.</p>
+      </div>
+
+      {/* Daily quote */}
+      <div className="stoic-daily">
+        <div className="stoic-daily__eyebrow">Daily meditation</div>
+        <div className="stoic-daily__quote">"{dailyQuote.text}"</div>
+        <div className="stoic-daily__author">— {dailyQuote.author}</div>
+      </div>
+
+      {/* Philosophers — 5 in a 3+2 grid */}
+      <h2 className="h-serif" style={{fontSize:24,margin:"0 0 16px"}}>The Philosophers</h2>
+      <div className="stoic-phil-grid" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
+        {PHILOSOPHER_DATA.slice(0,3).map(p=>{
+          const isOpen=openPhil===p.id;
+          return (
+            <div key={p.id} className={"stoic-phil"+(isOpen?" stoic-phil--open":"")}>
+              <div className="stoic-phil__head" onClick={()=>setOpenPhil(isOpen?null:p.id)}>
+                <div><div className="stoic-phil__name">{p.name}</div><div className="stoic-phil__dates">{p.dates}</div><div className="stoic-phil__role">{p.role}</div></div>
+                <Icon name={isOpen?"chevronDown":"chevronRight"} size={14}/>
+              </div>
+              {isOpen&&(
+                <div className="stoic-phil__body">
+                  <div className="stoic-phil__bio">{p.bio}</div>
+                  <div className="eyebrow" style={{marginBottom:8}}>On his practice</div>
+                  <div className="stoic-phil__story">{p.story}</div>
+                  <div className="eyebrow" style={{marginBottom:10}}>Key quotes</div>
+                  {p.quotes.map((q,i)=><div key={i} className="stoic-phil__quote">"{q}"</div>)}
+                  <div style={{marginTop:16,fontSize:11,color:"var(--hf-fg-subtle)",fontFamily:"var(--hf-font-mono)"}}>Key work — {p.work}</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="stoic-phil-grid" style={{gridTemplateColumns:"repeat(2,1fr)",marginBottom:36}}>
+        {PHILOSOPHER_DATA.slice(3).map(p=>{
+          const isOpen=openPhil===p.id;
+          return (
+            <div key={p.id} className={"stoic-phil"+(isOpen?" stoic-phil--open":"")}>
+              <div className="stoic-phil__head" onClick={()=>setOpenPhil(isOpen?null:p.id)}>
+                <div><div className="stoic-phil__name">{p.name}</div><div className="stoic-phil__dates">{p.dates}</div><div className="stoic-phil__role">{p.role}</div></div>
+                <Icon name={isOpen?"chevronDown":"chevronRight"} size={14}/>
+              </div>
+              {isOpen&&(
+                <div className="stoic-phil__body">
+                  <div className="stoic-phil__bio">{p.bio}</div>
+                  <div className="eyebrow" style={{marginBottom:8}}>On his practice</div>
+                  <div className="stoic-phil__story">{p.story}</div>
+                  <div className="eyebrow" style={{marginBottom:10}}>Key quotes</div>
+                  {p.quotes.map((q,i)=><div key={i} className="stoic-phil__quote">"{q}"</div>)}
+                  <div style={{marginTop:16,fontSize:11,color:"var(--hf-fg-subtle)",fontFamily:"var(--hf-font-mono)"}}>Key work — {p.work}</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Core principles — 6 in 2-col grid */}
+      <h2 className="h-serif" style={{fontSize:24,margin:"0 0 16px"}}>Core Principles</h2>
+      <div className="stoic-principles" style={{marginBottom:36}}>
+        {PRINCIPLES.map(pr=>(
+          <div key={pr.id} className="stoic-principle">
+            <div className="stoic-principle__name">{pr.name}</div>
+            <div className="stoic-principle__desc">{pr.desc}</div>
+            <div style={{marginTop:14,fontSize:11,color:"var(--hf-fg-subtle)",fontFamily:"var(--hf-font-mono)"}}>{pr.source}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Daily practices */}
+      <h2 className="h-serif" style={{fontSize:24,margin:"0 0 16px"}}>Daily Practices</h2>
+      <div className="stoic-practices">
+        {PRACTICES.map(pr=>(
+          <div key={pr.id} className="stoic-practice">
+            <div className="stoic-practice__head">
+              <div>
+                <div className="stoic-practice__name">{pr.name}</div>
+                <div className="stoic-practice__time">{pr.time}</div>
+              </div>
+              <Icon name={pr.icon} size={16}/>
+            </div>
+            <div className="stoic-practice__desc">{pr.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ── Breath ── */
+const Breath = ({ onDone, duration=60 }) => {
+  const seq=["Inhale","Hold","Exhale","Hold"];
+  const [i, setI] = useState(0);
+  const [remaining, setRemaining] = useState(duration);
+  useEffect(()=>{
+    const t=setInterval(()=>setI(v=>(v+1)%seq.length),3500);
+    const end=setTimeout(onDone, duration*1000);
+    return ()=>{ clearInterval(t); clearTimeout(end); };
+  },[duration]);
+  useEffect(()=>{
+    const t=setInterval(()=>setRemaining(r=>Math.max(0,r-1)),1000);
+    return ()=>clearInterval(t);
+  },[]);
+  const mins=Math.floor(remaining/60), secs=remaining%60;
+  const timeStr=mins>0?`${mins}:${String(secs).padStart(2,"0")}`:`${secs}s`;
+  return (
+    <div className="breath-stage">
+      <div className="breath-prompt">Take a breath.</div>
+      <div className="breath-circle"><div className="breath-dot"/></div>
+      <div className="breath-cue">{seq[i]}</div>
+      <div style={{fontFamily:"var(--hf-font-mono)",fontSize:14,color:"var(--hf-fg-muted)"}}>{timeStr}</div>
+      <button className="btn btn--ghost" onClick={onDone}>Skip</button>
+    </div>
+  );
+};
+
+/* ── CmdK ── */
+const CmdK = ({ onClose, onAction }) => {
+  const items=[
+    {id:"begin",   label:"Begin session",   icon:"play",   kbd:"Space"},
+    {id:"pause",   label:"Pause session",   icon:"pause",  kbd:"Space"},
+    {id:"today",   label:"Go to today",     icon:"calendar"},
+    {id:"stats",   label:"Go to stats",     icon:"stats"},
+    {id:"sounds",  label:"Soundscapes",     icon:"mic"},
+    {id:"planning",label:"Planning",        icon:"flag"},
+    {id:"stoic",   label:"Stoicism",        icon:"book"},
+    {id:"breath",  label:"Pre-focus breath",icon:"coffee"},
+    {id:"tracker", label:"Time tracker",    icon:"blocks"},
+    {id:"lognow",  label:"Log now",         icon:"plus"},
+  ];
+  const [q,setQ]=useState("");
+  const [sel,setSel]=useState(0);
+  const filtered=items.filter(it=>it.label.toLowerCase().includes(q.toLowerCase()));
+  const handleKey=e=>{
+    if(e.key==="ArrowDown"){e.preventDefault();setSel(v=>Math.min(v+1,filtered.length-1));}
+    if(e.key==="ArrowUp")  {e.preventDefault();setSel(v=>Math.max(v-1,0));}
+    if(e.key==="Enter"&&filtered[sel]){onAction(filtered[sel].id);onClose();}
+  };
+  return (
+    <div className="cmdk-backdrop" onClick={onClose}>
+      <div className="cmdk" onClick={e=>e.stopPropagation()}>
+        <div className="cmdk__search"><Icon name="search" size={16}/><input autoFocus placeholder="Type a command…" value={q} onChange={e=>{setQ(e.target.value);setSel(0);}} onKeyDown={handleKey}/><span className="cmdk__hint">ESC</span></div>
+        <div className="cmdk__list">
+          {filtered.map((it,idx)=>(
+            <button key={it.id} className={"cmdk__item"+(idx===sel?" cmdk__item--sel":"")} onMouseEnter={()=>setSel(idx)} onClick={()=>{onAction(it.id);onClose();}}>
+              <Icon name={it.icon} size={15}/>{it.label}{it.kbd&&<span className="kbd">{it.kbd}</span>}
+            </button>
+          ))}
+          {filtered.length===0&&<div style={{padding:16,color:"var(--hf-fg-muted)",fontSize:13,textAlign:"center"}}>Nothing matches.</div>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── TrackerPrompt ── */
+const TrackerPrompt = ({ onSave, onSkip, periodStart }) => {
+  const [val, setVal] = useState("");
+  const ref = useRef(null);
+  useEffect(()=>{ setTimeout(()=>ref.current?.focus(),50); },[]);
+  const save = () => { const t=val.trim(); if(t) onSave(t); };
+  const periodStr = `${formatHHMM(periodStart)} — ${nowTime()}`;
+  return (
+    <div className="tracker-toast">
+      <div className="tracker-toast__header">
+        <span className="tracker-toast__label">30 min check-in</span>
+        <span className="tracker-toast__period">{periodStr}</span>
+      </div>
+      <input ref={ref} className="tracker-toast__input" placeholder="What have you been working on?"
+        value={val} onChange={e=>setVal(e.target.value)}
+        onKeyDown={e=>{ if(e.key==="Enter") save(); if(e.key==="Escape") onSkip(); }}/>
+      <div className="tracker-toast__actions">
+        <button className="btn btn--primary" onClick={save} disabled={!val.trim()}>Log</button>
+        <button className="btn btn--ghost" onClick={onSkip}>Skip</button>
+      </div>
+    </div>
+  );
+};
+
+/* ── Tracker manual entry ── */
+const TrackerManualEntry = ({ onSave, onClose }) => {
+  const slots = getPastSlots();
+  const [slotIdx, setSlotIdx] = useState(0);
+  const [val, setVal] = useState("");
+  const ref = useRef(null);
+  useEffect(()=>{ setTimeout(()=>ref.current?.focus(),50); },[]);
+  const save = () => {
+    const t=val.trim();
+    if(!t||!slots[slotIdx]) return;
+    onSave(t, slots[slotIdx].start, slots[slotIdx].end);
+  };
+  return (
+    <div className="tracker-toast">
+      <div className="tracker-toast__header">
+        <span className="tracker-toast__label">New entry</span>
+        <button className="iconbtn" onClick={onClose} style={{marginRight:-6}}><Icon name="x" size={14}/></button>
+      </div>
+      {slots.length===0
+        ? <p style={{fontSize:13,color:"var(--hf-fg-muted)",margin:"0 0 14px",fontStyle:"italic"}}>No completed periods yet today — check back after the first 30 minutes.</p>
+        : <select className="input" style={{marginBottom:16,fontSize:14}}
+            value={slotIdx} onChange={e=>setSlotIdx(Number(e.target.value))}>
+            {slots.map((s,i)=><option key={i} value={i}>{s.label}</option>)}
+          </select>
+      }
+      <input ref={ref} className="tracker-toast__input" placeholder="What were you working on?"
+        value={val} onChange={e=>setVal(e.target.value)}
+        onKeyDown={e=>{ if(e.key==="Enter") save(); if(e.key==="Escape") onClose(); }}/>
+      <div className="tracker-toast__actions">
+        <button className="btn btn--primary" onClick={save} disabled={!val.trim()||slots.length===0}>Log</button>
+        <button className="btn btn--ghost" onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  );
+};
+
+/* ── Tracker view ── */
+const Tracker = ({ entries, countdown, onLogNow, onNewEntry }) => {
+  const fmtC=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+  const now=new Date();
+  const dStr=now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  const totalMins=entries.reduce((a,e)=>a+(e.duration||0),0);
+  return (
+    <div className="page">
+      <div style={{marginBottom:28}}><div className="eyebrow">{dStr}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Time tracker</h1></div>
+      <div className="card-s" style={{marginBottom:28}}>
+        <div className="tracker-summary">
+          <div className="kpi"><div className="kpi__label">Next check-in</div><div className="kpi__value" style={{fontSize:32}}>{fmtC(countdown)}</div></div>
+          <div className="kpi"><div className="kpi__label">Entries today</div><div className="kpi__value" style={{fontSize:32}}>{entries.length}</div></div>
+          <div className="kpi"><div className="kpi__label">Time logged</div><div className="kpi__value" style={{fontSize:32}}>{totalMins>0?<span>{fmtMins(totalMins)}</span>:<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
+        </div>
+        <div style={{marginTop:20,display:"flex",gap:8,flexWrap:"wrap"}}>
+          <button className="btn btn--primary" onClick={onLogNow}><Icon name="plus" size={14}/> Log now</button>
+          <button className="btn btn--secondary" onClick={onNewEntry}><Icon name="calendar" size={14}/> New entry</button>
+        </div>
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:12}}>
+        <h2 className="h-serif" style={{fontSize:24,margin:0}}>Today's log</h2>
+        {entries.length>0&&<span style={{fontSize:12,color:"var(--hf-fg-muted)",fontFamily:"var(--hf-font-mono)"}}>{entries.length} {entries.length===1?"entry":"entries"}</span>}
+      </div>
+      <div className="tracker-timeline">
+        {entries.length===0&&<div style={{padding:"32px 0",color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic"}}>Nothing logged yet. First check-in in {fmtC(countdown)}.</div>}
+        {[...entries].sort((a,b)=>a.startTime.localeCompare(b.startTime)).map((e,i)=>(
+          <div key={i} className="tracker-entry">
+            <span className="tracker-entry__time">{e.startTime} — {e.endTime}</span>
+            <span className="tracker-entry__text">{e.text}</span>
+            <span className="tracker-entry__dur">{e.duration!=null?fmtMins(e.duration):"—"}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ── Daily Practices ── */
+const DailyPractices = ({ practiceLog, onLogPractice }) => {
+  const R=46, CIRC=2*Math.PI*R;
+  const [timerPhase, setTimerPhase] = useState("idle"); // idle | running | complete
+  const [activePractice, setActivePractice] = useState(null);
+  const [remaining, setRemaining] = useState(0);
+
+  const timerTsRef      = useRef(0);
+  const timerTotalRef   = useRef(0);
+  const timerElapsedRef = useRef(0);
+  const timerPhaseRef   = useRef("idle");
+
+  useEffect(()=>{ timerPhaseRef.current=timerPhase; },[timerPhase]);
+
+  // Wall-clock timer tick
+  useEffect(()=>{
+    if(timerPhase!=="running") return;
+    const tick=setInterval(()=>{
+      const elapsed=timerElapsedRef.current+Math.floor((Date.now()-timerTsRef.current)/1000);
+      setRemaining(Math.max(0,timerTotalRef.current-elapsed));
+    },500);
+    return ()=>clearInterval(tick);
+  },[timerPhase]);
+
+  // Visibility change catch-up
+  useEffect(()=>{
+    const onVis=()=>{
+      if(document.hidden||timerPhaseRef.current!=="running") return;
+      const elapsed=timerElapsedRef.current+Math.floor((Date.now()-timerTsRef.current)/1000);
+      setRemaining(Math.max(0,timerTotalRef.current-elapsed));
+    };
+    document.addEventListener("visibilitychange",onVis);
+    return ()=>document.removeEventListener("visibilitychange",onVis);
+  },[]);
+
+  // Practice complete
+  useEffect(()=>{
+    if(timerPhase==="running"&&remaining===0&&activePractice){
+      const pr=PRACTICES.find(p=>p.id===activePractice);
+      playChime();
+      onLogPractice({ id:Date.now(), practiceId:activePractice, name:pr.name, date:new Date().toISOString(), duration:timerTotalRef.current });
+      setTimerPhase("complete");
+    }
+  },[remaining,timerPhase]);
+
+  const beginPractice=(pr)=>{
+    timerTotalRef.current=pr.duration;
+    timerTsRef.current=Date.now();
+    timerElapsedRef.current=0;
+    setRemaining(pr.duration);
+    setActivePractice(pr.id);
+    setTimerPhase("running");
+  };
+  const cancelTimer=()=>{ setTimerPhase("idle"); setActivePractice(null); setRemaining(0); };
+  const pledgePractice=(pr)=>{
+    onLogPractice({ id:Date.now(), practiceId:pr.id, name:pr.name, date:new Date().toISOString(), duration:null });
+  };
+
+  const today=todayStr();
+  const todayLog=practiceLog.filter(e=>e.date&&localDate(new Date(e.date))===today);
+  const doneIds=new Set(todayLog.map(e=>e.practiceId));
+
+  // Timer stage
+  if(timerPhase==="running"||timerPhase==="complete"){
+    const pr=PRACTICES.find(p=>p.id===activePractice);
+    const pct=timerTotalRef.current>0?(timerTotalRef.current-remaining)/timerTotalRef.current:1;
+    const offset=CIRC*(1-pct);
+    return (
+      <div className="focus-stage">
+        <div className="dp-timer__name">{pr.name}</div>
+        <div className="dp-timer__desc">{pr.instruction}</div>
+        <div className="ring" style={{width:320,height:320,margin:"28px 0"}}>
+          <svg viewBox="0 0 100 100">
+            <circle className="ring__bg" cx="50" cy="50" r={R}/>
+            <circle className="ring__fg" cx="50" cy="50" r={R} strokeDasharray={CIRC} strokeDashoffset={offset}/>
+          </svg>
+          <div className="ring__inner">
+            <div className="ring__timer" style={{fontSize:76}}>{fmt(remaining)}</div>
+            <div className="ring__label">{timerPhase==="complete"?"Complete":"Practice"}</div>
+          </div>
+        </div>
+        {timerPhase==="complete"?(
+          <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+            <div style={{fontSize:13,color:"var(--hf-fg-muted)"}}>Practice recorded for today.</div>
+            <button className="btn btn--primary btn--lg" onClick={cancelTimer}><Icon name="check" size={14}/> Done</button>
+          </div>
+        ):(
+          <div style={{display:"flex",gap:10}}>
+            <button className="btn btn--ghost btn--lg" onClick={cancelTimer}><Icon name="x" size={14}/> Cancel</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Grouped history (last 14 days, excluding today)
+  const historyLog=[...practiceLog].filter(e=>e.date&&localDate(new Date(e.date))!==today).sort((a,b)=>b.date.localeCompare(a.date));
+  const histByDay={};
+  historyLog.forEach(e=>{
+    const d=localDate(new Date(e.date));
+    if(!histByDay[d]) histByDay[d]=[];
+    histByDay[d].push(e);
+  });
+  const histDays=Object.keys(histByDay).sort((a,b)=>b.localeCompare(a)).slice(0,7);
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:32}}>
+        <div className="eyebrow">Practice</div>
+        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Daily Practices</h1>
+        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8,lineHeight:1.6}}>Stoic exercises made actionable. One session at a time.</p>
+      </div>
+
+      <div className="dp-grid">
+        {PRACTICES.map(pr=>{
+          const done=doneIds.has(pr.id);
+          return (
+            <div key={pr.id} className={"dp-card"+(done?" dp-card--done":"")}>
+              <div className="dp-card__head">
+                <div>
+                  <div className="dp-card__name">{pr.name}</div>
+                  <div className="dp-card__time">{pr.time}</div>
+                </div>
+                <Icon name={pr.icon} size={16}/>
+              </div>
+              <div className="dp-card__desc">{pr.desc}</div>
+              {done?(
+                <span className="badge badge--success"><span className="dot"/>Done today</span>
+              ):pr.duration?(
+                <button className="btn btn--primary" onClick={()=>beginPractice(pr)}>
+                  <Icon name="play" size={14}/> Begin · {Math.floor(pr.duration/60)} min
+                </button>
+              ):(
+                <button className="btn btn--secondary" onClick={()=>pledgePractice(pr)}>
+                  <Icon name="check" size={14}/> Pledge for today
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {todayLog.length>0&&(
+        <>
+          <h2 className="h-serif" style={{fontSize:22,margin:"0 0 14px"}}>Completed today</h2>
+          <div style={{marginBottom:32}}>
+            {todayLog.map((e,i)=>(
+              <div key={i} className="dp-log-entry">
+                <span className="dp-log-entry__check"><Icon name="check" size={14}/></span>
+                <span className="dp-log-entry__name">{e.name}</span>
+                {e.duration&&<span className="dp-log-entry__dur">{fmtDur(e.duration)}</span>}
+                <span className="dp-log-entry__time">{new Date(e.date).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false})}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {histDays.length>0&&(
+        <>
+          <h2 className="h-serif" style={{fontSize:22,margin:"0 0 14px"}}>Recent history</h2>
+          {histDays.map(d=>(
+            <div key={d} style={{marginBottom:20}}>
+              <div style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"var(--hf-fg-muted)",fontWeight:500,marginBottom:8}}>
+                {new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}
+              </div>
+              {histByDay[d].map((e,i)=>(
+                <div key={i} className="dp-log-entry">
+                  <span className="dp-log-entry__check"><Icon name="check" size={14}/></span>
+                  <span className="dp-log-entry__name">{e.name}</span>
+                  {e.duration&&<span className="dp-log-entry__dur">{fmtDur(e.duration)}</span>}
+                  <span className="dp-log-entry__time">{new Date(e.date).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false})}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </>
+      )}
+
+      {practiceLog.length===0&&todayLog.length===0&&(
+        <div style={{color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic",paddingTop:8}}>No practices recorded yet. Begin one above.</div>
+      )}
+    </div>
+  );
+};
+
+/* ── Settings ── */
+const Settings = ({ theme, setTheme, onExport, onClearData }) => {
+  const [confirmClear, setConfirmClear] = useState(false);
+  return (
+    <div className="page">
+      <div className="eyebrow">Preferences</div>
+      <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 32px"}}>Settings</h1>
+      <div className="card-s">
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid var(--hf-border)"}}>
+          <div><div style={{fontSize:14,fontWeight:500}}>Theme</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>Light paper or deep charcoal.</div></div>
+          <button className="btn btn--secondary" onClick={()=>setTheme(t=>t==="light"?"dark":"light")}><Icon name={theme==="dark"?"sun":"moon"} size={14}/>{theme==="dark"?"Light":"Dark"}</button>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid var(--hf-border)"}}>
+          <div><div style={{fontSize:14,fontWeight:500}}>Keyboard shortcuts</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>Space to begin or pause. Ctrl+K for commands.</div></div>
+          <span className="badge badge--neutral" style={{fontFamily:"var(--hf-font-mono)"}}>Space · Ctrl K</span>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid var(--hf-border)"}}>
+          <div><div style={{fontSize:14,fontWeight:500}}>Pre-focus breath</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>1, 2, or 3 min. Available on the session page.</div></div>
+          <span className="badge badge--success"><span className="dot"/>Active</span>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0"}}>
+          <div><div style={{fontSize:14,fontWeight:500}}>Tracker interval</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>Check-in prompts at :00 and :30 of every hour.</div></div>
+          <span className="badge badge--neutral" style={{fontFamily:"var(--hf-font-mono)"}}>Every 30 min</span>
+        </div>
+      </div>
+
+      <div className="card-s" style={{marginTop:24}}>
+        <div className="eyebrow" style={{marginBottom:14}}>Data</div>
+        <p style={{fontSize:13,color:"var(--hf-fg-body)",margin:"0 0 18px",lineHeight:1.65}}>
+          Sessions, tracker entries, and daily plans are saved in your browser's local storage. Export to back them up or analyze externally.
+        </p>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <button className="btn btn--secondary" onClick={onExport}><Icon name="download" size={14}/> Export JSON</button>
+          {confirmClear
+            ? <>
+                <button className="btn btn--danger" onClick={()=>{ onClearData(); setConfirmClear(false); }}>Confirm — erase all</button>
+                <button className="btn btn--ghost" onClick={()=>setConfirmClear(false)}>Cancel</button>
+              </>
+            : <button className="btn btn--ghost" onClick={()=>setConfirmClear(true)}>Clear all data</button>
+          }
+        </div>
+      </div>
+      <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:24,fontStyle:"italic"}}>
+        Data lives only in this browser. No account, no sync, no servers.
+      </p>
+    </div>
+  );
+};
+
+/* ── App ── */
+const App = () => {
+  const [view,    setView]    = useState("session");
+  const [theme,   setTheme]   = useState(()=>loadLS("hf_theme","light"));
+  const [task,    setTask]    = useState("");
+  const [sound,   setSound]   = useState(null);
+  const [cmdk,    setCmdk]    = useState(false);
+  const [phase,   setPhase]   = useState("idle");
+  const [session, setSession] = useState({index:1, mode:"pomodoro", total:25*60, remaining:25*60});
+  const [breakRem,setBreakRem]= useState(5*60);
+  const [history,     setHistory]     = useState(()=>loadLS("hf_history",[]));
+  const [quote,       setQuote]       = useState(()=>randQuote());
+  const [mits,        setMits]        = useState(()=>loadLS("hf_mits",{}));
+  const [practiceLog, setPracticeLog] = useState(()=>loadLS("hf_practices",[]));
+  const [breathDuration, setBreathDuration] = useState(60);
+
+  // Wall-clock refs — these are never stale in callbacks
+  const sessionStartRef     = useRef(null);   // HH:MM display string when Begin pressed
+  const focusTsRef          = useRef(0);      // Date.now() when this focus period started
+  const focusElapsedRef     = useRef(0);      // seconds elapsed in ALL prior focus periods (handles pause/resume)
+  const breakTsRef          = useRef(0);      // Date.now() when break started
+  const breakTotalRef       = useRef(5*60);   // total break seconds for current break
+  const phaseRef            = useRef("idle"); // always-current phase (for visibilitychange)
+  const trackerTargetRef    = useRef(getNextHalfHourMs()); // abs ms of next :00/:30
+  const trackerFiredRef     = useRef(false);  // prevents double-fire on same interval
+
+  // Tracker
+  const [trackerEntries,   setTrackerEntries]   = useState(()=>loadLS("hf_tracker",[]));
+  const [trackerPrompt,    setTrackerPrompt]    = useState(false);
+  const [manualEntry,      setManualEntry]      = useState(false);
+  const [trackerCountdown, setTrackerCountdown] = useState(()=>Math.max(0,Math.round((getNextHalfHourMs()-Date.now())/1000)));
+  const [trackerPeriodStart, setTrackerPeriodStart] = useState(()=>getLastHalfHourDate());
+
+  /* Persistence */
+  useEffect(()=>saveLS("hf_theme",     theme),       [theme]);
+  useEffect(()=>saveLS("hf_history",   history),     [history]);
+  useEffect(()=>saveLS("hf_tracker",   trackerEntries), [trackerEntries]);
+  useEffect(()=>saveLS("hf_mits",      mits),        [mits]);
+  useEffect(()=>saveLS("hf_practices", practiceLog), [practiceLog]);
+
+  /* Theme */
+  useEffect(()=>{ document.documentElement.setAttribute("data-theme",theme); },[theme]);
+
+  /* Sound engine */
+  useEffect(()=>{ if(sound) SoundEngine.play(sound); else SoundEngine.stop(); },[sound]);
+
+  /* Keep phaseRef always current — used in callbacks/effects that can't take phase as dep */
+  useEffect(()=>{ phaseRef.current=phase; },[phase]);
+
+  /* Request notification permission once on mount */
+  useEffect(()=>{
+    if("Notification" in window && Notification.permission==="default") Notification.requestPermission();
+  },[]);
+
+  /* Focus / break timer — wall-clock based so background throttling can't drift it */
+  useEffect(()=>{
+    if(phase!=="focusing"&&phase!=="break") return;
+    const tick=setInterval(()=>{
+      if(phaseRef.current==="focusing"){
+        setSession(s=>{
+          const elapsed=focusElapsedRef.current+Math.floor((Date.now()-focusTsRef.current)/1000);
+          const rem=Math.max(0,s.total-elapsed);
+          return rem===s.remaining?s:{...s,remaining:rem};
+        });
+      } else if(phaseRef.current==="break"){
+        setBreakRem(()=>Math.max(0,breakTotalRef.current-Math.floor((Date.now()-breakTsRef.current)/1000)));
+      }
+    },500); // 500ms so we recover immediately when tab is refocused
+    return ()=>clearInterval(tick);
+  },[phase]);
+
+  /* Session complete */
+  useEffect(()=>{
+    if(phase==="focusing"&&session.remaining===0){
+      playChime();
+      sendNotif("Hyper Focus · Session complete", task||"Session finished. Time for a break.");
+      setHistory(h=>[...h,{id:Date.now(),startTime:sessionStartRef.current||nowTime(),time:nowTime(),date:new Date().toISOString(),task:task||"Untitled session.",mode:session.mode,dur:session.total}]);
+      setPhase("complete");
+    }
+  },[session.remaining,phase]);
+
+  /* Break complete */
+  useEffect(()=>{
+    if(phase==="break"&&breakRem===0){
+      playChime();
+      sendNotif("Hyper Focus · Break over","Ready for your next session.");
+      setSession(s=>({...s,remaining:s.total,index:s.index+1}));
+      setQuote(randQuote());
+      setPhase("idle");
+    }
+  },[breakRem,phase]);
+
+  /* Tracker tick — wall-clock based, fires OS notification when :00/:30 is reached */
+  useEffect(()=>{
+    const doCheck=()=>{
+      const secs=Math.max(0,Math.round((trackerTargetRef.current-Date.now())/1000));
+      setTrackerCountdown(secs);
+      if(secs===0&&!trackerFiredRef.current){
+        trackerFiredRef.current=true;
+        setTrackerPrompt(true);
+        playChime();
+        sendNotif("Hyper Focus · Check-in","What have you been working on?");
+        trackerTargetRef.current=getNextHalfHourMs();
+        setTimeout(()=>{ trackerFiredRef.current=false; },4000);
+      }
+    };
+    doCheck(); // check immediately in case page was hidden when it fired
+    const t=setInterval(doCheck,1000);
+    return ()=>clearInterval(t);
+  },[]);
+
+  /* Visibility change — recalculate all timers the instant the tab becomes active */
+  useEffect(()=>{
+    const onVis=()=>{
+      if(document.hidden) return;
+      // Focus timer catch-up
+      if(phaseRef.current==="focusing"){
+        setSession(s=>{
+          const elapsed=focusElapsedRef.current+Math.floor((Date.now()-focusTsRef.current)/1000);
+          return {...s,remaining:Math.max(0,s.total-elapsed)};
+        });
+      }
+      // Break timer catch-up
+      if(phaseRef.current==="break"){
+        setBreakRem(Math.max(0,breakTotalRef.current-Math.floor((Date.now()-breakTsRef.current)/1000)));
+      }
+      // Tracker catch-up
+      const secs=Math.max(0,Math.round((trackerTargetRef.current-Date.now())/1000));
+      setTrackerCountdown(secs);
+      if(secs===0&&!trackerFiredRef.current){
+        trackerFiredRef.current=true;
+        setTrackerPrompt(true);
+        playChime();
+        sendNotif("Hyper Focus · Check-in","What have you been working on?");
+        trackerTargetRef.current=getNextHalfHourMs();
+        setTimeout(()=>{ trackerFiredRef.current=false; },4000);
+      }
+    };
+    document.addEventListener("visibilitychange",onVis);
+    return ()=>document.removeEventListener("visibilitychange",onVis);
+  },[]);
+
+  /* Document title */
+  useEffect(()=>{
+    if     (phase==="focusing") document.title=`${fmt(session.remaining)} · Hyper Focus`;
+    else if(phase==="break")    document.title=`Break ${fmt(breakRem)} · Hyper Focus`;
+    else if(phase==="complete") document.title=`Done · Hyper Focus`;
+    else                        document.title="Hyper Focus";
+  },[phase,session.remaining,breakRem]);
+
+  /* Global keys */
+  useEffect(()=>{
+    const onKey=e=>{
+      if((e.metaKey||e.ctrlKey)&&e.key==="k"){e.preventDefault();setCmdk(v=>!v);return;}
+      if(e.key==="Escape"){setCmdk(false);return;}
+      if(e.key===" "&&!["INPUT","TEXTAREA","SELECT"].includes(e.target.tagName)){
+        e.preventDefault();
+        if(view==="session"){
+          if     (phase==="idle")     setPhase("focusing");
+          else if(phase==="focusing") setPhase("idle");
+        }
+      }
+    };
+    window.addEventListener("keydown",onKey);
+    return ()=>window.removeEventListener("keydown",onKey);
+  },[phase,view]);
+
+  const onBegin = () => {
+    // elapsed before this period = total − current remaining (handles resume after pause)
+    focusElapsedRef.current = session.total - session.remaining;
+    focusTsRef.current = Date.now();
+    sessionStartRef.current = nowTime();
+    setPhase("focusing");
+  };
+  const onPause = () => {
+    // freeze elapsed so the resume can pick up exactly where we left off
+    focusElapsedRef.current += Math.floor((Date.now()-focusTsRef.current)/1000);
+    setPhase("idle");
+  };
+  const onEnd = () => {
+    // Compute how many seconds were actually focused
+    // If phase==="focusing" we're mid-period; if "idle" (paused) elapsed is already accumulated
+    const elapsed = phase==="focusing"
+      ? focusElapsedRef.current + Math.floor((Date.now()-focusTsRef.current)/1000)
+      : focusElapsedRef.current;
+    focusElapsedRef.current=0; focusTsRef.current=0;
+    setSession(s=>({...s,remaining:s.total}));
+    if(elapsed>=60){
+      // Save with real elapsed duration and show the complete/rating screen
+      setHistory(h=>[...h,{
+        id:        Date.now(),
+        startTime: sessionStartRef.current||nowTime(),
+        time:      nowTime(),
+        date:      new Date().toISOString(),
+        task:      task||"Untitled session.",
+        mode:      session.mode,
+        dur:       elapsed,
+      }]);
+      setPhase("complete");
+    } else {
+      // Too short to be worth saving (accidental click)
+      setPhase("idle");
+    }
+  };
+  const onStartBreak = () => {
+    const mode=MODES.find(m=>m.id===session.mode);
+    const dur=mode?.breakDur||5*60;
+    breakTotalRef.current=dur; breakTsRef.current=Date.now();
+    setBreakRem(dur); setPhase("break");
+  };
+  const onNewSession = () => {
+    focusElapsedRef.current=0; focusTsRef.current=0;
+    setSession(s=>({...s,remaining:s.total,index:s.index+1}));
+    setQuote(randQuote()); setPhase("idle");
+  };
+  const onBreathe       = (mins) => { setBreathDuration(mins*60); setView("breath"); };
+  const rateSession     = (q)    => { setHistory(h=>h.map((s,i)=>i===h.length-1?{...s,quality:q}:s)); };
+  const onMitClick      = (text) => { setTask(text); };
+  const onRenameSession = (id,newTask) => { setHistory(h=>h.map(s=>s.id===id?{...s,task:newTask}:s)); };
+  const onDeleteSession = (id) => { setHistory(h=>h.filter(s=>s.id!==id)); };
+  const onAdd5min       = ()     => { setSession(s=>({...s,total:s.total+300,remaining:s.remaining+300})); };
+  const onLogPractice   = (entry)=> { setPracticeLog(l=>[...l,entry]); };
+  const onManualEntry   = (text, slotStart, slotEnd) => {
+    setTrackerEntries(es=>[...es,{
+      id:        Date.now(),
+      startTime: formatHHMM(slotStart),
+      endTime:   formatHHMM(slotEnd),
+      date:      slotEnd.toISOString(),
+      duration:  30,
+      text,
+    }]);
+  };
+
+  const logEntry = (text) => {
+    const now = new Date();
+    setTrackerEntries(es=>[...es,{
+      id:        Date.now(),
+      startTime: formatHHMM(trackerPeriodStart),
+      endTime:   formatHHMM(now),
+      date:      now.toISOString(),
+      duration:  Math.round((now-trackerPeriodStart)/60000),
+      text,
+    }]);
+    setTrackerPeriodStart(new Date());
+    trackerTargetRef.current = getNextHalfHourMs(); // re-align to the true next :00/:30
+    setTrackerPrompt(false);
+  };
+
+  const exportData = () => {
+    const data={history,trackerEntries,mits,practiceLog,exportedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=`hyperfocus-${todayStr()}.json`; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const clearData = () => {
+    setHistory([]); setTrackerEntries([]); setMits({}); setPracticeLog([]);
+    saveLS("hf_history",[]); saveLS("hf_tracker",[]); saveLS("hf_mits",{}); saveLS("hf_practices",[]);
+  };
+
+  const cmdAction = id => {
+    if     (id==="begin")   { focusTsRef.current=Date.now(); focusElapsedRef.current=0; sessionStartRef.current=nowTime(); setView("session"); setPhase("focusing"); }
+    else if(id==="pause")   { setPhase("idle"); }
+    else if(id==="breath")  { setView("breath"); }
+    else if(id==="lognow")  { setTrackerPrompt(true); }
+    else if(["today","stats","sounds","planning","stoic","tracker"].includes(id)) setView(id);
+  };
+
+  const today       = todayStr();
+  const todayHistory = history.filter(s=>s.date&&localDate(new Date(s.date))===today);
+  const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
+  const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
+
+  const crumbs=({session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",planning:"Planning",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",tracker:"Tracker"})[view];
+  const section=["sounds","planning","stoic","practices"].includes(view)?"Practice":"Focus";
+  const crumbArr=view==="settings"?["Settings"]:[section,crumbs];
+  const soundLabel=sound?({rain:"Soft rain",forest:"Old forest",waves:"Shoreline",cafe:"Quiet café",brown:"Brown noise",fire:"Fireplace"})[sound]:null;
+
+  return (
+    <div className="app">
+      <Rail current={view} onNav={setView} sounds={soundLabel} theme={theme}/>
+      <main className="canvas">
+        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={fmt(session.remaining)}/>
+
+        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick}/>}
+        {view==="today"    && <Today sessions={todayHistory} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
+        {view==="stats"    && <Stats sessions={history}/>}
+        {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
+        {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
+        {view==="planning" && <Planning mits={mits} setMits={setMits}/>}
+        {view==="stoic"     && <Stoic/>}
+        {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
+        {view==="breath"    && <Breath duration={breathDuration} onDone={()=>{ setView("session"); onBegin(); }}/>}
+        {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onClearData={clearData}/>}
+      </main>
+      {trackerPrompt && <TrackerPrompt onSave={logEntry} onSkip={()=>setTrackerPrompt(false)} periodStart={trackerPeriodStart}/>}
+      {manualEntry && <TrackerManualEntry onSave={(text,s,e)=>{ onManualEntry(text,s,e); setManualEntry(false); }} onClose={()=>setManualEntry(false)}/>}
+      {cmdk && <CmdK onClose={()=>setCmdk(false)} onAction={cmdAction}/>}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
