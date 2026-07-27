@@ -14,9 +14,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Fonts are self-hosted (see fonts.css) — the app must never need a network. -->
+<link rel="stylesheet" href="fonts.css">
 <style>
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; }
@@ -392,6 +391,104 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .insight-chip svg { color:var(--hf-fg-muted); flex-shrink:0; }
 .insight-chip b { color:var(--hf-fg); font-weight:500; }
 
+/* ── Ambient ─────────────────────────────────────────────────────────────
+   A slow warm bloom behind the ring. Present but almost subliminal while idle,
+   breathing once you are actually focusing. */
+.focus-stage::before {
+  content:""; position:absolute; top:50%; left:50%; width:min(880px,120vw); height:min(880px,120vw);
+  transform:translate(-50%,-50%) scale(.92); border-radius:50%; pointer-events:none; z-index:0;
+  background:radial-gradient(circle, rgba(200,169,126,.13) 0%, rgba(200,169,126,.05) 42%, rgba(200,169,126,0) 68%);
+  opacity:.55; transition:opacity 1200ms var(--hf-ease-out);
+}
+.focus-stage--live::before { opacity:1; animation:hf-bloom 9s ease-in-out infinite; }
+.focus-stage--break::before { background:radial-gradient(circle, rgba(107,142,90,.13) 0%, rgba(107,142,90,.05) 42%, rgba(107,142,90,0) 68%); }
+@keyframes hf-bloom {
+  0%,100% { transform:translate(-50%,-50%) scale(.9);  opacity:.75; }
+  50%     { transform:translate(-50%,-50%) scale(1.04); opacity:1; }
+}
+.focus-stage > * { position:relative; z-index:1; }
+[data-theme="dark"] .focus-stage::before {
+  background:radial-gradient(circle, rgba(211,184,135,.10) 0%, rgba(211,184,135,.04) 42%, rgba(211,184,135,0) 68%);
+}
+[data-theme="dark"] .focus-stage--break::before {
+  background:radial-gradient(circle, rgba(107,142,90,.11) 0%, rgba(107,142,90,.04) 42%, rgba(107,142,90,0) 68%);
+}
+.ring__fg { transition:stroke-dashoffset 980ms linear, stroke 600ms var(--hf-ease-out); }
+.ring--live .ring__fg { filter:drop-shadow(0 0 6px rgba(200,169,126,.5)); }
+[data-theme="dark"] .ring--live .ring__fg { filter:drop-shadow(0 0 8px rgba(211,184,135,.45)); }
+.ring__timer { transition:letter-spacing 600ms var(--hf-ease-out), opacity 400ms var(--hf-ease-out); }
+
+/* ── Session complete ── */
+.seal { display:flex; align-items:center; justify-content:center; margin-bottom:26px; }
+.seal svg { width:64px; height:64px; }
+.seal circle, .seal .seal__dot { stroke:var(--hf-sand-400); }
+.seal .seal__ring { fill:none; stroke-width:1.5; stroke-dasharray:var(--len); stroke-dashoffset:var(--len);
+  animation:hf-draw 900ms var(--hf-ease-out) forwards; transform-origin:center; transform:rotate(-90deg); }
+.seal .seal__ring--2 { animation-delay:180ms; }
+.seal .seal__dot { fill:var(--hf-sand-400); stroke:none; opacity:0; animation:hf-pop 420ms var(--hf-ease-out) 780ms forwards; }
+@keyframes hf-draw { to { stroke-dashoffset:0; } }
+@keyframes hf-pop  { from{opacity:0;transform:scale(.4);} to{opacity:1;transform:scale(1);} }
+.rise { opacity:0; animation:hf-rise 700ms var(--hf-ease-out) forwards; }
+@keyframes hf-rise { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:none;} }
+.complete-figure { font-family:var(--hf-font-mono); font-weight:300; font-size:64px; letter-spacing:-0.03em;
+  line-height:1; color:var(--hf-fg); font-feature-settings:"tnum"; }
+.complete-figure small { font-size:20px; color:var(--hf-fg-muted); margin-left:4px; letter-spacing:0; }
+.complete-meta { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:20px; }
+.complete-goal { margin-top:26px; width:min(340px,80vw); }
+.complete-goal__head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:12px; margin-bottom:8px; }
+.complete-goal__name { color:var(--hf-fg-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.complete-goal__num  { font-family:var(--hf-font-mono); color:var(--hf-fg); white-space:nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .focus-stage--live::before, .ring--breathing, .breath-circle { animation:none; }
+  .seal .seal__ring { animation:none; stroke-dashoffset:0; }
+  .seal .seal__dot  { animation:none; opacity:1; }
+  .rise { animation:none; opacity:1; }
+}
+
+/* ── Findings (derived insights) ── */
+.finding { display:flex; gap:13px; align-items:flex-start; padding:15px 0; border-bottom:1px solid var(--hf-border); }
+.finding:last-child { border-bottom:0; }
+.finding__icon { color:var(--hf-sand-500); flex-shrink:0; margin-top:2px; }
+[data-theme="dark"] .finding__icon { color:var(--hf-accent); }
+.finding__text { font-size:14px; line-height:1.65; color:var(--hf-fg-body); }
+.finding__text b { color:var(--hf-fg); font-weight:500; }
+.finding__note { display:block; font-size:12px; color:var(--hf-fg-subtle); margin-top:4px; line-height:1.55; }
+.goal-line { display:flex; align-items:baseline; gap:12px; padding:11px 0; border-bottom:1px solid var(--hf-border); font-size:13.5px; }
+.goal-line:last-child { border-bottom:0; }
+.goal-line__name { flex:1; color:var(--hf-fg); }
+.goal-line__h { font-family:var(--hf-font-mono); font-size:12px; color:var(--hf-fg-muted); white-space:nowrap; }
+.goal-line__h b { color:var(--hf-fg); font-weight:400; }
+
+/* ── The Day (rituals) ── */
+.day-hero { padding:8px 0 36px; }
+.day-greet { font-family:var(--hf-font-serif); font-size:46px; line-height:1.1; letter-spacing:-0.015em; color:var(--hf-fg); margin:10px 0 0; }
+.day-sub { font-size:13px; color:var(--hf-fg-muted); margin-top:12px; line-height:1.7; }
+.day-sub b { color:var(--hf-fg); font-weight:500; }
+.day-star { font-family:var(--hf-font-serif); font-style:italic; font-size:21px; line-height:1.5; color:var(--hf-fg-body); border-left:3px solid var(--hf-sand-400); padding:2px 0 2px 18px; margin:28px 0 0; }
+.day-section { margin-top:40px; }
+.day-section__title { font-family:var(--hf-font-serif); font-size:24px; letter-spacing:-0.01em; margin:0 0 4px; }
+.day-section__note { font-size:12.5px; color:var(--hf-fg-muted); line-height:1.65; margin:0 0 16px; }
+.day-figures { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.day-figure__label { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.day-figure__value { font-family:var(--hf-font-mono); font-weight:300; font-size:30px; letter-spacing:-0.02em; color:var(--hf-fg); line-height:1; margin-top:8px; font-feature-settings:"tnum"; }
+.day-figure__value small { font-size:14px; color:var(--hf-fg-muted); margin-left:2px; }
+.reflect { padding:16px 0; border-bottom:1px solid var(--hf-border); }
+.reflect:last-of-type { border-bottom:0; }
+.reflect__q { font-size:13px; color:var(--hf-fg-body); font-weight:500; margin-bottom:8px; }
+.reflect__q span { display:block; font-weight:400; color:var(--hf-fg-subtle); font-size:12px; margin-top:3px; line-height:1.5; }
+.reflect__field { width:100%; border:0; background:transparent; outline:none; resize:none; overflow:hidden; display:block; padding:0;
+  font-family:var(--hf-font-sans); font-size:14.5px; line-height:1.7; color:var(--hf-fg); border-bottom:1px solid transparent; transition:border-color 160ms var(--hf-ease-out); }
+.reflect__field:focus { border-bottom-color:var(--hf-sand-400); }
+.reflect__field::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+.day-log { padding:18px 0; border-bottom:1px solid var(--hf-border); }
+.day-log:last-child { border-bottom:0; }
+.day-log__head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.day-log__date { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.day-log__line { font-size:13px; color:var(--hf-fg-body); line-height:1.7; margin-bottom:6px; }
+.day-log__line b { font-weight:500; color:var(--hf-fg-muted); font-size:11px; letter-spacing:.06em; text-transform:uppercase; display:block; margin-bottom:2px; }
+.day-done { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--hf-success); }
+
 /* ── Mobile drawer trigger (hidden on desktop) ── */
 .rail-backdrop { display:none; }
 .iconbtn--menu { display:none; }
@@ -436,8 +533,11 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
   .session-complete__task { font-size:24px; }
 
   /* Every fixed multi-column grid collapses */
-  .kpi-grid { grid-template-columns:repeat(2,1fr); gap:22px 14px; }
+  .kpi-grid,
+  .day-figures { grid-template-columns:repeat(2,1fr); gap:22px 14px; }
   .kpi__value { font-size:30px; }
+  .day-greet { font-size:32px; }
+  .day-star { font-size:18px; }
   .sound-grid,
   .stoic-phil-grid,
   .stoic-phil-grid--2,
@@ -488,9 +588,11 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   });
 }
 </script>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<!-- Vendored locally: no CDN, no network, and the production React build (the
+     development build ships warning machinery that makes it noticeably slower). -->
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="vendor/babel.min.js"></script>
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 
@@ -582,13 +684,44 @@ const PRACTICES = [
     instruction:"Pledge to practice voluntary simplicity today. Eat plainly, skip comforts, sit with discomfort without distraction. Ask yourself tonight: was this what I feared?" },
 ];
 
-/* ── localStorage ── */
+/* ── Storage ───────────────────────────────────────────────────────────────
+   localStorage stays the primary store — it is synchronous, so no render can
+   ever read a half-written state. IndexedDB is a mirror: it survives some things
+   localStorage does not (per-site storage clears, quota pressure), and gives us
+   something to restore from if localStorage ever comes back empty. */
+const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals"];
+
+const IDB = (() => {
+  const DB="hyperfocus", STORE="kv";
+  let dbp=null;
+  const open = () => dbp || (dbp = new Promise((res,rej)=>{
+    if(!("indexedDB" in window)) return rej(new Error("IndexedDB unavailable"));
+    const r=indexedDB.open(DB,1);
+    r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains(STORE)) r.result.createObjectStore(STORE); };
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  }));
+  return {
+    set: (k,v) => open().then(db=>new Promise((res,rej)=>{
+      const t=db.transaction(STORE,"readwrite");
+      t.objectStore(STORE).put(v,k);
+      t.oncomplete=res; t.onerror=()=>rej(t.error);
+    })).catch(()=>{}),  // a mirror that fails must never break the app
+    get: (k) => open().then(db=>new Promise((res,rej)=>{
+      const t=db.transaction(STORE,"readonly");
+      const q=t.objectStore(STORE).get(k);
+      q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error);
+    })).catch(()=>undefined),
+  };
+})();
+
 const loadLS = (key, def) => { try { const v=localStorage.getItem(key); return v?JSON.parse(v):def; } catch(e){ return def; } };
 // Silent failure here means silent data loss — surface it so the UI can warn.
 let saveFailed = false;
 const saveLS = (key, val) => {
   try { localStorage.setItem(key,JSON.stringify(val)); }
   catch(e){ saveFailed = true; console.error("Hyper Focus — could not save",key,e); }
+  if(DATA_KEYS.includes(key)) IDB.set(key,val);
 };
 const hasSaveFailed = () => saveFailed;
 
@@ -748,7 +881,7 @@ const Mark = ({ size=22, theme="light" }) => {
 
 /* ── Rail ── */
 const NAV = [
-  { sec:"Compass",  items:[{id:"purpose",label:"Purpose",icon:"compass"}] },
+  { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"purpose",label:"Purpose",icon:"compass"}] },
   { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
   { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"planning",label:"Planning",icon:"flag"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
 ];
@@ -777,7 +910,7 @@ const Rail = ({ current, onNav, sounds, theme, northStar, open }) => {
 };
 
 /* ── Topbar ── */
-const Topbar = ({ crumbs=[], onCmdk, onTheme, theme, running, timeStr, onMenu }) => (
+const Topbar = ({ crumbs=[], onCmdk, onTheme, theme, running, timeStr, onMenu, closePrompt, onClosePrompt }) => (
   <header className="topbar">
     <div className="topbar__crumb">
       <button className="iconbtn iconbtn--menu" onClick={onMenu} aria-label="Open navigation"><Icon name="menu" size={17}/></button>
@@ -789,6 +922,7 @@ const Topbar = ({ crumbs=[], onCmdk, onTheme, theme, running, timeStr, onMenu })
       ))}
     </div>
     <div className="topbar__actions">
+      {closePrompt&&!running&&<button className="badge badge--accent" style={{marginRight:8}} onClick={onClosePrompt}><span className="dot"/>Close the day</button>}
       {running&&<span className="badge badge--accent" style={{marginRight:8}}><span className="dot"/>Focusing · {timeStr}</span>}
       <button className="iconbtn" onClick={onCmdk} title="Command (Ctrl+K)"><Icon name="search" size={15}/></button>
       <button className="iconbtn" onClick={onTheme} title="Toggle theme"><Icon name={theme==="dark"?"sun":"moon"} size={15}/></button>
@@ -797,11 +931,12 @@ const Topbar = ({ crumbs=[], onCmdk, onTheme, theme, running, timeStr, onMenu })
 );
 
 /* ── Session ── */
-const StarRating = ({ rated, onRate }) => {
+const StarRating = ({ rated, onRate, label="How focused were you?", captions }) => {
   const [hover, setHover] = useState(null);
+  const words = captions || ["","1 star","2 stars","3 stars","4 stars","5 stars — Flow"];
   return (
     <div className="star-rate">
-      <div className="star-rate__label">How focused were you?</div>
+      {label&&<div className="star-rate__label">{label}</div>}
       <div className="star-rate__stars">
         {[1,2,3,4,5].map(v=>{
           const filled = hover!=null ? v<=hover : v<=(rated||0);
@@ -821,12 +956,12 @@ const StarRating = ({ rated, onRate }) => {
           );
         })}
       </div>
-      {rated&&<div style={{marginTop:8,fontSize:11,color:"var(--hf-fg-subtle)",letterSpacing:".06em",textTransform:"uppercase"}}>{["","1 star","2 stars","3 stars","4 stars","5 stars — Flow"][rated]}</div>}
+      {rated&&<div style={{marginTop:8,fontSize:11,color:"var(--hf-fg-subtle)",letterSpacing:".06em",textTransform:"uppercase"}}>{words[rated]}</div>}
     </div>
   );
 };
 
-const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick, northStar, activeGoal, onOpenPurpose }) => {
+const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0 }) => {
   const R=46, CIRC=2*Math.PI*R;
   const [editDur, setEditDur] = useState(false);
   const [durVal,  setDurVal]  = useState("");
@@ -846,13 +981,48 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
   if (phase==="complete") {
     const mode=MODES.find(m=>m.id===session.mode);
     const breakMins=Math.round((mode?.breakDur||300)/60);
+    const mins=Math.max(1,Math.round((lastDur||session.total)/60));
+    const goalPct=activeGoal&&activeGoal.target ? Math.min(100,(goalHours/activeGoal.target)*100) : null;
+    const C=2*Math.PI*22;
     return (
       <div className="focus-stage">
         <div className="session-complete">
-          <div className="session-complete__label">Session recorded.</div>
-          <div className="session-complete__task">{task||"Untitled session."}</div>
-          <StarRating rated={rated} onRate={v=>{ setRated(v); onRate(v); }}/>
-          <div style={{display:"flex",gap:10,marginTop:24,flexWrap:"wrap",justifyContent:"center"}}>
+          {/* The mark draws itself — a small, deliberate full stop on the session. */}
+          <div className="seal">
+            <svg viewBox="0 0 64 64">
+              <circle className="seal__ring" cx="32" cy="32" r="28" style={{"--len":2*Math.PI*28}}/>
+              <circle className="seal__ring seal__ring--2" cx="32" cy="32" r="16" style={{"--len":2*Math.PI*16}}/>
+              <circle className="seal__dot" cx="32" cy="32" r="3.5"/>
+            </svg>
+          </div>
+
+          <div className="rise" style={{animationDelay:"900ms"}}>
+            <div className="complete-figure">{mins}<small>min</small></div>
+            <div className="session-complete__label" style={{marginTop:14}}>of focus, held.</div>
+          </div>
+
+          <div className="session-complete__task rise" style={{animationDelay:"1000ms",marginTop:18}}>{task||"Untitled session."}</div>
+
+          <div className="complete-meta rise" style={{animationDelay:"1100ms"}}>
+            {streak>0&&<span className="badge badge--accent"><Icon name="zap" size={11}/>Day {streak} of the chain</span>}
+            {todaySecs>0&&<span className="badge badge--neutral"><Icon name="timer" size={11}/>{fmtDur(todaySecs)} today</span>}
+          </div>
+
+          {activeGoal&&goalPct!=null&&(
+            <div className="complete-goal rise" style={{animationDelay:"1200ms"}}>
+              <div className="complete-goal__head">
+                <span className="complete-goal__name">{activeGoal.title}</span>
+                <span className="complete-goal__num">{goalHours.toFixed(1)}h / {activeGoal.target}h</span>
+              </div>
+              <div className="goal__bar"><i style={{width:`${goalPct}%`}}/></div>
+            </div>
+          )}
+
+          <div className="rise" style={{animationDelay:"1300ms"}}>
+            <StarRating rated={rated} onRate={v=>{ setRated(v); onRate(v); }}/>
+          </div>
+
+          <div className="rise" style={{animationDelay:"1400ms",display:"flex",gap:10,marginTop:28,flexWrap:"wrap",justifyContent:"center"}}>
             <button className="btn btn--primary btn--lg" onClick={onStartBreak}><Icon name="coffee" size={14}/> Start break · {breakMins}m</button>
             <button className="btn btn--secondary btn--lg" onClick={onNewSession}><Icon name="play" size={14}/> New session</button>
           </div>
@@ -862,7 +1032,7 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
   }
 
   return (
-    <div className="focus-stage">
+    <div className={"focus-stage"+(isFocusing?" focus-stage--live":"")+(isBreak?" focus-stage--break focus-stage--live":"")}>
       <div className="focus-meta">
         <span>SESSION <b>{String(session.index).padStart(2,"0")}</b></span>
         <span>·</span>
@@ -911,7 +1081,7 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
         </div>
       )}
 
-      <div className={"ring"+(isFocusing?" ring--breathing":"")}>
+      <div className={"ring"+(isFocusing?" ring--breathing ring--live":"")}>
         <svg viewBox="0 0 100 100">
           <circle className="ring__bg" cx="50" cy="50" r={R}/>
           <circle className={"ring__fg"+(isBreak?" ring__fg--break":"")} cx="50" cy="50" r={R} strokeDasharray={CIRC} strokeDashoffset={ringOffset}/>
@@ -1120,8 +1290,94 @@ const getAvgLen = (sessions) => {
   return Math.floor(sessions.reduce((a,s)=>a+s.dur,0)/sessions.length/60);
 };
 
+/* ── Derived insights ──────────────────────────────────────────────────────
+   Everything below reads only data the app already records. Each finding needs
+   a minimum sample before it is shown — a "golden hour" drawn from two sessions
+   is noise dressed up as advice. */
+const MIN_RATED = 3;   // per bucket, before a bucket is allowed to make a claim
+const avg = (xs) => xs.reduce((a,b)=>a+b,0)/xs.length;
+
+const DAY_PARTS = [
+  { id:"early",     label:"before 9am",       from:5,  to:9  },
+  { id:"morning",   label:"the late morning", from:9,  to:12 },
+  { id:"afternoon", label:"the afternoon",    from:12, to:17 },
+  { id:"evening",   label:"the evening",      from:17, to:21 },
+  { id:"night",     label:"late at night",    from:21, to:29 }, // wraps past midnight
+];
+const partOfDay = (d) => {
+  const h=d.getHours();
+  return DAY_PARTS.find(p=>(h>=p.from&&h<p.to)||(p.to>24&&(h>=p.from||h<p.to-24))) || DAY_PARTS[4];
+};
+
+// When are your best sessions? Compares average quality across parts of the day.
+const getGoldenHours = (sessions) => {
+  const rated=sessions.filter(s=>s.quality>0&&s.date);
+  const buckets={};
+  rated.forEach(s=>{
+    const p=partOfDay(new Date(s.date));
+    (buckets[p.id]=buckets[p.id]||{label:p.label,qs:[]}).qs.push(s.quality);
+  });
+  const eligible=Object.values(buckets).filter(b=>b.qs.length>=MIN_RATED);
+  if(eligible.length<2) return null;
+  const scored=eligible.map(b=>({...b,avg:avg(b.qs)})).sort((a,b)=>b.avg-a.avg);
+  const best=scored[0], worst=scored[scored.length-1];
+  if(best.avg-worst.avg<0.4) return null; // no meaningful spread
+  return { best, worst };
+};
+
+// Do longer sessions actually serve you, or do they just feel productive?
+const getLengthEffect = (sessions) => {
+  const rated=sessions.filter(s=>s.quality>0);
+  const bands=[
+    { label:"under 30 min", test:s=>s.dur<30*60,                  qs:[] },
+    { label:"30 to 60 min", test:s=>s.dur>=30*60&&s.dur<=60*60,   qs:[] },
+    { label:"over an hour", test:s=>s.dur>60*60,                  qs:[] },
+  ];
+  rated.forEach(s=>{ const b=bands.find(b=>b.test(s)); if(b) b.qs.push(s.quality); });
+  const eligible=bands.filter(b=>b.qs.length>=MIN_RATED);
+  if(eligible.length<2) return null;
+  const scored=eligible.map(b=>({label:b.label,avg:avg(b.qs),n:b.qs.length})).sort((a,b)=>b.avg-a.avg);
+  if(scored[0].avg-scored[scored.length-1].avg<0.4) return null;
+  return { best:scored[0], worst:scored[scored.length-1] };
+};
+
+// Which timer mode produces your best work?
+const getBestMode = (sessions) => {
+  const buckets={};
+  sessions.filter(s=>s.quality>0).forEach(s=>{ (buckets[s.mode]=buckets[s.mode]||[]).push(s.quality); });
+  const eligible=Object.entries(buckets).filter(([,qs])=>qs.length>=MIN_RATED);
+  if(eligible.length<2) return null;
+  const scored=eligible.map(([m,qs])=>({mode:MODES.find(x=>x.id===m)?.label||m,avg:avg(qs)})).sort((a,b)=>b.avg-a.avg);
+  if(scored[0].avg-scored[scored.length-1].avg<0.4) return null;
+  return scored[0];
+};
+
+// How long since a session you'd call excellent?
+const getDaysSinceBest = (sessions) => {
+  const best=sessions.filter(s=>s.quality===5&&s.date).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  if(!best) return null;
+  const days=Math.floor((new Date(localDate()+"T12:00:00")-new Date(localDate(new Date(best.date))+"T12:00:00"))/86400000);
+  return { days, task:best.task };
+};
+
+// Showing up at all, over the last 30 days.
+const getConsistency = (sessions) => {
+  const start=new Date(); start.setDate(start.getDate()-29);
+  const startKey=localDate(start);
+  const days=new Set(sessions.filter(s=>s.date&&localDate(new Date(s.date))>=startKey).map(s=>localDate(new Date(s.date))));
+  if(days.size===0) return null;
+  return { days:days.size, pct:Math.round((days.size/30)*100) };
+};
+
+// Hours actually spent per goal.
+const getGoalHours = (sessions, goals=[]) => goals
+  .filter(g=>!g.archived)
+  .map(g=>({ ...g, hours:sessions.reduce((a,s)=>a+(s.goalId===g.id?(s.dur||0):0),0)/3600 }))
+  .filter(g=>g.hours>0)
+  .sort((a,b)=>b.hours-a.hours);
+
 /* ── Stats ── */
-const Stats = ({ sessions }) => {
+const Stats = ({ sessions, purpose={} }) => {
   const [period, setPeriod] = useState("week");
   const today   = todayStr();
   const ws      = getWeekStart();
@@ -1156,6 +1412,29 @@ const Stats = ({ sessions }) => {
   const avgLen   = getAvgLen(sessions);
   const flowSessions = sessions.filter(s=>s.quality>=4).length;
 
+  const golden      = getGoldenHours(sessions);
+  const lengthFx    = getLengthEffect(sessions);
+  const bestMode    = getBestMode(sessions);
+  const sinceBest   = getDaysSinceBest(sessions);
+  const consistency = getConsistency(sessions);
+  const goalHours   = getGoalHours(sessions, purpose.goals);
+  const ratedCount  = sessions.filter(s=>s.quality>0).length;
+
+  const findings = [
+    golden && { icon:"sun", text:<>Your sharpest work happens <b>{golden.best.label}</b> — {golden.best.avg.toFixed(1)}★ on average, against {golden.worst.avg.toFixed(1)}★ {golden.worst.label}.</>,
+      note:"Protect that window before you give it to anything else." },
+    lengthFx && { icon:"timer", text:<>Sessions <b>{lengthFx.best.label}</b> rate highest at {lengthFx.best.avg.toFixed(1)}★; {lengthFx.worst.label} sits at {lengthFx.worst.avg.toFixed(1)}★.</>,
+      note:lengthFx.best.label==="over an hour" ? "Long stretches are working for you — defend them." : "Longer is not automatically deeper." },
+    bestMode && { icon:"target", text:<><b>{bestMode.mode}</b> is your strongest mode, averaging {bestMode.avg.toFixed(1)}★.</> },
+    consistency && { icon:"calendar", text:<>You showed up on <b>{consistency.days} of the last 30 days</b> — {consistency.pct}%.</>,
+      note:consistency.pct>=70 ? "That is the number that compounds." : "Frequency beats intensity. A short session still keeps the chain alive." },
+    sinceBest && { icon:"star",
+      text:sinceBest.days===0
+        ? <>You logged a <b>5★ session today</b>. Note what made it possible.</>
+        : <>It has been <b>{sinceBest.days} {sinceBest.days===1?"day":"days"}</b> since a 5★ session.</>,
+      note:sinceBest.days===0?null:`The last one: "${sinceBest.task}"` },
+  ].filter(Boolean);
+
   return (
     <div className="page">
       <div style={{marginBottom:16}}><div className="eyebrow">{new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"})}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Stats</h1></div>
@@ -1168,6 +1447,47 @@ const Stats = ({ sessions }) => {
           {flowSessions>0&&<span className="insight-chip"><Icon name="star" size={11}/><b>{flowSessions}</b> {flowSessions===1?"session":"sessions"} rated 4-5★</span>}
         </div>
       )}
+      {/* ── What the data says ── */}
+      {sessions.length>0&&(
+        <div style={{marginBottom:28}}>
+          <h2 className="h-serif" style={{fontSize:24,margin:"28px 0 4px"}}>What the data says</h2>
+          <p style={{fontSize:12.5,color:"var(--hf-fg-muted)",lineHeight:1.65,margin:"0 0 14px"}}>
+            Drawn from your own sessions. Findings appear once there is enough rated data to mean something.
+          </p>
+          <div className="card-s">
+            {findings.length>0
+              ? findings.map((f,i)=>(
+                  <div className="finding" key={i}>
+                    <span className="finding__icon"><Icon name={f.icon} size={16}/></span>
+                    <div className="finding__text">{f.text}{f.note&&<span className="finding__note">{f.note}</span>}</div>
+                  </div>
+                ))
+              : <p style={{fontSize:13,color:"var(--hf-fg-muted)",margin:0,lineHeight:1.7}}>
+                  Nothing conclusive yet. You have rated <b>{ratedCount}</b> {ratedCount===1?"session":"sessions"} —
+                  rate a few more at the end of each session and patterns start showing up here.
+                </p>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Where the hours went ── */}
+      {goalHours.length>0&&(
+        <div style={{marginBottom:28}}>
+          <h2 className="h-serif" style={{fontSize:24,margin:"0 0 4px"}}>Where the hours went</h2>
+          <p style={{fontSize:12.5,color:"var(--hf-fg-muted)",lineHeight:1.65,margin:"0 0 14px"}}>
+            Time attributed to each goal, all time.
+          </p>
+          <div className="card-s">
+            {goalHours.map(g=>(
+              <div className="goal-line" key={g.id}>
+                <span className="goal-line__name">{g.title}</span>
+                <span className="goal-line__h"><b>{g.hours.toFixed(1)}h</b> / {g.target}h</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="stats-periods">
         {[{id:"today",label:"Today"},{id:"week",label:"This week"},{id:"month",label:"This month"},{id:"all",label:"All time"}].map(p=>(
           <button key={p.id} className={"stats-period"+(period===p.id?" stats-period--active":"")} onClick={()=>setPeriod(p.id)}>{p.label}</button>
@@ -1474,6 +1794,7 @@ const CmdK = ({ onClose, onAction }) => {
   const items=[
     {id:"begin",   label:"Begin session",   icon:"play",   kbd:"Space"},
     {id:"pause",   label:"Pause session",   icon:"pause",  kbd:"Space"},
+    {id:"day",     label:"The Day — open or close",icon:"sun"},
     {id:"purpose", label:"Purpose & goals",  icon:"compass"},
     {id:"today",   label:"Go to today",     icon:"calendar"},
     {id:"stats",   label:"Go to stats",     icon:"stats"},
@@ -1794,6 +2115,173 @@ const DailyPractices = ({ practiceLog, onLogPractice }) => {
 };
 
 /* ── Settings ── */
+/* ── The Day ── */
+const REFLECT_QS = [
+  { id:"advanced", q:"What actually moved forward?",  hint:"Name the thing itself, not the hours you spent near it.", ph:"Today I moved…" },
+  { id:"derailed", q:"What pulled you away?",         hint:"Without excuse and without self-punishment. You are calibrating, not confessing.", ph:"I lost the thread when…" },
+  { id:"tomorrow", q:"One line for tomorrow.",        hint:"The first thing you will touch, decided now so morning-you doesn't have to.", ph:"Tomorrow I start with…" },
+];
+
+const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practiceLog, streak, onEnterDay }) => {
+  const today    = todayStr();
+  const entry    = rituals[today] || {};
+  const opened   = !!entry.openedAt;
+  const closed   = !!entry.closedAt;
+  const [draft, setDraft]   = useState(()=>({advanced:"",derailed:"",tomorrow:"",rating:null, ...(rituals[todayStr()]?.reflection||{})}));
+  const [editing, setEditing] = useState(false);
+  const hour     = new Date().getHours();
+  const greeting = hour<5 ? "Still awake." : hour<12 ? "Good morning." : hour<19 ? "Good afternoon." : "Good evening.";
+
+  const plan     = mits[today] || {tasks:["","",""],done:[false,false,false]};
+  const setTask  = (i,val) => setMits(m=>({...m,[today]:{...plan,tasks:plan.tasks.map((t,j)=>j===i?val:t)}}));
+  const toggle   = (i) => { if(!plan.tasks[i]) return; setMits(m=>({...m,[today]:{...plan,done:plan.done.map((d,j)=>j===i?!d:d)}})); };
+
+  const focusedSecs = sessions.reduce((a,s)=>a+(s.dur||0),0);
+  const mitsDone    = plan.tasks.filter((t,i)=>t&&plan.done[i]).length;
+  const mitsTotal   = plan.tasks.filter(t=>t).length;
+  const practices   = practiceLog.filter(p=>p.date&&localDate(new Date(p.date))===today).length;
+
+  const openDay  = () => { setRituals(r=>({...r,[today]:{...(r[today]||{}),openedAt:new Date().toISOString()}})); onEnterDay(); };
+  const closeDay = () => {
+    setRituals(r=>({...r,[today]:{...(r[today]||{}),closedAt:new Date().toISOString(),reflection:{...draft}}}));
+    setEditing(false);
+  };
+
+  // Past closings, most recent first
+  const pastDays = Object.entries(rituals)
+    .filter(([d,v])=>d!==today && v.closedAt)
+    .sort((a,b)=>b[0].localeCompare(a[0]))
+    .slice(0,14);
+  const fmtDay = (d) => new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+
+  const reflectFields = (
+    <div className="card-s">
+      {REFLECT_QS.map(r=>(
+        <div className="reflect" key={r.id}>
+          <div className="reflect__q">{r.q}<span>{r.hint}</span></div>
+          <AutoTextarea className="reflect__field" placeholder={r.ph}
+            value={draft[r.id]||""} onChange={v=>setDraft(d=>({...d,[r.id]:v}))}/>
+        </div>
+      ))}
+      <div className="reflect" style={{borderBottom:0}}>
+        <div className="reflect__q">How was the day, as a whole?</div>
+        <StarRating rated={draft.rating} onRate={v=>setDraft(d=>({...d,rating:v}))} label={null}
+          captions={["","Survived it","Scattered","Steady","Strong","A day you'd repeat"]}/>
+      </div>
+      <div style={{display:"flex",gap:8,marginTop:18,flexWrap:"wrap"}}>
+        <button className="btn btn--primary btn--lg" onClick={closeDay}><Icon name="check" size={14}/> Close the day</button>
+        {editing&&<button className="btn btn--ghost btn--lg" onClick={()=>setEditing(false)}>Cancel</button>}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="page">
+      <div className="day-hero">
+        <div className="eyebrow">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</div>
+        <h1 className="day-greet">{greeting}</h1>
+        <div className="day-sub">
+          {streak>0
+            ? <>Day <b>{streak}</b> of your streak. {opened?"":"Don't break the chain."}</>
+            : <>No streak yet — one session today starts it.</>}
+        </div>
+        {purpose.northStar
+          ? <div className="day-star">{purpose.northStar}</div>
+          : <div className="day-sub" style={{marginTop:20,fontStyle:"italic"}}>You haven't written a North Star yet. It belongs at the top of this page — set it on Purpose.</div>}
+      </div>
+
+      {/* ── Morning ── */}
+      {!opened ? (
+        <div className="day-section">
+          <h2 className="day-section__title">Three things</h2>
+          <p className="day-section__note">What would make today a success? Decide now, before the day decides for you.</p>
+          <div className="card-s">
+            {[0,1,2].map(i=>(
+              <div key={i} className="mit-row">
+                <input type="checkbox" className="mit-check" checked={plan.done[i]&&!!plan.tasks[i]} onChange={()=>toggle(i)}/>
+                <input className={"mit-input"+(plan.done[i]&&plan.tasks[i]?" mit-input--done":"")}
+                  placeholder={["Most important task…","Second priority…","Third priority…"][i]}
+                  value={plan.tasks[i]} onChange={e=>setTask(i,e.target.value)}/>
+              </div>
+            ))}
+            <button className="btn btn--primary btn--lg" style={{marginTop:20}} onClick={openDay}>
+              <Icon name="play" size={14}/> Begin the day
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="day-section">
+          <h2 className="day-section__title">Today so far</h2>
+          <p className="day-section__note">Opened at {formatHHMM(new Date(entry.openedAt))}.</p>
+          <div className="card-s">
+            <div className="day-figures">
+              <div><div className="day-figure__label">Focused</div><div className="day-figure__value">{focusedSecs?fmtDur(focusedSecs):"—"}</div></div>
+              <div><div className="day-figure__label">Sessions</div><div className="day-figure__value">{sessions.length||"—"}</div></div>
+              <div><div className="day-figure__label">Priorities</div><div className="day-figure__value">{mitsTotal?<>{mitsDone}<small>/{mitsTotal}</small></>:"—"}</div></div>
+              <div><div className="day-figure__label">Practices</div><div className="day-figure__value">{practices||"—"}</div></div>
+            </div>
+            {mitsTotal>0&&(
+              <div style={{marginTop:24,borderTop:"1px solid var(--hf-border)",paddingTop:6}}>
+                {plan.tasks.map((t,i)=>t?(
+                  <div key={i} className="mit-row">
+                    <input type="checkbox" className="mit-check" checked={plan.done[i]} onChange={()=>toggle(i)}/>
+                    <input className={"mit-input"+(plan.done[i]?" mit-input--done":"")} value={t} onChange={e=>setTask(i,e.target.value)}/>
+                  </div>
+                ):null)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Evening ── */}
+      <div className="day-section">
+        <h2 className="day-section__title">Close the day</h2>
+        <p className="day-section__note">
+          Seneca reviewed every evening — not to punish himself, but to calibrate. A day you never
+          close is a day you cannot learn from.
+        </p>
+        {closed && !editing ? (
+          <div className="card-s">
+            <div className="day-done"><Icon name="check" size={15}/> Closed at {formatHHMM(new Date(entry.closedAt))}.</div>
+            <div style={{marginTop:18}}>
+              {REFLECT_QS.map(r=>entry.reflection?.[r.id]?(
+                <div className="day-log__line" key={r.id}><b>{r.q}</b>{entry.reflection[r.id]}</div>
+              ):null)}
+              {entry.reflection?.rating&&<div className="quality-stars" style={{fontSize:14,marginTop:10}}>{"★".repeat(entry.reflection.rating)}</div>}
+            </div>
+            <button className="btn btn--ghost" style={{marginTop:16,padding:"4px 10px",fontSize:12}}
+              onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
+              Edit
+            </button>
+          </div>
+        ) : reflectFields}
+      </div>
+
+      {/* ── History ── */}
+      {pastDays.length>0&&(
+        <div className="day-section">
+          <h2 className="day-section__title">Previous days</h2>
+          <p className="day-section__note">Read these back before you plan a week.</p>
+          <div className="card-s">
+            {pastDays.map(([d,v])=>(
+              <div className="day-log" key={d}>
+                <div className="day-log__head">
+                  <div className="day-log__date">{fmtDay(d)}</div>
+                  {v.reflection?.rating&&<div className="quality-stars">{"★".repeat(v.reflection.rating)}</div>}
+                </div>
+                {REFLECT_QS.map(r=>v.reflection?.[r.id]?(
+                  <div className="day-log__line" key={r.id}><b>{r.q}</b>{v.reflection[r.id]}</div>
+                ):null)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ── Purpose ── */
 // Textarea that grows with its content — keeps the North Star readable as one block
 // instead of a scrolling one-liner.
@@ -1906,7 +2394,9 @@ const Purpose = ({ purpose, setPurpose, sessions }) => {
   );
 };
 
-const Settings = ({ theme, setTheme, onExport, onImport, onClearData }) => {
+const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport, hasData }) => {
+  const daysSinceExport = lastExport ? Math.floor((Date.now()-lastExport)/86400000) : null;
+  const nudge = hasData && (daysSinceExport===null || daysSinceExport>=7);
   const [confirmClear, setConfirmClear] = useState(false);
   const [importMsg, setImportMsg] = useState(null);
   const fileRef = useRef(null);
@@ -1961,6 +2451,17 @@ const Settings = ({ theme, setTheme, onExport, onImport, onClearData }) => {
         {importMsg && (
           <p style={{fontSize:12,marginTop:14,marginBottom:0,color:importMsg.ok?"var(--hf-success)":"#C0392B"}}>{importMsg.text}</p>
         )}
+        {nudge ? (
+          <p style={{fontSize:12.5,marginTop:16,marginBottom:0,lineHeight:1.6,color:"var(--hf-sand-700)"}}>
+            {daysSinceExport===null
+              ? "You have never exported. One click now means a bad day later costs you nothing."
+              : `Your last backup was ${daysSinceExport} days ago.`}
+          </p>
+        ) : daysSinceExport!==null && (
+          <p style={{fontSize:12,marginTop:16,marginBottom:0,color:"var(--hf-fg-subtle)"}}>
+            Last backup: {daysSinceExport===0?"today":`${daysSinceExport} day${daysSinceExport===1?"":"s"} ago`}.
+          </p>
+        )}
         <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:14,marginBottom:0,lineHeight:1.6}}>
           Clearing erases sessions, tracker entries, plans, and practices. Your Purpose page is kept.
         </p>
@@ -1972,9 +2473,21 @@ const Settings = ({ theme, setTheme, onExport, onImport, onClearData }) => {
   );
 };
 
+/* Persist on change only. Writing on mount would re-save the state we just
+   loaded — and, worse, would overwrite the IndexedDB mirror with an empty array
+   before the recovery check ever gets to read it. */
+const usePersist = (key, value) => {
+  const mounted = useRef(false);
+  useEffect(()=>{
+    if(!mounted.current){ mounted.current=true; return; }
+    saveLS(key, value);
+  },[value]);
+};
+
 /* ── App ── */
 const App = () => {
-  const [view,    setView]    = useState("session");
+  // Land on the day's opening ritual until it has been done, then go straight to work.
+  const [view,    setView]    = useState(()=>loadLS("hf_rituals",{})[todayStr()]?.openedAt ? "session" : "day");
   const [theme,   setTheme]   = useState(()=>loadLS("hf_theme","light"));
   const [task,    setTask]    = useState("");
   const [sound,   setSound]   = useState(null);
@@ -1988,6 +2501,9 @@ const App = () => {
   const [mits,        setMits]        = useState(()=>loadLS("hf_mits",{}));
   const [practiceLog, setPracticeLog] = useState(()=>loadLS("hf_practices",[]));
   const [breathDuration, setBreathDuration] = useState(60);
+  const [lastDur, setLastDur] = useState(0); // seconds of the session the complete screen is showing
+  const [lastExport, setLastExport] = useState(()=>loadLS("hf_lastExport",null));
+  const [rituals,     setRituals]     = useState(()=>loadLS("hf_rituals",{}));
   const [purpose,     setPurpose]     = useState(()=>({northStar:"",identity:"",goals:[],activeGoalId:null,...loadLS("hf_purpose",{})}));
   const activeGoalId = purpose.activeGoalId || null;
   const activeGoal   = (purpose.goals||[]).find(g=>g.id===activeGoalId) || null;
@@ -2011,16 +2527,39 @@ const App = () => {
   const [trackerPeriodStart, setTrackerPeriodStart] = useState(()=>getLastHalfHourDate());
 
   /* Persistence */
-  useEffect(()=>saveLS("hf_theme",     theme),       [theme]);
-  useEffect(()=>saveLS("hf_history",   history),     [history]);
-  useEffect(()=>saveLS("hf_tracker",   trackerEntries), [trackerEntries]);
-  useEffect(()=>saveLS("hf_mits",      mits),        [mits]);
-  useEffect(()=>saveLS("hf_practices", practiceLog), [practiceLog]);
-  useEffect(()=>saveLS("hf_purpose",   purpose),     [purpose]);
+  usePersist("hf_theme",     theme);
+  usePersist("hf_history",   history);
+  usePersist("hf_tracker",   trackerEntries);
+  usePersist("hf_mits",      mits);
+  usePersist("hf_practices", practiceLog);
+  usePersist("hf_purpose",   purpose);
+  usePersist("hf_rituals",   rituals);
 
   /* Storage health — runs after the persistence effects above, every render */
   const [storageWarn, setStorageWarn] = useState(false);
   useEffect(()=>{ if(hasSaveFailed()&&!storageWarn) setStorageWarn(true); });
+
+  /* Recovery — if localStorage came back empty but the IndexedDB mirror still
+     holds sessions, offer to restore rather than silently starting from zero. */
+  const [recovery, setRecovery] = useState(null);
+  useEffect(()=>{
+    if(history.length||trackerEntries.length||practiceLog.length) return;
+    let cancelled=false;
+    IDB.get("hf_history").then(h=>{
+      if(!cancelled && Array.isArray(h) && h.length) setRecovery(h.length);
+    });
+    return ()=>{ cancelled=true; };
+  },[]);
+  const restoreFromMirror = async () => {
+    const [h,t,m,p,pu,r]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
+    if(Array.isArray(h)) setHistory(h);
+    if(Array.isArray(t)) setTrackerEntries(t);
+    if(m&&typeof m==="object") setMits(m);
+    if(Array.isArray(p)) setPracticeLog(p);
+    if(pu&&typeof pu==="object") setPurpose(prev=>({...prev,...pu}));
+    if(r&&typeof r==="object") setRituals(r);
+    setRecovery(null);
+  };
 
   /* Theme */
   useEffect(()=>{ document.documentElement.setAttribute("data-theme",theme); },[theme]);
@@ -2060,6 +2599,7 @@ const App = () => {
       sendNotif("Hyper Focus · Session complete", task||"Session finished. Time for a break.");
       const id=Date.now();
       lastSessionIdRef.current=id;
+      setLastDur(session.total);
       setHistory(h=>[...h,{id,startTime:sessionStartRef.current||nowTime(),time:nowTime(),date:new Date().toISOString(),task:task||"Untitled session.",mode:session.mode,dur:session.total,goalId:activeGoalId}]);
       setPhase("complete");
     }
@@ -2177,6 +2717,7 @@ const App = () => {
       // Save with real elapsed duration and show the complete/rating screen
       const id=Date.now();
       lastSessionIdRef.current=id;
+      setLastDur(elapsed);
       setHistory(h=>[...h,{
         id,
         startTime: sessionStartRef.current||nowTime(),
@@ -2239,12 +2780,14 @@ const App = () => {
   };
 
   const exportData = () => {
-    const data={version:2,history,trackerEntries,mits,practiceLog,purpose,exportedAt:new Date().toISOString()};
+    const data={version:3,history,trackerEntries,mits,practiceLog,purpose,rituals,exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url; a.download=`hyperfocus-${todayStr()}.json`; a.click();
     URL.revokeObjectURL(url);
+    saveLS("hf_lastExport", Date.now());
+    setLastExport(Date.now());
   };
   const clearData = () => {
     setHistory([]); setTrackerEntries([]); setMits({}); setPracticeLog([]);
@@ -2271,6 +2814,7 @@ const App = () => {
         setTrackerEntries(t=>mergeById(t,d.trackerEntries));
         setPracticeLog(p=>mergeById(p,d.practiceLog));
         if(d.mits && typeof d.mits==="object") setMits(m=>({...m,...d.mits}));
+        if(d.rituals && typeof d.rituals==="object") setRituals(r=>({...r,...d.rituals}));
         if(d.purpose && typeof d.purpose==="object") setPurpose(p=>({
           ...p, ...d.purpose,
           goals: mergeById(p.goals, d.purpose.goals),
@@ -2287,7 +2831,7 @@ const App = () => {
     else if(id==="pause")   { if(phase==="focusing") onPause(); }
     else if(id==="breath")  { setView("breath"); }
     else if(id==="lognow")  { setTrackerPrompt(true); }
-    else if(["purpose","today","stats","sounds","planning","stoic","tracker","practices"].includes(id)) setView(id);
+    else if(["day","purpose","today","stats","sounds","planning","stoic","tracker","practices"].includes(id)) setView(id);
   };
 
   const today       = todayStr();
@@ -2295,8 +2839,8 @@ const App = () => {
   const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
   const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
 
-  const crumbs=({purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",planning:"Planning",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",tracker:"Tracker"})[view];
-  const section=view==="purpose"?"Compass":["sounds","planning","stoic","practices"].includes(view)?"Practice":"Focus";
+  const crumbs=({day:"The Day",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",planning:"Planning",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",tracker:"Tracker"})[view];
+  const section=["purpose","day"].includes(view)?"Compass":["sounds","planning","stoic","practices"].includes(view)?"Practice":"Focus";
   const crumbArr=view==="settings"?["Settings"]:[section,crumbs];
   const soundLabel=sound?({rain:"Soft rain",forest:"Old forest",waves:"Shoreline",cafe:"Quiet café",brown:"Brown noise",fire:"Fireplace"})[sound]:null;
 
@@ -2305,7 +2849,21 @@ const App = () => {
       <Rail current={view} onNav={v=>{ setView(v); setMenuOpen(false); }} sounds={soundLabel} theme={theme} northStar={purpose.northStar} open={menuOpen}/>
       {menuOpen && <div className="rail-backdrop" onClick={()=>setMenuOpen(false)}/>}
       <main className="canvas">
-        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={fmt(session.remaining)} onMenu={()=>setMenuOpen(true)}/>
+        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={fmt(session.remaining)} onMenu={()=>setMenuOpen(true)}
+          closePrompt={view!=="day"&&new Date().getHours()>=19&&!rituals[today]?.closedAt}
+          onClosePrompt={()=>setView("day")}/>
+
+        {recovery && (
+          <div className="page" style={{paddingBottom:0}}>
+            <div className="warn-banner" style={{background:"var(--hf-sand-50)",borderColor:"var(--hf-sand-300)",color:"var(--hf-sand-700)"}}>
+              This browser's storage looks empty, but a local backup with <b>{recovery} sessions</b> is still here.
+              <div style={{display:"flex",gap:8,marginTop:12}}>
+                <button className="btn btn--primary" onClick={restoreFromMirror}>Restore it</button>
+                <button className="btn btn--ghost" onClick={()=>setRecovery(null)}>Start fresh</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {storageWarn && (
           <div className="page" style={{paddingBottom:0}}>
@@ -2316,17 +2874,22 @@ const App = () => {
           </div>
         )}
 
-        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}/>}
+        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
+                                lastDur={lastDur} streak={calcStreak(history)} todaySecs={todayHistory.reduce((a,s)=>a+(s.dur||0),0)}
+                                goalHours={activeGoalId?history.reduce((a,s)=>a+(s.goalId===activeGoalId?(s.dur||0):0),0)/3600:0}/>}
         {view==="today"    && <Today sessions={todayHistory} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
-        {view==="stats"    && <Stats sessions={history}/>}
+        {view==="stats"    && <Stats sessions={history} purpose={purpose}/>}
         {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
         {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
         {view==="planning" && <Planning mits={mits} setMits={setMits}/>}
         {view==="stoic"     && <Stoic/>}
         {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
         {view==="breath"    && <Breath duration={breathDuration} onDone={()=>{ setView("session"); onBegin(); }}/>}
+        {view==="day"      && <TheDay rituals={rituals} setRituals={setRituals} purpose={purpose} mits={mits} setMits={setMits}
+                                sessions={todayHistory} practiceLog={practiceLog} streak={calcStreak(history)} onEnterDay={()=>setView("session")}/>}
         {view==="purpose"  && <Purpose purpose={purpose} setPurpose={setPurpose} sessions={history}/>}
-        {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}/>}
+        {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}
+                                lastExport={lastExport} hasData={history.length>0}/>}
       </main>
       {trackerPrompt && <TrackerPrompt onSave={logEntry} onSkip={()=>setTrackerPrompt(false)} periodStart={trackerPeriodStart}/>}
       {manualEntry && <TrackerManualEntry onSave={(text,s,e)=>{ onManualEntry(text,s,e); setManualEntry(false); }} onClose={()=>setManualEntry(false)}/>}

@@ -1,6 +1,6 @@
 # Hyper Focus
 
-A single-file, offline-first productivity app built with React (Babel standalone). No server, no account, no tracking — everything runs locally in your browser and persists in `localStorage`.
+A single-file, offline-first productivity app built with React (Babel standalone). No server, no account, no tracking, **no network** — React, Babel and the fonts are all vendored locally, so the app runs with the machine unplugged.
 
 ![Light mode](https://img.shields.io/badge/theme-light%20%2F%20dark-C8A97E?style=flat-square)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-6B8E5A?style=flat-square)
@@ -15,6 +15,12 @@ The compass the rest of the app points at.
 - **North Star** — one sentence on what you're building toward. Shown in the sidebar and above every session you start.
 - **Identity** — who you are becoming, in the present tense.
 - **Goals** with an hour target. Every session is attributed to the current goal, so progress is measured in hours actually focused, not intentions.
+
+### ☀️ The Day
+Two rituals, because a timer alone never made anyone come back.
+- **Opening** — the app lands here until you've opened the day: your streak, your North Star, and your three priorities. Ten seconds, and you're anchored.
+- **Closing** — the day's numbers, then three questions (*what moved forward · what pulled you away · one line for tomorrow*) and a rating. A gentle prompt appears in the topbar after 7pm.
+- Every closed day is kept, so you can read the last two weeks back before planning the next one.
 
 ### 🎯 Focus Timer
 - Three modes: **Pomodoro** (25 min), **Deep Work** (90 min), **Flowmodoro** (50 min)
@@ -37,6 +43,8 @@ The compass the rest of the app points at.
 - Wall-clock based countdown, fires OS notifications even when on another page/app
 
 ### 📊 Stats
+- **What the data says** — findings derived from your own sessions: the part of the day your work rates highest, whether longer sessions actually score better, your strongest mode, how many of the last 30 days you showed up, and how long since a 5★ session. Each finding waits until there is enough rated data to mean something.
+- **Where the hours went** — real hours logged against each goal
 - Bar chart (this week) and monthly breakdown
 - **90-day heatmap** (GitHub-style contribution graph)
 - Insight chips: streak, best day, average session length, high-quality sessions
@@ -128,7 +136,9 @@ Or just **double-click `HyperFocus.html`** in your file manager.
 
 - **No server.** The app is a static HTML file.
 - **No account.** Nothing is ever transmitted anywhere.
-- All data (sessions, plans, tracker entries, practices, purpose) lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`, `hf_purpose`.
+- All data lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`, `hf_purpose`, `hf_rituals`.
+- Every one of those is **mirrored into IndexedDB**. If `localStorage` ever comes back empty, the app notices and offers to restore from the mirror instead of silently starting you at zero.
+- Settings tells you how long it has been since your last export, and nags after a week.
 - Use **Settings → Export JSON** to back up your data at any time.
 
 ---

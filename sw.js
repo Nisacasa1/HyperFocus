@@ -1,12 +1,17 @@
 /* Hyper Focus service worker.
    Goal: after one online visit the app opens with no network at all — including
    on a phone in airplane mode. Bump CACHE when you ship a new HyperFocus.html. */
-const CACHE = "hyperfocus-v1";
+const CACHE = "hyperfocus-v2";
 
-// Same-origin files that make up the app shell.
+// Same-origin files that make up the app shell. Fonts (woff2) are picked up by
+// the runtime cache on first render rather than listed one by one here.
 const SHELL = [
   "./",
   "./HyperFocus.html",
+  "./fonts.css",
+  "./vendor/react.production.min.js",
+  "./vendor/react-dom.production.min.js",
+  "./vendor/babel.min.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -50,8 +55,7 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Everything else (including the React/Babel CDN bundles and Google Fonts):
-  // cache first, then fill the cache in the background.
+  // Everything else (scripts, fonts): cache first, then refill in the background.
   e.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req)
