@@ -164,8 +164,10 @@ LICENSE
 
 The legacy `/assets` and `*.jsx` files are early-stage design drafts and are not used by the app.
 
-> When you change `HyperFocus.html`, bump `CACHE` in [`sw.js`](sw.js) so installed
-> copies pick the new version up.
+> Editing `HyperFocus.html` needs no service-worker change — navigations are
+> network-first, so a redeploy reaches installed copies on the next launch.
+> Only bump `CACHE` in [`sw.js`](sw.js) when something in `vendor/` or `fonts/`
+> changes; bumping it otherwise forces every device to re-download Babel.
 
 ---
 
