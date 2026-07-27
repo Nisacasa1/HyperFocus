@@ -708,6 +708,7 @@ const TRIGGERS = [
 /* Real rest empties the nervous system; degenerate leisure keeps feeding it
    input while feeling like recovery. The test is whether input is coming in. */
 const REAL_REST = [
+  "Replay the work you just did, eyes closed — the brain consolidates in rest, not in effort",
   "Walk without headphones",
   "Sit and look out of the window",
   "Meditation or NSDR",
@@ -773,7 +774,7 @@ const PRACTICES = [
    ever read a half-written state. IndexedDB is a mirror: it survives some things
    localStorage does not (per-site storage clears, quota pressure), and gives us
    something to restore from if localStorage ever comes back empty. */
-const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks"];
+const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks","hf_weekly"];
 
 const IDB = (() => {
   const DB="hyperfocus", STORE="kv";
@@ -965,9 +966,9 @@ const Mark = ({ size=22, theme="light" }) => {
 
 /* ── Rail ── */
 const NAV = [
-  { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"purpose",label:"Purpose",icon:"compass"}] },
+  { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"week",label:"The Week",icon:"trend"},{id:"purpose",label:"Purpose",icon:"compass"}] },
   { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
-  { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"planning",label:"Planning",icon:"flag"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
+  { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
 ];
 
 const Rail = ({ current, onNav, sounds, theme, northStar, open }) => {
@@ -1045,7 +1046,7 @@ const StarRating = ({ rated, onRate, label="How focused were you?", captions }) 
   );
 };
 
-const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0, protocols=[], kind, setKind, onLogBreak }) => {
+const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onPreload, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0, protocols=[], kind, setKind, onLogBreak }) => {
   const R=46, CIRC=2*Math.PI*R;
   const [editDur, setEditDur] = useState(false);
   const [durVal,  setDurVal]  = useState("");
@@ -1259,6 +1260,16 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
         </div>
       )}
 
+      {/* Preload — deliberate nothing before the work (phase 1 of the focus protocol) */}
+      {isIdle && !isPaused && (
+        <div className="breath-opts">
+          <span className="breath-opts__label">Preload</span>
+          {[10,15,20].map(m=>(
+            <button key={m} className="breath-opt" onClick={()=>onPreload(m)} title="Sit with zero input before the work — closes the stimulation gap">{m} min</button>
+          ))}
+        </div>
+      )}
+
       {isIdle&&!isPaused&&(
         <div className="session-quote">{quote.text}<cite>— {quote.author}</cite></div>
       )}
@@ -1267,7 +1278,7 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
 };
 
 /* ── Today ── */
-const Today = ({ sessions, onStart, onRename, onDelete }) => {
+const Today = ({ sessions, streak=0, onStart, onRename, onDelete }) => {
   const [editId,  setEditId]  = useState(null);
   const [editVal, setEditVal] = useState("");
   const editRef = useRef(null);
@@ -1293,7 +1304,7 @@ const Today = ({ sessions, onStart, onRename, onDelete }) => {
         <div className="kpi-grid">
           <div className="kpi"><div className="kpi__label">Focused</div><div className="kpi__value">{total?fmtDur(total):<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
           <div className="kpi"><div className="kpi__label">Sessions</div><div className="kpi__value">{sessions.length}<small>/ 4</small></div></div>
-          <div className="kpi"><div className="kpi__label">Streak</div><div className="kpi__value">—</div></div>
+          <div className="kpi"><div className="kpi__label">Streak</div><div className="kpi__value">{streak?<>{streak}<small>{streak===1?"day":"days"}</small></>:<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
           <div className="kpi"><div className="kpi__label">Longest</div><div className="kpi__value">{longest?fmtDur(longest):<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
         </div>
       </div>
@@ -1823,79 +1834,6 @@ const Soundscapes = ({ active, setActive }) => {
   );
 };
 
-/* ── Planning ── */
-const Planning = ({ mits, setMits }) => {
-  const today = todayStr();
-  const todayPlan = mits[today] || { tasks:["","",""], done:[false,false,false] };
-  const setTask = (i,val) => setMits(m=>({ ...m, [today]:{ ...todayPlan, tasks:todayPlan.tasks.map((t,j)=>j===i?val:t) } }));
-  const toggleDone = (i) => {
-    if (!todayPlan.tasks[i]) return;
-    setMits(m=>({ ...m, [today]:{ ...todayPlan, done:todayPlan.done.map((d,j)=>j===i?!d:d) } }));
-  };
-  const pastDays = Object.entries(mits)
-    .filter(([d])=>d!==today)
-    .sort((a,b)=>b[0].localeCompare(a[0]))
-    .slice(0,7);
-  const fmtDay = (d) => new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
-  const completedToday = todayPlan.tasks.filter((t,i)=>t&&todayPlan.done[i]).length;
-  const totalToday     = todayPlan.tasks.filter(t=>t).length;
-
-  return (
-    <div className="page">
-      <div style={{marginBottom:32}}>
-        <div className="eyebrow">Practice</div>
-        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Daily planning</h1>
-        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8,lineHeight:1.6}}>Three things that would make today a success. No more.</p>
-      </div>
-
-      <div className="card-s" style={{marginBottom:10}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-          <div className="eyebrow">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</div>
-          {totalToday>0&&<span className="badge badge--neutral">{completedToday}/{totalToday} done</span>}
-        </div>
-        {[0,1,2].map(i=>(
-          <div key={i} className="mit-row">
-            <input type="checkbox" className="mit-check" checked={todayPlan.done[i]&&!!todayPlan.tasks[i]} onChange={()=>toggleDone(i)}/>
-            <input className={"mit-input"+(todayPlan.done[i]&&todayPlan.tasks[i]?" mit-input--done":"")}
-              placeholder={["Most important task…","Second priority…","Third priority…"][i]}
-              value={todayPlan.tasks[i]}
-              onChange={e=>setTask(i,e.target.value)}/>
-          </div>
-        ))}
-        <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:16,fontStyle:"italic",lineHeight:1.6}}>
-          "It is not that we have a short time to live, but that we waste a great deal of it." — Seneca
-        </p>
-      </div>
-
-      {pastDays.length>0&&(
-        <>
-          <h2 className="h-serif" style={{fontSize:22,margin:"32px 0 14px"}}>Recent plans</h2>
-          <div className="plan-history">
-            {pastDays.map(([d,plan])=>{
-              const tasks=plan.tasks||[]; const done=plan.done||[];
-              const nonEmpty=tasks.filter(t=>t);
-              if(nonEmpty.length===0) return null;
-              return (
-                <div key={d} className="plan-day">
-                  <div className="plan-day__date">{fmtDay(d)}</div>
-                  <div className="plan-day__tasks">
-                    {tasks.map((t,i)=>t?(
-                      <div key={i} className={"plan-day__task"+(done[i]?" plan-day__task--done":"")}>
-                        <div className={"plan-day__dot"+(done[i]?" plan-day__dot--done":"")}/>
-                        {t}
-                      </div>
-                    ):null)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
 /* ── Stoic ── */
 const Stoic = () => {
   // Fixed for the whole calendar day — a "daily" quote that rerolls on every
@@ -2025,19 +1963,51 @@ const Breath = ({ onDone, duration=60 }) => {
   );
 };
 
+/* ── Preload ──────────────────────────────────────────────────────────────
+   Phase 1 of the vault's focus protocol: 10-20 minutes of deliberate nothing
+   before the work, so the work becomes the most stimulating option available.
+   The screen is empty on purpose. Boredom is the mechanism, not a bug. */
+const Preload = ({ onDone, duration=600 }) => {
+  const [remaining, setRemaining] = useState(duration);
+  const startRef = useRef(Date.now());
+  useEffect(()=>{
+    const t=setInterval(()=>{
+      const left=duration-Math.floor((Date.now()-startRef.current)/1000);
+      setRemaining(Math.max(0,left));
+      if(left<=0){ clearInterval(t); playChime(); onDone(); }
+    },500);
+    return ()=>clearInterval(t);
+  },[duration]);
+  const mins=Math.floor(remaining/60), secs=remaining%60;
+  return (
+    <div className="breath-stage">
+      <div className="breath-prompt">Sit with nothing.</div>
+      <p style={{fontSize:13,color:"var(--hf-fg-muted)",maxWidth:380,textAlign:"center",lineHeight:1.7,margin:0}}>
+        No phone, no music, no input. Let it get boring — you are creating the
+        state where the work is the most interesting thing in the room.
+      </p>
+      <div style={{fontFamily:"var(--hf-font-mono)",fontWeight:300,fontSize:64,letterSpacing:"-0.02em",color:"var(--hf-fg)"}}>
+        {mins}:{String(secs).padStart(2,"0")}
+      </div>
+      <button className="btn btn--ghost" onClick={onDone}>Skip</button>
+    </div>
+  );
+};
+
 /* ── CmdK ── */
 const CmdK = ({ onClose, onAction }) => {
   const items=[
     {id:"begin",   label:"Begin session",   icon:"play",   kbd:"Space"},
     {id:"pause",   label:"Pause session",   icon:"pause",  kbd:"Space"},
     {id:"day",     label:"The Day — open or close",icon:"sun"},
+    {id:"week",    label:"The Week — review", icon:"trend"},
     {id:"purpose", label:"Purpose & goals",  icon:"compass"},
     {id:"today",   label:"Go to today",     icon:"calendar"},
     {id:"stats",   label:"Go to stats",     icon:"stats"},
     {id:"sounds",  label:"Soundscapes",     icon:"mic"},
-    {id:"planning",label:"Planning",        icon:"flag"},
     {id:"stoic",   label:"Stoicism",        icon:"book"},
     {id:"breath",  label:"Pre-focus breath",icon:"coffee"},
+    {id:"preload", label:"Preload — empty the mind", icon:"target"},
     {id:"tracker", label:"Time tracker",    icon:"blocks"},
     {id:"lognow",  label:"Log now",         icon:"plus"},
   ];
@@ -2127,7 +2097,7 @@ const TrackerManualEntry = ({ onSave, onClose }) => {
 };
 
 /* ── Tracker view ── */
-const Tracker = ({ entries, countdown, onLogNow, onNewEntry }) => {
+const Tracker = ({ entries, countdown, enabled=true, onLogNow, onNewEntry }) => {
   const fmtC=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
   const now=new Date();
   const dStr=now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
@@ -2137,7 +2107,7 @@ const Tracker = ({ entries, countdown, onLogNow, onNewEntry }) => {
       <div style={{marginBottom:28}}><div className="eyebrow">{dStr}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Time tracker</h1></div>
       <div className="card-s" style={{marginBottom:28}}>
         <div className="tracker-summary">
-          <div className="kpi"><div className="kpi__label">Next check-in</div><div className="kpi__value" style={{fontSize:32}}>{fmtC(countdown)}</div></div>
+          <div className="kpi"><div className="kpi__label">Next check-in</div><div className="kpi__value" style={{fontSize:32}}>{enabled?fmtC(countdown):<span style={{color:"var(--hf-fg-subtle)",fontSize:16}}>Off</span>}</div></div>
           <div className="kpi"><div className="kpi__label">Entries today</div><div className="kpi__value" style={{fontSize:32}}>{entries.length}</div></div>
           <div className="kpi"><div className="kpi__label">Time logged</div><div className="kpi__value" style={{fontSize:32}}>{totalMins>0?<span>{fmtMins(totalMins)}</span>:<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
         </div>
@@ -2358,9 +2328,21 @@ const REFLECT_QS = [
   { id:"tomorrow", q:"One line for tomorrow.",        hint:"The first thing you will touch, decided now so morning-you doesn't have to.", ph:"Tomorrow I start with…" },
 ];
 
+/* Optional questions that map 1:1 to sections of the vault's daily template.
+   All optional — a 3-line entry counts the same as a 30-line one. */
+const JOURNAL_QS = [
+  { id:"freeform", q:"Captura libre",                          hint:"Whatever it is, unfiltered. Start with \"hoy fue…\" if nothing comes.", ph:"Hoy fue…" },
+  { id:"repeated", q:"A thought that kept coming back",        hint:"The idea that returned all day, even if you don't know why.", ph:"No dejé de pensar en…" },
+  { id:"surprised",q:"Something that surprised or unsettled you", hint:"Discomfort is information — don't filter it.", ph:"No esperaba…" },
+  { id:"phrase",   q:"Phrase of the day",                      hint:"Yours or borrowed. If there is none, invent one — the day in one line.", ph:"…" },
+];
+
 /* Export the day's close as a markdown file matching journal/_template-diario.md
-   in the vault, so the capture layer gets fed without opening Obsidian. */
-const journalMarkdown = ({ date, reflection, sessions, focusedSecs, mitsDone, mitsTotal, byKind, energy }) => {
+   in the vault, so the capture layer gets fed without opening Obsidian.
+   Template sections carry ONLY the answers written for them — the app's own
+   reflection questions (moved forward / pulled away / tomorrow) have different
+   semantics and live in the Hyper Focus section below, never in the vault's. */
+const journalMarkdown = ({ date, reflection, sessions, focusedSecs, mitsDone, mitsTotal, byKind, energy, deepDone, restVerdict }) => {
   const r = reflection || {};
   const bullets = sessions.map(s=>`- ${s.startTime||""} · ${s.task} (${fmtDur(s.dur||0)}${s.quality?` · ${"★".repeat(s.quality)}`:""})`).join("\n");
   return `---
@@ -2373,23 +2355,23 @@ tags: [hyperfocus]
 # ${date}
 
 ## 🌀 Captura libre
-${r.advanced || ""}
+${r.freeform || ""}
 
 ## 🔁 Un pensamiento que se repitió hoy
-
+${r.repeated || ""}
 
 ## 💡 Algo que aprendí, confirmé o cuestioné
-${r.derailed || ""}
+
 
 ## ⚡ Una decisión o acción que tomé
-${r.tomorrow || ""}
+
 
 ## 😶 Algo que me sorprendió, incomodó o no esperaba
-
+${r.surprised || ""}
 
 ## 🗣️ Frase del día
 
->
+>${r.phrase ? " "+r.phrase : ""}
 
 ## 🔗 ¿Esto se parece a algo que ya tengo guardado?
 
@@ -2403,18 +2385,26 @@ ${r.tomorrow || ""}
 - **Prioridades:** ${mitsTotal?`${mitsDone}/${mitsTotal}`:"—"}
 - **Forma del día:** Use ${byKind.use?fmtDur(byKind.use):"—"} · Fill ${byKind.fill?fmtDur(byKind.fill):"—"} · Empty ${byKind.empty?fmtDur(byKind.empty):"—"}
 - **Valoración del día:** ${r.rating?`${"★".repeat(r.rating)} (${r.rating}/5)`:"—"}
+- **¿Hice el bloque profundo?** ${deepDone?"Sí":"No"}
+- **¿Descansé de verdad?** ${restVerdict}
+
+### Reflexión del cierre
+- **¿Qué avanzó?** ${r.advanced || "—"}
+- **¿Qué me sacó?** ${r.derailed || "—"}
+- **Mañana empiezo con:** ${r.tomorrow || "—"}
 
 ${sessions.length?`### Sesiones\n${bullets}`:""}
 `;
 };
 
-const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practiceLog, streak, onEnterDay }) => {
+const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practiceLog, breaks=[], streak, onEnterDay }) => {
   const today    = todayStr();
   const entry    = rituals[today] || {};
   const opened   = !!entry.openedAt;
   const closed   = !!entry.closedAt;
-  const [draft, setDraft]   = useState(()=>({advanced:"",derailed:"",tomorrow:"",rating:null, ...(rituals[todayStr()]?.reflection||{})}));
+  const [draft, setDraft]   = useState(()=>({advanced:"",derailed:"",tomorrow:"",freeform:"",repeated:"",surprised:"",phrase:"",rating:null, ...(rituals[todayStr()]?.reflection||{})}));
   const [editing, setEditing] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
   const hour     = new Date().getHours();
   const greeting = hour<5 ? "Still awake." : hour<12 ? "Good morning." : hour<19 ? "Good afternoon." : "Good evening.";
 
@@ -2428,6 +2418,18 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
   const practices   = practiceLog.filter(p=>p.date&&localDate(new Date(p.date))===today).length;
   const byKind      = kindSecs(sessions);
 
+  /* The closing metric from the vault's operating protocol: did I do the deep
+     block, and did I actually rest — or just stop working? Both are computed
+     from data the app already has; neither is asked. */
+  const deepDone    = sessions.some(s=>(s.dur||0)>=50*60);
+  const todayBreaks = breaks.filter(b=>b.date&&localDate(new Date(b.date))===today&&b.type);
+  const nReal       = todayBreaks.filter(b=>b.type==="real").length;
+  const nDeg        = todayBreaks.filter(b=>b.type==="degenerate").length;
+  const restVerdict = todayBreaks.length===0 ? "Sin datos — no clasificaste ningún descanso"
+    : nDeg===0 ? "Sí — todo el descanso fue sin input"
+    : nReal===0 ? "No — todos los descansos fueron con pantallas"
+    : `Parcial — ${nReal} sin input, ${nDeg} con pantallas`;
+
   const openDay  = () => { setRituals(r=>({...r,[today]:{...(r[today]||{}),openedAt:new Date().toISOString()}})); onEnterDay(); };
   const closeDay = () => {
     setRituals(r=>({...r,[today]:{...(r[today]||{}),closedAt:new Date().toISOString(),reflection:{...draft}}}));
@@ -2438,6 +2440,7 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
     const md = journalMarkdown({
       date: today, reflection: entry.reflection, sessions, focusedSecs, mitsDone, mitsTotal, byKind,
       energy: "🔋".repeat(Math.max(1,Math.min(3,Math.ceil((entry.reflection?.rating||3)/2)))),
+      deepDone, restVerdict,
     });
     const blob=new Blob([md],{type:"text/markdown"});
     const url=URL.createObjectURL(blob);
@@ -2453,9 +2456,38 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
     .slice(0,14);
   const fmtDay = (d) => new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
 
+  // Past plans (absorbed from the old Planning page — one place to decide, one to review)
+  const pastPlans = Object.entries(mits)
+    .filter(([d,plan])=>d!==today && (plan.tasks||[]).some(t=>t))
+    .sort((a,b)=>b[0].localeCompare(a[0]))
+    .slice(0,7);
+  const fmtPlanDay = (d) => new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+
   const reflectFields = (
     <div className="card-s">
+      {/* The closing metric — answered from data, not asked. */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+        <span className={"badge "+(deepDone?"badge--success":"badge--neutral")}>
+          <span className="dot"/>{deepDone?"Deep block done":"No deep block today"}
+        </span>
+        <span className={"badge "+(nDeg===0&&nReal>0?"badge--success":"badge--neutral")} title={restVerdict}>
+          <span className="dot"/>{todayBreaks.length===0?"No breaks classified":nDeg===0?"Rest without input":nReal===0?"Rest was all screens":`Rest: ${nReal} real · ${nDeg} screens`}
+        </span>
+      </div>
       {REFLECT_QS.map(r=>(
+        <div className="reflect" key={r.id}>
+          <div className="reflect__q">{r.q}<span>{r.hint}</span></div>
+          <AutoTextarea className="reflect__field" placeholder={r.ph}
+            value={draft[r.id]||""} onChange={v=>setDraft(d=>({...d,[r.id]:v}))}/>
+        </div>
+      ))}
+      {/* Optional journal capture — feeds journal/entries/ in the vault. */}
+      <div className="reflect" style={{borderBottom:journalOpen?"":0}}>
+        <button className="btn btn--ghost" style={{padding:"4px 0",fontSize:12.5}} onClick={()=>setJournalOpen(v=>!v)}>
+          <Icon name={journalOpen?"chevronDown":"chevronRight"} size={13}/> For the second brain — optional
+        </button>
+      </div>
+      {journalOpen && JOURNAL_QS.map(r=>(
         <div className="reflect" key={r.id}>
           <div className="reflect__q">{r.q}<span>{r.hint}</span></div>
           <AutoTextarea className="reflect__field" placeholder={r.ph}
@@ -2487,6 +2519,13 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
         {purpose.northStar
           ? <div className="day-star">{purpose.northStar}</div>
           : <div className="day-sub" style={{marginTop:20,fontStyle:"italic"}}>You haven't written a North Star yet. It belongs at the top of this page — set it on Purpose.</div>}
+        {/* The other pole of the field of tension — what today is a vote against. */}
+        {purpose.antiVision && (
+          <div className="day-sub" style={{marginTop:14,maxWidth:620}}>
+            <b style={{fontSize:10,letterSpacing:".14em",textTransform:"uppercase",color:"var(--hf-fg-subtle)",fontWeight:500}}>And what you refuse:</b>{" "}
+            <span style={{fontStyle:"italic",color:"var(--hf-fg-muted)"}}>{purpose.antiVision.split("\n")[0]}</span>
+          </div>
+        )}
       </div>
 
       {/* ── Morning ── */}
@@ -2572,7 +2611,7 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
             </div>
             <div style={{display:"flex",gap:8,marginTop:16,flexWrap:"wrap",alignItems:"center"}}>
               <button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}}
-                onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
+                onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",freeform:"",repeated:"",surprised:"",phrase:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
                 Edit
               </button>
               <button className="btn btn--secondary" style={{padding:"4px 10px",fontSize:12}} onClick={exportJournal}>
@@ -2606,6 +2645,227 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
           </div>
         </div>
       )}
+
+      {/* ── Recent plans ── */}
+      {pastPlans.length>0&&(
+        <div className="day-section">
+          <h2 className="day-section__title">Recent plans</h2>
+          <p className="day-section__note">The three things of previous days, and whether they happened.</p>
+          <div className="card-s">
+            <div className="plan-history">
+              {pastPlans.map(([d,plan])=>{
+                const tasks=plan.tasks||[]; const done=plan.done||[];
+                return (
+                  <div key={d} className="plan-day">
+                    <div className="plan-day__date">{fmtPlanDay(d)}</div>
+                    <div className="plan-day__tasks">
+                      {tasks.map((t,i)=>t?(
+                        <div key={i} className={"plan-day__task"+(done[i]?" plan-day__task--done":"")}>
+                          <div className={"plan-day__dot"+(done[i]?" plan-day__dot--done":"")}/>
+                          {t}
+                        </div>
+                      ):null)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── The Week ─────────────────────────────────────────────────────────────
+   The vault's weekly protocol, composed from pieces the app already tracks:
+   a review of accumulated evidence, a measurement backwards (never toward the
+   ideal), a leak audit, and a check that the week had real emptiness in it.
+   Closes with an export that seeds Claudian's weekly synthesis. */
+const isoWeekOf = (dstr) => {
+  const dt=new Date(dstr+"T12:00:00");
+  dt.setDate(dt.getDate()+3-((dt.getDay()+6)%7));
+  const w1=new Date(dt.getFullYear(),0,4);
+  const wk=1+Math.round(((dt-w1)/86400000-3+((w1.getDay()+6)%7))/7);
+  return `${dt.getFullYear()}-W${String(wk).padStart(2,"0")}`;
+};
+
+const TheWeek = ({ weekly, setWeekly, purpose, sessions, rituals, breaks }) => {
+  const ws = getWeekStart();                          // Monday of this week
+  const prevWs = (()=>{ const d=new Date(ws+"T12:00:00"); d.setDate(d.getDate()-7); return localDate(d); })();
+  const saved = weekly[ws] || {};
+  const [fugas, setFugas] = useState(saved.fugas||"");
+  const [note,  setNote]  = useState(saved.note||"");
+
+  const inRange = (from,to) => sessions.filter(s=>{ if(!s.date) return false; const d=localDate(new Date(s.date)); return d>=from&&(!to||d<to); });
+  const statsOf = (list) => {
+    const rated=list.filter(s=>s.quality>0);
+    return {
+      hours:list.reduce((a,s)=>a+(s.dur||0),0)/3600,
+      n:list.length,
+      days:new Set(list.map(s=>localDate(new Date(s.date)))).size,
+      q:rated.length?avg(rated.map(s=>s.quality)):null,
+    };
+  };
+  const cur  = statsOf(inRange(ws,null));
+  const prev = statsOf(inRange(prevWs,ws));
+  const weekSessions = inRange(ws,null);
+  const byKind = kindSecs(weekSessions);
+  const deepBlocks = weekSessions.filter(s=>(s.dur||0)>=50*60).length;
+  const weekBreaks = breaks.filter(b=>b.date&&localDate(new Date(b.date))>=ws&&b.type);
+  const nReal = weekBreaks.filter(b=>b.type==="real").length;
+  const nDeg  = weekBreaks.filter(b=>b.type==="degenerate").length;
+  const emptySessions = weekSessions.filter(s=>s.kind==="empty").length;
+  const closedDays = Object.entries(rituals)
+    .filter(([d,v])=>d>=ws&&v.closedAt)
+    .sort((a,b)=>a[0].localeCompare(b[0]));
+
+  const fmtD = (v,unit="") => v==null?"—":(typeof v==="number"&&!Number.isInteger(v)?v.toFixed(1):v)+unit;
+  const rows = [
+    { label:"Hours focused", then:fmtD(prev.hours,"h"), now:fmtD(cur.hours,"h"), up:cur.hours>prev.hours },
+    { label:"Sessions",      then:fmtD(prev.n),         now:fmtD(cur.n),         up:cur.n>prev.n },
+    { label:"Days shown up", then:fmtD(prev.days),      now:fmtD(cur.days),      up:cur.days>prev.days },
+    { label:"Avg quality",   then:prev.q?prev.q.toFixed(1)+"★":"—", now:cur.q?cur.q.toFixed(1)+"★":"—", up:(cur.q||0)>(prev.q||0) },
+  ];
+
+  const closeWeek = () => {
+    setWeekly(w=>({...w,[ws]:{fugas,note,closedAt:new Date().toISOString()}}));
+  };
+
+  const exportSeed = () => {
+    const wk = isoWeekOf(ws);
+    const dayLines = closedDays.map(([d,v])=>{
+      const r=v.reflection||{};
+      return `- ${new Date(d+"T12:00:00").toLocaleDateString("es-CO",{weekday:"short",day:"numeric"})}: ${r.rating?"★".repeat(r.rating):"—"}${r.tomorrow?` · mañana: ${r.tomorrow}`:""}`;
+    }).join("\n");
+    const md = `---
+type: weekly-seed
+week: ${wk}
+generated: ${todayStr()}
+tags: [hyperfocus, sintesis-semanal]
+---
+
+# Semana ${wk} — datos de Hyper Focus
+
+*Seed automático para la síntesis semanal. Complementa las entradas de journal/entries/ — no las reemplaza.*
+
+## Medición hacia atrás (vs. semana anterior)
+- **Horas de foco:** ${fmtD(prev.hours,"h")} → ${fmtD(cur.hours,"h")}
+- **Sesiones:** ${prev.n} → ${cur.n}
+- **Días presentes:** ${prev.days} → ${cur.days}
+- **Calidad media:** ${prev.q?prev.q.toFixed(1)+"★":"—"} → ${cur.q?cur.q.toFixed(1)+"★":"—"}
+
+## Evidencia acumulada
+- **Identidad declarada:** ${purpose.identity?`"${purpose.identity}"`:"—"}
+- **Votos esta semana:** ${cur.n} ${cur.n===1?"sesión":"sesiones"} (${fmtD(cur.hours,"h")})
+- **Bloques profundos (≥50 min):** ${deepBlocks}
+
+## La forma de la semana
+- **Use:** ${byKind.use?fmtDur(byKind.use):"—"} · **Fill:** ${byKind.fill?fmtDur(byKind.fill):"—"} · **Empty:** ${byKind.empty?fmtDur(byKind.empty):"—"}
+- **Descansos clasificados:** ${nReal} sin input · ${nDeg} con pantallas
+- **Sesiones de vacío deliberado:** ${emptySessions}
+
+## Días cerrados
+${dayLines||"- (ninguno)"}
+
+## Auditoría de fugas
+${fugas||"—"}
+
+## Nota de la semana
+${note||"—"}
+`;
+    const blob=new Blob([md],{type:"text/markdown"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=`${wk}-hyperfocus.md`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:28}}>
+        <div className="eyebrow">Week of {new Date(ws+"T12:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric"})} · {isoWeekOf(ws)}</div>
+        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>The Week</h1>
+        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8,lineHeight:1.7,maxWidth:620}}>
+          Once a week, four moves: look at the evidence, measure backwards, audit the leaks,
+          and check that the week had real emptiness in it. Then send the seed to the second brain.
+        </p>
+      </div>
+
+      {/* ── Measured backwards ── */}
+      <div className="eyebrow" style={{marginBottom:10}}>Measured backwards</div>
+      <div className="card-s" style={{marginBottom:28}}>
+        <div className="gain-grid">
+          {rows.map(g=>(
+            <div className="gain" key={g.label}>
+              <div className="gain__label">{g.label}</div>
+              <div className="gain__row">
+                <span className="gain__then">{g.then}</span>
+                <span className="gain__arrow">→</span>
+                <span className="gain__now">{g.now}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p style={{fontSize:12.5,color:"var(--hf-fg-subtle)",margin:"16px 0 0",paddingTop:14,borderTop:"1px solid var(--hf-border)",fontStyle:"italic",lineHeight:1.6}}>
+          Against last week — never against the ideal.
+        </p>
+      </div>
+
+      {/* ── Accumulated evidence ── */}
+      <div className="eyebrow" style={{marginBottom:10}}>Accumulated evidence</div>
+      <div className="card-s" style={{marginBottom:28}}>
+        {purpose.identity
+          ? <p style={{fontSize:14,fontStyle:"italic",color:"var(--hf-fg-body)",margin:"0 0 12px",lineHeight:1.7}}>"{purpose.identity}"</p>
+          : <p style={{fontSize:13,color:"var(--hf-fg-muted)",margin:"0 0 12px"}}>No identity statement yet — write one on Purpose.</p>}
+        <div className="votes" style={{borderTop:0,paddingTop:0,marginTop:0}}>
+          <span className="votes__n">{cur.n}</span>
+          <span className="votes__label">{cur.n===1?"vote":"votes"} this week that the person you're becoming would cast — {fmtD(cur.hours,"h")} of focus, {deepBlocks} deep {deepBlocks===1?"block":"blocks"}.</span>
+        </div>
+        {closedDays.length>0&&(
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:14,paddingTop:14,borderTop:"1px solid var(--hf-border)"}}>
+            {closedDays.map(([d,v])=>(
+              <span key={d} className="badge badge--neutral">
+                {new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short"})}
+                {v.reflection?.rating&&<span className="quality-stars" style={{fontSize:10}}>{"★".repeat(v.reflection.rating)}</span>}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Deliberate emptiness ── */}
+      <div className="eyebrow" style={{marginBottom:10}}>Deliberate emptiness</div>
+      <div className="card-s" style={{marginBottom:28}}>
+        <p style={{fontSize:13.5,color:"var(--hf-fg-body)",margin:0,lineHeight:1.7}}>
+          {emptySessions>0||byKind.empty>0
+            ? <>The week held <b>{fmtDur(byKind.empty)}</b> of Empty and {nReal>0?<><b>{nReal}</b> {nReal===1?"break":"breaks"} without input</>:"no classified real rest"}. The mind processed.</>
+            : <>No Empty sessions and {nReal>0?`${nReal} real ${nReal===1?"break":"breaks"}`:"no real rest"} this week. One block of deliberate boredom — a walk without headphones, sitting with nothing — is part of the protocol, not a luxury.</>}
+        </p>
+      </div>
+
+      {/* ── Leak audit ── */}
+      <div className="eyebrow" style={{marginBottom:10}}>Leak audit</div>
+      <div className="card-s" style={{marginBottom:28}}>
+        <div className="reflect" style={{paddingTop:0}}>
+          <div className="reflect__q">Open loops, sustained judgments, draining relations<span>Name them — a leak you can see stops being ambient.</span></div>
+          <AutoTextarea className="reflect__field" placeholder="What is quietly draining energy…" value={fugas} onChange={setFugas}/>
+        </div>
+        <div className="reflect" style={{borderBottom:0}}>
+          <div className="reflect__q">One line for the week<span>What did this week teach that last week's you didn't know?</span></div>
+          <AutoTextarea className="reflect__field" placeholder="This week I learned…" value={note} onChange={setNote}/>
+        </div>
+      </div>
+
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+        <button className="btn btn--primary btn--lg" onClick={closeWeek}><Icon name="check" size={14}/> {saved.closedAt?"Update the week":"Close the week"}</button>
+        <button className="btn btn--secondary btn--lg" onClick={()=>{ closeWeek(); exportSeed(); }}><Icon name="download" size={14}/> Send seed to second brain</button>
+        {saved.closedAt&&<span style={{fontSize:12,color:"var(--hf-fg-subtle)"}}>Closed {formatHHMM(new Date(saved.closedAt))} · {localDate(new Date(saved.closedAt))}</span>}
+      </div>
+      <p style={{fontSize:11.5,color:"var(--hf-fg-subtle)",lineHeight:1.6,margin:"12px 0 0"}}>
+        Downloads <code>{isoWeekOf(ws)}-hyperfocus.md</code> — drop it into <code>raw/pending/</code> so Claudian
+        can use it when building the weekly synthesis.
+      </p>
     </div>
   );
 };
@@ -2828,7 +3088,7 @@ const Purpose = ({ purpose, setPurpose, sessions }) => {
   );
 };
 
-const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport, hasData }) => {
+const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport, hasData, trackerOn, setTrackerOn }) => {
   const daysSinceExport = lastExport ? Math.floor((Date.now()-lastExport)/86400000) : null;
   const nudge = hasData && (daysSinceExport===null || daysSinceExport>=7);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -2852,8 +3112,8 @@ const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport
           <span className="badge badge--success"><span className="dot"/>Active</span>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0"}}>
-          <div><div style={{fontSize:14,fontWeight:500}}>Tracker interval</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>Check-in prompts at :00 and :30 of every hour.</div></div>
-          <span className="badge badge--neutral" style={{fontFamily:"var(--hf-font-mono)"}}>Every 30 min</span>
+          <div><div style={{fontSize:14,fontWeight:500}}>Tracker check-ins</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>Prompts at :00 and :30. Never interrupts a focus session — those blocks are logged automatically.</div></div>
+          <button className="btn btn--secondary" onClick={()=>setTrackerOn(v=>!v)}>{trackerOn?"On — every 30 min":"Off"}</button>
         </div>
       </div>
 
@@ -2897,7 +3157,7 @@ const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport
           </p>
         )}
         <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:14,marginBottom:0,lineHeight:1.6}}>
-          Clearing erases sessions, tracker entries, plans, and practices. Your Purpose page is kept.
+          Clearing erases sessions, tracker entries, plans, practices, closed days, breaks, and weekly reviews. Your Purpose page is kept.
         </p>
       </div>
       <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:24,fontStyle:"italic"}}>
@@ -2935,12 +3195,15 @@ const App = () => {
   const [mits,        setMits]        = useState(()=>loadLS("hf_mits",{}));
   const [practiceLog, setPracticeLog] = useState(()=>loadLS("hf_practices",[]));
   const [breathDuration, setBreathDuration] = useState(60);
+  const [preloadDuration, setPreloadDuration] = useState(10*60);
   const [lastDur, setLastDur] = useState(0); // seconds of the session the complete screen is showing
   const [lastExport, setLastExport] = useState(()=>loadLS("hf_lastExport",null));
   const [kind, setKind]     = useState("use");           // Fill / Empty / Use
   const [breaks, setBreaks] = useState(()=>loadLS("hf_breaks",[]));
   const [restAsk, setRestAsk] = useState(null);          // {id} of a break awaiting classification
   const [rituals,     setRituals]     = useState(()=>loadLS("hf_rituals",{}));
+  const [weekly,      setWeekly]      = useState(()=>loadLS("hf_weekly",{}));
+  const [trackerOn,   setTrackerOn]   = useState(()=>loadLS("hf_trackerOn",true));
   const [purpose,     setPurpose]     = useState(()=>({northStar:"",identity:"",goals:[],activeGoalId:null,...loadLS("hf_purpose",{})}));
   const activeGoalId = purpose.activeGoalId || null;
   const activeGoal   = (purpose.goals||[]).find(g=>g.id===activeGoalId) || null;
@@ -2952,6 +3215,9 @@ const App = () => {
   const breakTsRef          = useRef(0);      // Date.now() when break started
   const breakTotalRef       = useRef(5*60);   // total break seconds for current break
   const phaseRef            = useRef("idle"); // always-current phase (for visibilitychange)
+  const taskRef             = useRef("");     // current task text, readable from timer closures
+  const trackerOnRef        = useRef(true);   // tracker toggle, readable from timer closures
+  const periodStartRef      = useRef(null);   // mirror of trackerPeriodStart for closures
   const lastSessionIdRef    = useRef(null);   // id of the session the rating screen belongs to
   const trackerTargetRef    = useRef(getNextHalfHourMs()); // abs ms of next :00/:30
   const trackerFiredRef     = useRef(false);  // prevents double-fire on same interval
@@ -2972,6 +3238,8 @@ const App = () => {
   usePersist("hf_purpose",   purpose);
   usePersist("hf_rituals",   rituals);
   usePersist("hf_breaks",    breaks);
+  usePersist("hf_weekly",    weekly);
+  usePersist("hf_trackerOn", trackerOn);
 
   /* Storage health — runs after the persistence effects above, every render */
   const [storageWarn, setStorageWarn] = useState(false);
@@ -2989,13 +3257,15 @@ const App = () => {
     return ()=>{ cancelled=true; };
   },[]);
   const restoreFromMirror = async () => {
-    const [h,t,m,p,pu,r]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
+    const [h,t,m,p,pu,r,b,w]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
     if(Array.isArray(h)) setHistory(h);
     if(Array.isArray(t)) setTrackerEntries(t);
     if(m&&typeof m==="object") setMits(m);
     if(Array.isArray(p)) setPracticeLog(p);
     if(pu&&typeof pu==="object") setPurpose(prev=>({...prev,...pu}));
     if(r&&typeof r==="object") setRituals(r);
+    if(Array.isArray(b)) setBreaks(b);
+    if(w&&typeof w==="object") setWeekly(w);
     setRecovery(null);
   };
 
@@ -3007,6 +3277,9 @@ const App = () => {
 
   /* Keep phaseRef always current — used in callbacks/effects that can't take phase as dep */
   useEffect(()=>{ phaseRef.current=phase; },[phase]);
+  useEffect(()=>{ taskRef.current=task; },[task]);
+  useEffect(()=>{ trackerOnRef.current=trackerOn; },[trackerOn]);
+  useEffect(()=>{ periodStartRef.current=trackerPeriodStart; },[trackerPeriodStart]);
 
   /* Request notification permission once on mount */
   useEffect(()=>{
@@ -3058,20 +3331,41 @@ const App = () => {
     }
   },[breakRem,phase]);
 
-  /* Tracker tick — wall-clock based, fires OS notification when :00/:30 is reached */
-  useEffect(()=>{
-    const doCheck=()=>{
-      const secs=Math.max(0,Math.round((trackerTargetRef.current-Date.now())/1000));
-      setTrackerCountdown(secs);
-      if(secs===0&&!trackerFiredRef.current){
-        trackerFiredRef.current=true;
+  /* Tracker tick — wall-clock based, fires OS notification when :00/:30 is reached.
+     Two exceptions, both deliberate:
+     - tracker switched off in Settings → the mark passes silently
+     - a focus session is running → the block is logged automatically under the
+       session's task. Interrupting deep work to ask what you're doing is the one
+       thing this app must never do. */
+  const doTrackerCheck = () => {
+    const secs=Math.max(0,Math.round((trackerTargetRef.current-Date.now())/1000));
+    setTrackerCountdown(secs);
+    if(secs===0&&!trackerFiredRef.current){
+      trackerFiredRef.current=true;
+      trackerTargetRef.current=getNextHalfHourMs();
+      setTimeout(()=>{ trackerFiredRef.current=false; },4000);
+      if(!trackerOnRef.current){
+        setTrackerPeriodStart(new Date());
+      } else if(phaseRef.current==="focusing"||phaseRef.current==="break"){
+        // Attribute the block to the running session — silently.
+        const now=new Date(), start=periodStartRef.current||getLastHalfHourDate();
+        const label=phaseRef.current==="break" ? "Break" : `Focus — ${taskRef.current||"untitled session"}`;
+        setTrackerEntries(es=>[...es,{
+          id:Date.now(), startTime:formatHHMM(start), endTime:formatHHMM(now),
+          date:now.toISOString(), duration:Math.max(1,Math.round((now-start)/60000)), text:label,
+        }]);
+        setTrackerPeriodStart(now);
+      } else {
         setTrackerPrompt(true);
         playChime();
         sendNotif("Hyper Focus · Check-in","What have you been working on?");
-        trackerTargetRef.current=getNextHalfHourMs();
-        setTimeout(()=>{ trackerFiredRef.current=false; },4000);
       }
-    };
+    }
+  };
+  const doTrackerCheckRef = useRef(doTrackerCheck);
+  doTrackerCheckRef.current = doTrackerCheck;
+  useEffect(()=>{
+    const doCheck=()=>doTrackerCheckRef.current();
     doCheck(); // check immediately in case page was hidden when it fired
     const t=setInterval(doCheck,1000);
     return ()=>clearInterval(t);
@@ -3092,17 +3386,8 @@ const App = () => {
       if(phaseRef.current==="break"){
         setBreakRem(Math.max(0,breakTotalRef.current-Math.floor((Date.now()-breakTsRef.current)/1000)));
       }
-      // Tracker catch-up
-      const secs=Math.max(0,Math.round((trackerTargetRef.current-Date.now())/1000));
-      setTrackerCountdown(secs);
-      if(secs===0&&!trackerFiredRef.current){
-        trackerFiredRef.current=true;
-        setTrackerPrompt(true);
-        playChime();
-        sendNotif("Hyper Focus · Check-in","What have you been working on?");
-        trackerTargetRef.current=getNextHalfHourMs();
-        setTimeout(()=>{ trackerFiredRef.current=false; },4000);
-      }
+      // Tracker catch-up — same logic as the interval tick
+      doTrackerCheckRef.current();
     };
     document.addEventListener("visibilitychange",onVis);
     return ()=>document.removeEventListener("visibilitychange",onVis);
@@ -3228,7 +3513,7 @@ const App = () => {
   };
 
   const exportData = () => {
-    const data={version:3,history,trackerEntries,mits,practiceLog,purpose,rituals,exportedAt:new Date().toISOString()};
+    const data={version:4,history,trackerEntries,mits,practiceLog,purpose,rituals,breaks,weekly,exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
@@ -3238,8 +3523,9 @@ const App = () => {
     setLastExport(Date.now());
   };
   const clearData = () => {
-    setHistory([]); setTrackerEntries([]); setMits({}); setPracticeLog([]);
+    setHistory([]); setTrackerEntries([]); setMits({}); setPracticeLog([]); setRituals({}); setBreaks([]); setWeekly({});
     saveLS("hf_history",[]); saveLS("hf_tracker",[]); saveLS("hf_mits",{}); saveLS("hf_practices",[]);
+    saveLS("hf_rituals",{}); saveLS("hf_breaks",[]); saveLS("hf_weekly",{});
     // Purpose is deliberately preserved — clearing your logs should never
     // erase your North Star. Delete it by hand on the Purpose page.
   };
@@ -3263,6 +3549,8 @@ const App = () => {
         setPracticeLog(p=>mergeById(p,d.practiceLog));
         if(d.mits && typeof d.mits==="object") setMits(m=>({...m,...d.mits}));
         if(d.rituals && typeof d.rituals==="object") setRituals(r=>({...r,...d.rituals}));
+        if(Array.isArray(d.breaks)) setBreaks(b=>mergeById(b,d.breaks));
+        if(d.weekly && typeof d.weekly==="object") setWeekly(w=>({...w,...d.weekly}));
         if(d.purpose && typeof d.purpose==="object") setPurpose(p=>({
           ...p, ...d.purpose,
           goals: mergeById(p.goals, d.purpose.goals),
@@ -3278,8 +3566,9 @@ const App = () => {
     if     (id==="begin")   { setView("session"); onBegin(); }
     else if(id==="pause")   { if(phase==="focusing") onPause(); }
     else if(id==="breath")  { setView("breath"); }
+    else if(id==="preload") { setView("preload"); }
     else if(id==="lognow")  { setTrackerPrompt(true); }
-    else if(["day","purpose","today","stats","sounds","planning","stoic","tracker","practices"].includes(id)) setView(id);
+    else if(["day","week","purpose","today","stats","sounds","stoic","tracker","practices"].includes(id)) setView(id);
   };
 
   const today       = todayStr();
@@ -3287,8 +3576,8 @@ const App = () => {
   const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
   const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
 
-  const crumbs=({day:"The Day",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",planning:"Planning",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",tracker:"Tracker"})[view];
-  const section=["purpose","day"].includes(view)?"Compass":["sounds","planning","stoic","practices"].includes(view)?"Practice":"Focus";
+  const crumbs=({day:"The Day",week:"The Week",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker"})[view];
+  const section=["purpose","day","week"].includes(view)?"Compass":["sounds","stoic","practices"].includes(view)?"Practice":"Focus";
   const crumbArr=view==="settings"?["Settings"]:[section,crumbs];
   const soundLabel=sound?({rain:"Soft rain",forest:"Old forest",waves:"Shoreline",cafe:"Quiet café",brown:"Brown noise",fire:"Fireplace"})[sound]:null;
 
@@ -3325,20 +3614,21 @@ const App = () => {
         {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
                                 lastDur={lastDur} streak={calcStreak(history)} todaySecs={todayHistory.reduce((a,s)=>a+(s.dur||0),0)}
                                 goalHours={activeGoalId?history.reduce((a,s)=>a+(s.goalId===activeGoalId?(s.dur||0):0),0)/3600:0}
-                                protocols={purpose.protocols} kind={kind} setKind={setKind}/>}
-        {view==="today"    && <Today sessions={todayHistory} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
+                                protocols={purpose.protocols} kind={kind} setKind={setKind} onPreload={(mins)=>{ setPreloadDuration(mins*60); setView("preload"); }}/>}
+        {view==="today"    && <Today sessions={todayHistory} streak={calcStreak(history)} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
         {view==="stats"    && <Stats sessions={history} purpose={purpose} breaks={breaks}/>}
-        {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
+        {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
         {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
-        {view==="planning" && <Planning mits={mits} setMits={setMits}/>}
         {view==="stoic"     && <Stoic/>}
         {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
         {view==="breath"    && <Breath duration={breathDuration} onDone={()=>{ setView("session"); onBegin(); }}/>}
+        {view==="preload"   && <Preload duration={preloadDuration} onDone={()=>setView("session")}/>}
         {view==="day"      && <TheDay rituals={rituals} setRituals={setRituals} purpose={purpose} mits={mits} setMits={setMits}
-                                sessions={todayHistory} practiceLog={practiceLog} streak={calcStreak(history)} onEnterDay={()=>setView("session")}/>}
+                                sessions={todayHistory} practiceLog={practiceLog} breaks={breaks} streak={calcStreak(history)} onEnterDay={()=>setView("session")}/>}
+        {view==="week"     && <TheWeek weekly={weekly} setWeekly={setWeekly} purpose={purpose} sessions={history} rituals={rituals} breaks={breaks}/>}
         {view==="purpose"  && <Purpose purpose={purpose} setPurpose={setPurpose} sessions={history}/>}
         {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}
-                                lastExport={lastExport} hasData={history.length>0}/>}
+                                lastExport={lastExport} hasData={history.length>0} trackerOn={trackerOn} setTrackerOn={setTrackerOn}/>}
       </main>
       {restAsk && (
         <div className="tracker-toast">
