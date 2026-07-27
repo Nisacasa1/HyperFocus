@@ -10,6 +10,12 @@ A single-file, offline-first productivity app built with React (Babel standalone
 
 ## Features
 
+### 🧭 Purpose
+The compass the rest of the app points at.
+- **North Star** — one sentence on what you're building toward. Shown in the sidebar and above every session you start.
+- **Identity** — who you are becoming, in the present tense.
+- **Goals** with an hour target. Every session is attributed to the current goal, so progress is measured in hours actually focused, not intentions.
+
 ### 🎯 Focus Timer
 - Three modes: **Pomodoro** (25 min), **Deep Work** (90 min), **Flowmodoro** (50 min)
 - Wall-clock based timer — never drifts even if the tab is backgrounded or the computer sleeps
@@ -60,7 +66,31 @@ Completed practices are logged per day and a history is shown below the cards.
 ### ⚙️ Settings
 - Light / dark theme toggle
 - Export all data as **JSON**
-- Clear all data
+- **Import JSON** — merges by id, so re-importing the same backup is harmless. This is how you carry history between your laptop and your phone.
+- Clear all data (your Purpose page is preserved)
+
+---
+
+## Running it on your phone
+
+The app works on any screen: below 860px the sidebar becomes a drawer and every
+layout collapses to a single column.
+
+### Deploy to Netlify
+
+`netlify.toml` is already configured — there's no build step.
+
+1. Push this repo to GitHub.
+2. In Netlify, **Add new site → Import an existing project**, pick the repo.
+3. Leave the build command empty and the publish directory as `.`. Deploy.
+
+Then open the site on your phone and use **Add to Home Screen**. It installs as a
+standalone app with its own icon, no browser chrome, and works fully offline after
+the first visit (a service worker caches the app, React, and the fonts).
+
+> **One database per device.** Everything is stored in `localStorage`, so your
+> phone and your laptop keep separate histories. Use **Settings → Export JSON** on
+> one and **Import JSON** on the other to merge them. There is no server and no sync.
 
 ---
 
@@ -98,7 +128,7 @@ Or just **double-click `HyperFocus.html`** in your file manager.
 
 - **No server.** The app is a static HTML file.
 - **No account.** Nothing is ever transmitted anywhere.
-- All data (sessions, plans, tracker entries, practices) lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`.
+- All data (sessions, plans, tracker entries, practices, purpose) lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`, `hf_purpose`.
 - Use **Settings → Export JSON** to back up your data at any time.
 
 ---
@@ -106,13 +136,20 @@ Or just **double-click `HyperFocus.html`** in your file manager.
 ## Project Structure
 
 ```
-HyperFocus.html     ← The entire app (HTML + CSS + JS in one file)
+HyperFocus.html        ← The entire app (HTML + CSS + JS in one file)
+sw.js                  ← Service worker (offline support)
+manifest.webmanifest   ← PWA manifest (install to home screen)
+netlify.toml           ← Netlify config (no build step)
+icons/                 ← App icons
 README.md
 LICENSE
 .gitignore
 ```
 
 The legacy `/assets` and `*.jsx` files are early-stage design drafts and are not used by the app.
+
+> When you change `HyperFocus.html`, bump `CACHE` in [`sw.js`](sw.js) so installed
+> copies pick the new version up.
 
 ---
 

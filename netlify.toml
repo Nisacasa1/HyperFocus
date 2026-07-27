@@ -1,0 +1,26 @@
+# Hyper Focus is a static single-file app — nothing to build.
+[build]
+  publish = "."
+
+# Serve the app at the site root while keeping HyperFocus.html as the source of
+# truth (so double-clicking the file locally still works).
+[[redirects]]
+  from = "/"
+  to = "/HyperFocus.html"
+  status = 200
+
+# The service worker must never be served stale, or updates can never land.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/HyperFocus.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

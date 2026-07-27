@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hyper Focus</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='28' stroke='%2312110E' stroke-width='1.5' fill='none'/><circle cx='32' cy='32' r='16' stroke='%2312110E' stroke-width='1.5' fill='none'/><circle cx='32' cy='32' r='3' fill='%2312110E'/></svg>">
+<meta name="description" content="A quiet, offline-first place to hold your focus and remember your purpose.">
+<meta name="theme-color" content="#FBFAF7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12110E" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hyper Focus">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -137,6 +146,7 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 /* ── Ring ── */
 .ring { position:relative; width:380px; height:380px; display:flex; align-items:center; justify-content:center; }
 .ring--breathing { animation:hf-breath 4s ease-in-out infinite; }
+.ring--dp { width:min(320px,78vw); height:min(320px,78vw); margin:28px 0; }
 @keyframes hf-breath { 0%,100%{transform:scale(1);}50%{transform:scale(1.035);} }
 .ring svg { width:100%; height:100%; transform:rotate(-90deg); }
 .ring__bg { stroke:var(--hf-bone-200); fill:none; stroke-width:1.5; }
@@ -229,6 +239,8 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .stoic-daily__quote { font-family:var(--hf-font-serif); font-size:22px; font-style:italic; color:var(--hf-fg); line-height:1.55; letter-spacing:-0.01em; }
 .stoic-daily__author { margin-top:14px; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
 .stoic-phil-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:36px; }
+.stoic-phil-grid--2 { grid-template-columns:repeat(2,1fr); }
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
 .stoic-phil { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; overflow:hidden; transition:border-color 160ms var(--hf-ease-out); }
 .stoic-phil--open { border-color:var(--hf-sand-300); }
 [data-theme="dark"] .stoic-phil--open { border-color:rgba(211,184,135,.4); }
@@ -348,16 +360,134 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .heatmap__months { display:flex; gap:3px; margin-bottom:6px; }
 .heatmap__months span { font-size:9px; color:var(--hf-fg-subtle); letter-spacing:.06em; text-transform:uppercase; font-family:var(--hf-font-mono); }
 
+/* ── Purpose ── */
+.rail__star { font-family:var(--hf-font-serif); font-style:italic; font-size:12.5px; line-height:1.45; color:var(--hf-fg-muted); padding:0 8px 14px; margin-top:-8px; border-bottom:1px solid var(--hf-border); margin-bottom:4px; white-space:normal; }
+.rail__star:empty { display:none; }
+.purpose-star { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-left:3px solid var(--hf-sand-400); border-radius:10px; padding:28px 32px; margin-bottom:20px; }
+.purpose-star__field { font-family:var(--hf-font-serif); font-size:28px; line-height:1.35; color:var(--hf-fg); letter-spacing:-0.01em; width:100%; border:0; background:transparent; outline:none; resize:none; overflow:hidden; display:block; padding:0; }
+.purpose-star__field::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+.purpose-identity__field { font-size:14px; line-height:1.75; color:var(--hf-fg-body); width:100%; border:0; background:transparent; outline:none; resize:none; overflow:hidden; display:block; padding:0; font-family:var(--hf-font-sans); }
+.purpose-identity__field::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+.goal { padding:18px 0; border-bottom:1px solid var(--hf-border); }
+.goal:last-child { border-bottom:0; }
+.goal__head { display:flex; align-items:baseline; justify-content:space-between; gap:14px; }
+.goal__title { font-family:var(--hf-font-serif); font-size:19px; color:var(--hf-fg); letter-spacing:-0.01em; line-height:1.25; flex:1; }
+.goal__title--dim { color:var(--hf-fg-muted); }
+.goal__nums { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-muted); white-space:nowrap; }
+.goal__nums b { color:var(--hf-fg); font-weight:400; }
+.goal__bar { height:4px; border-radius:2px; background:var(--hf-bone-200); margin-top:12px; overflow:hidden; }
+.goal__bar i { display:block; height:100%; background:var(--hf-sand-400); border-radius:2px; transition:width 400ms var(--hf-ease-out); }
+[data-theme="dark"] .goal__bar { background:#2A2823; }
+.goal__actions { display:flex; gap:6px; margin-top:12px; align-items:center; flex-wrap:wrap; }
+.goal-new { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; }
+.goal-new .input { flex:1; min-width:180px; }
+.goal-new .input--num { flex:0 0 110px; min-width:110px; }
+.session-star { font-family:var(--hf-font-serif); font-style:italic; font-size:15px; color:var(--hf-fg-muted); text-align:center; max-width:560px; line-height:1.6; margin-bottom:18px; }
+.session-goal { display:flex; justify-content:center; margin:-8px 0 22px; }
+.warn-banner { background:rgba(192,57,43,.08); border:1px solid rgba(192,57,43,.3); color:#C0392B; border-radius:8px; padding:12px 16px; font-size:13px; line-height:1.5; margin-bottom:20px; }
+
 /* ── Insights card ── */
 .insights { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
 .insight-chip { font-size:12px; padding:5px 12px 5px 10px; border-radius:9999px; background:var(--hf-bg-subtle); border:1px solid var(--hf-border); color:var(--hf-fg-body); font-family:var(--hf-font-mono); display:inline-flex; align-items:center; gap:6px; }
 .insight-chip svg { color:var(--hf-fg-muted); flex-shrink:0; }
 .insight-chip b { color:var(--hf-fg); font-weight:500; }
 
+/* ── Mobile drawer trigger (hidden on desktop) ── */
+.rail-backdrop { display:none; }
+.iconbtn--menu { display:none; }
+
+/* ── Responsive ────────────────────────────────────────────────────────────
+   Below 860px the rail becomes an off-canvas drawer and every fixed grid
+   collapses. Uses dvh so mobile browser chrome can't clip the timer. */
+@media (max-width: 860px) {
+  #root { height:100dvh; }
+  .app { grid-template-columns:1fr; height:100dvh; }
+
+  .rail {
+    position:fixed; top:0; left:0; bottom:0; width:264px; max-width:82vw; z-index:60;
+    transform:translateX(-100%); transition:transform 220ms var(--hf-ease-out);
+    box-shadow:var(--hf-shadow-xl); overflow-y:auto;
+    padding-top:calc(18px + env(safe-area-inset-top));
+    padding-bottom:calc(18px + env(safe-area-inset-bottom));
+  }
+  .rail--open { transform:translateX(0); }
+  .rail-backdrop { display:block; position:fixed; inset:0; z-index:55; background:rgba(18,17,14,.4); backdrop-filter:blur(2px); animation:fadeIn 160ms var(--hf-ease-out); }
+  .rail__item { padding:11px 10px; font-size:14px; }
+
+  .iconbtn--menu { display:flex; }
+  .topbar { padding:0 12px; padding-top:env(safe-area-inset-top); height:calc(52px + env(safe-area-inset-top)); gap:8px; }
+  .topbar__crumb { font-size:11px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .topbar__crumb span:not(.badge) { display:none; }
+  .topbar__crumb svg { display:none; }
+
+  .page { padding:28px 20px calc(48px + env(safe-area-inset-bottom)); }
+  .h-serif { font-size:32px !important; }
+
+  .focus-stage { min-height:auto; padding:76px 20px calc(48px + env(safe-area-inset-bottom)); justify-content:flex-start; }
+  .focus-meta { position:static; transform:none; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:22px; white-space:normal; }
+  .focus-task { font-size:24px; margin-bottom:26px; }
+  .session-star { font-size:14px; margin-bottom:14px; }
+  .ring { width:min(300px,78vw); height:min(300px,78vw); }
+  .ring__timer { font-size:clamp(56px,17vw,84px); }
+  .focus-actions { margin-top:28px; width:100%; }
+  .focus-actions > div { flex-wrap:wrap; justify-content:center; }
+  .btn--xl { padding:14px 28px; }
+  .session-complete { padding:0; }
+  .session-complete__task { font-size:24px; }
+
+  /* Every fixed multi-column grid collapses */
+  .kpi-grid { grid-template-columns:repeat(2,1fr); gap:22px 14px; }
+  .kpi__value { font-size:30px; }
+  .sound-grid,
+  .stoic-phil-grid,
+  .stoic-phil-grid--2,
+  .grid-2,
+  .stoic-principles,
+  .stoic-practices,
+  .dp-grid,
+  .tracker-summary { grid-template-columns:1fr; }
+
+  .session-row { grid-template-columns:1fr auto; gap:4px 12px; padding:12px 0; }
+  .session-row__time { grid-column:1/-1; }
+  .session-row__del { opacity:1; }
+  .tracker-entry { grid-template-columns:1fr auto; gap:4px 12px; }
+  .tracker-entry__time { grid-column:1/-1; }
+
+  .tracker-toast { width:auto; left:12px; right:12px; transform:none; bottom:calc(16px + env(safe-area-inset-bottom)); }
+  @keyframes slideUp { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+  .tracker-toast__actions { flex-wrap:wrap; }
+
+  .cmdk-backdrop { padding:16px; align-items:flex-start; padding-top:80px; }
+  .cmdk { width:100%; }
+
+  .stoic-daily { padding:22px 20px; }
+  .stoic-daily__quote { font-size:19px; }
+  .purpose-star { padding:22px 20px; }
+  .purpose-star__field { font-size:22px; }
+  .breath-prompt { font-size:30px; }
+  .heatmap { overflow-x:auto; padding-bottom:6px; }
+  .stats-periods { flex-wrap:wrap; }
+}
+
+/* Touch devices: hover styles that latch on tap are worse than none */
+@media (hover: none) {
+  .session-row__del { opacity:1; }
+  .btn:active { transform:translateY(1px); }
+}
+
 </style>
 </head>
 <body>
 <div id="root"></div>
+<script>
+// Service worker — only over http(s). Opening the file directly (file://) has no
+// SW context, and registering there throws.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(err => console.warn("SW registration failed:", err));
+  });
+}
+</script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
@@ -454,7 +584,13 @@ const PRACTICES = [
 
 /* ── localStorage ── */
 const loadLS = (key, def) => { try { const v=localStorage.getItem(key); return v?JSON.parse(v):def; } catch(e){ return def; } };
-const saveLS = (key, val) => { try { localStorage.setItem(key,JSON.stringify(val)); } catch(e){} };
+// Silent failure here means silent data loss — surface it so the UI can warn.
+let saveFailed = false;
+const saveLS = (key, val) => {
+  try { localStorage.setItem(key,JSON.stringify(val)); }
+  catch(e){ saveFailed = true; console.error("Hyper Focus — could not save",key,e); }
+};
+const hasSaveFailed = () => saveFailed;
 
 /* ── Time utils ── */
 const fmt = (s) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
@@ -465,6 +601,9 @@ const localDate  = (d) => { const dt=d?(d instanceof Date?d:new Date(d)):new Dat
 const dateStr    = (d) => localDate(d instanceof Date ? d : new Date(d));
 const todayStr   = () => localDate();
 const randQuote  = () => STOIC_QUOTES[Math.floor(Math.random()*STOIC_QUOTES.length)];
+// Days since epoch, in local time — the same quote for the whole day, everywhere in the app.
+const dayNumber  = () => { const d=new Date(); return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000); };
+const quoteOfDay = () => STOIC_QUOTES[dayNumber()%STOIC_QUOTES.length];
 
 // Fixed 30-min clock intervals (:00 and :30 of each hour)
 const getSecsToNextHalfHour = () => {
@@ -593,6 +732,10 @@ const Icon = ({ name, size=16 }) => {
     trend:        <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
     target:       <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></>,
     star:         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
+    compass:      <><circle cx="12" cy="12" r="9"/><polygon points="16.2 7.8 14.1 14.1 7.8 16.2 9.9 9.9 16.2 7.8"/></>,
+    menu:         <path d="M3 6h18M3 12h18M3 18h18"/>,
+    upload:       <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></>,
+    archive:      <><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/></>,
   };
   const d=p[name]; if(!d) return null;
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
@@ -604,14 +747,18 @@ const Mark = ({ size=22, theme="light" }) => {
 };
 
 /* ── Rail ── */
-const Rail = ({ current, onNav, sounds, theme }) => {
-  const nav = [
-    { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
-    { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"planning",label:"Planning",icon:"flag"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
-  ];
+const NAV = [
+  { sec:"Compass",  items:[{id:"purpose",label:"Purpose",icon:"compass"}] },
+  { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
+  { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"planning",label:"Planning",icon:"flag"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
+];
+
+const Rail = ({ current, onNav, sounds, theme, northStar, open }) => {
+  const nav = NAV;
   return (
-    <aside className="rail">
+    <aside className={"rail"+(open?" rail--open":"")}>
       <div className="rail__brand"><Mark size={22} theme={theme}/><span className="rail__brand-name">Hyper Focus</span></div>
+      {northStar && <div className="rail__star" title={northStar}>{northStar}</div>}
       {nav.map(g=>(
         <React.Fragment key={g.sec}>
           <div className="rail__sec">{g.sec}</div>
@@ -630,9 +777,10 @@ const Rail = ({ current, onNav, sounds, theme }) => {
 };
 
 /* ── Topbar ── */
-const Topbar = ({ crumbs=[], onCmdk, onTheme, theme, running, timeStr }) => (
+const Topbar = ({ crumbs=[], onCmdk, onTheme, theme, running, timeStr, onMenu }) => (
   <header className="topbar">
     <div className="topbar__crumb">
+      <button className="iconbtn iconbtn--menu" onClick={onMenu} aria-label="Open navigation"><Icon name="menu" size={17}/></button>
       {crumbs.map((c,i)=>(
         <React.Fragment key={i}>
           {i>0&&<Icon name="chevronRight" size={12}/>}
@@ -678,7 +826,7 @@ const StarRating = ({ rated, onRate }) => {
   );
 };
 
-const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick }) => {
+const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick, northStar, activeGoal, onOpenPurpose }) => {
   const R=46, CIRC=2*Math.PI*R;
   const [editDur, setEditDur] = useState(false);
   const [durVal,  setDurVal]  = useState("");
@@ -728,10 +876,26 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
         </span>
       </div>
 
+      {/* Why you're here, before what you're doing */}
+      {isIdle && !isPaused && northStar && <div className="session-star">{northStar}</div>}
+
       {isIdle&&!isPaused
         ? <input className="focus-task" style={{width:"100%",maxWidth:640}} placeholder="What are you working on?" value={task} onChange={e=>setTask(e.target.value)}/>
         : <div className="focus-task" style={{fontStyle:"normal"}}>{task||"Untitled session."}</div>
       }
+
+      {/* Which goal this session will count toward */}
+      {isIdle && !isPaused && (
+        <div className="session-goal">
+          {activeGoal
+            ? <button className="badge badge--accent" onClick={onOpenPurpose} title="Change on the Purpose page">
+                <span className="dot"/>Counts toward · {activeGoal.title}
+              </button>
+            : <button className="badge badge--neutral" onClick={onOpenPurpose}>
+                <Icon name="compass" size={12}/> No goal set — this time won't be attributed
+              </button>}
+        </div>
+      )}
 
       {/* Today's priorities reminder — click to pre-fill task */}
       {isIdle && !isPaused && hasMits && (
@@ -1045,7 +1209,7 @@ const Stats = ({ sessions }) => {
           </div>
         )}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+      <div className="grid-2">
         <div className="card-s"><div className="eyebrow">By mode</div>
           <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:10,fontFamily:"var(--hf-font-mono)",fontSize:13}}>
             {MODES.map(m=><div key={m.id} style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"var(--hf-fg-muted)"}}>{m.label}</span><span>{modeMap[m.id]?fmtDur(modeMap[m.id]):"—"}</span></div>)}
@@ -1178,7 +1342,9 @@ const Planning = ({ mits, setMits }) => {
 
 /* ── Stoic ── */
 const Stoic = () => {
-  const [dailyQuote] = useState(()=>randQuote());
+  // Fixed for the whole calendar day — a "daily" quote that rerolls on every
+  // mount is not an anchor, it's noise.
+  const dailyQuote = quoteOfDay();
   const [openPhil, setOpenPhil] = useState(null);
   return (
     <div className="page">
@@ -1197,7 +1363,7 @@ const Stoic = () => {
 
       {/* Philosophers — 5 in a 3+2 grid */}
       <h2 className="h-serif" style={{fontSize:24,margin:"0 0 16px"}}>The Philosophers</h2>
-      <div className="stoic-phil-grid" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
+      <div className="stoic-phil-grid">
         {PHILOSOPHER_DATA.slice(0,3).map(p=>{
           const isOpen=openPhil===p.id;
           return (
@@ -1220,7 +1386,7 @@ const Stoic = () => {
           );
         })}
       </div>
-      <div className="stoic-phil-grid" style={{gridTemplateColumns:"repeat(2,1fr)",marginBottom:36}}>
+      <div className="stoic-phil-grid stoic-phil-grid--2" style={{marginBottom:36}}>
         {PHILOSOPHER_DATA.slice(3).map(p=>{
           const isOpen=openPhil===p.id;
           return (
@@ -1308,6 +1474,7 @@ const CmdK = ({ onClose, onAction }) => {
   const items=[
     {id:"begin",   label:"Begin session",   icon:"play",   kbd:"Space"},
     {id:"pause",   label:"Pause session",   icon:"pause",  kbd:"Space"},
+    {id:"purpose", label:"Purpose & goals",  icon:"compass"},
     {id:"today",   label:"Go to today",     icon:"calendar"},
     {id:"stats",   label:"Go to stats",     icon:"stats"},
     {id:"sounds",  label:"Soundscapes",     icon:"mic"},
@@ -1511,7 +1678,7 @@ const DailyPractices = ({ practiceLog, onLogPractice }) => {
       <div className="focus-stage">
         <div className="dp-timer__name">{pr.name}</div>
         <div className="dp-timer__desc">{pr.instruction}</div>
-        <div className="ring" style={{width:320,height:320,margin:"28px 0"}}>
+        <div className="ring ring--dp">
           <svg viewBox="0 0 100 100">
             <circle className="ring__bg" cx="50" cy="50" r={R}/>
             <circle className="ring__fg" cx="50" cy="50" r={R} strokeDasharray={CIRC} strokeDashoffset={offset}/>
@@ -1627,8 +1794,122 @@ const DailyPractices = ({ practiceLog, onLogPractice }) => {
 };
 
 /* ── Settings ── */
-const Settings = ({ theme, setTheme, onExport, onClearData }) => {
+/* ── Purpose ── */
+// Textarea that grows with its content — keeps the North Star readable as one block
+// instead of a scrolling one-liner.
+const AutoTextarea = ({ value, onChange, className, placeholder }) => {
+  const ref = useRef(null);
+  useEffect(()=>{
+    const el=ref.current; if(!el) return;
+    el.style.height="auto"; el.style.height=el.scrollHeight+"px";
+  },[value]);
+  return <textarea ref={ref} rows={1} className={className} placeholder={placeholder} value={value} onChange={e=>onChange(e.target.value)}/>;
+};
+
+const Purpose = ({ purpose, setPurpose, sessions }) => {
+  const [newTitle, setNewTitle] = useState("");
+  const [newHours, setNewHours] = useState("");
+  const goals  = purpose.goals || [];
+  const active = goals.filter(g=>!g.archived);
+  const done   = goals.filter(g=>g.archived);
+  const hoursFor = id => sessions.reduce((a,s)=>a+(s.goalId===id?(s.dur||0):0),0)/3600;
+
+  const patch = p => setPurpose(prev=>({...prev,...p}));
+  const addGoal = () => {
+    const title=newTitle.trim(); if(!title) return;
+    const target=Math.min(5000,Math.max(1,parseInt(newHours)||40));
+    const g={id:"g"+Date.now(),title,target,archived:false,createdAt:new Date().toISOString()};
+    setPurpose(p=>({...p,goals:[...(p.goals||[]),g],activeGoalId:p.activeGoalId||g.id}));
+    setNewTitle(""); setNewHours("");
+  };
+  const updateGoal = (id,p) => setPurpose(prev=>({...prev,goals:prev.goals.map(g=>g.id===id?{...g,...p}:g)}));
+  const removeGoal = (id) => setPurpose(prev=>({
+    ...prev,
+    goals: prev.goals.filter(g=>g.id!==id),
+    activeGoalId: prev.activeGoalId===id ? null : prev.activeGoalId,
+  }));
+
+  const renderGoal = (g) => {
+    const h=hoursFor(g.id), pct=Math.min(100,(h/g.target)*100), isActive=purpose.activeGoalId===g.id;
+    return (
+      <div className="goal" key={g.id}>
+        <div className="goal__head">
+          <div className={"goal__title"+(g.archived?" goal__title--dim":"")}>{g.title}</div>
+          <div className="goal__nums"><b>{h.toFixed(1)}h</b> / {g.target}h</div>
+        </div>
+        <div className="goal__bar"><i style={{width:`${pct}%`}}/></div>
+        <div className="goal__actions">
+          {!g.archived && (isActive
+            ? <span className="badge badge--accent"><span className="dot"/>Current focus</span>
+            : <button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}} onClick={()=>patch({activeGoalId:g.id})}>Make current</button>)}
+          <button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}}
+            onClick={()=>updateGoal(g.id,{archived:!g.archived})}>
+            {g.archived?"Reopen":"Archive"}
+          </button>
+          <button className="btn btn--danger" style={{padding:"4px 10px",fontSize:12}} onClick={()=>removeGoal(g.id)}>Delete</button>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="page">
+      <div className="eyebrow">Compass</div>
+      <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 10px"}}>Purpose</h1>
+      <p style={{fontSize:14,color:"var(--hf-fg-muted)",lineHeight:1.7,margin:"0 0 32px",maxWidth:620}}>
+        Everything else in this app measures what you did. This page holds why. It is the only
+        thing here you should reread more often than you edit.
+      </p>
+
+      <div className="eyebrow" style={{marginBottom:10}}>North Star</div>
+      <div className="purpose-star">
+        <AutoTextarea className="purpose-star__field" value={purpose.northStar||""}
+          onChange={v=>patch({northStar:v})}
+          placeholder="In one sentence — what are you actually building your life toward?"/>
+      </div>
+      <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.65,margin:"0 0 40px",maxWidth:560}}>
+        This line follows you: it sits in the sidebar and above every session you start.
+      </p>
+
+      <div className="eyebrow" style={{marginBottom:10}}>Identity</div>
+      <div className="card-s" style={{marginBottom:8}}>
+        <AutoTextarea className="purpose-identity__field" value={purpose.identity||""}
+          onChange={v=>patch({identity:v})}
+          placeholder="I am the kind of person who…"/>
+      </div>
+      <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.65,margin:"0 0 40px",maxWidth:560}}>
+        Habits follow identity, not goals. Write who you are becoming, in the present tense.
+      </p>
+
+      <div className="eyebrow" style={{marginBottom:10}}>Goals</div>
+      <div className="card-s">
+        {active.length===0 && <p style={{fontSize:13,color:"var(--hf-fg-muted)",margin:"4px 0 0",lineHeight:1.7}}>
+          No goals yet. Add one and every session you run will count toward it.
+        </p>}
+        {active.map(renderGoal)}
+        <div className="goal-new">
+          <input className="input" placeholder="Goal — e.g. Ship the first version of the product"
+            value={newTitle} onChange={e=>setNewTitle(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter") addGoal(); }}/>
+          <input className="input input--num" type="number" min="1" max="5000" placeholder="Hours"
+            value={newHours} onChange={e=>setNewHours(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter") addGoal(); }}/>
+          <button className="btn btn--primary" onClick={addGoal}><Icon name="plus" size={14}/> Add</button>
+        </div>
+      </div>
+
+      {done.length>0 && (<>
+        <div className="eyebrow" style={{margin:"36px 0 10px"}}>Archived</div>
+        <div className="card-s">{done.map(renderGoal)}</div>
+      </>)}
+    </div>
+  );
+};
+
+const Settings = ({ theme, setTheme, onExport, onImport, onClearData }) => {
   const [confirmClear, setConfirmClear] = useState(false);
+  const [importMsg, setImportMsg] = useState(null);
+  const fileRef = useRef(null);
   return (
     <div className="page">
       <div className="eyebrow">Preferences</div>
@@ -1655,10 +1936,20 @@ const Settings = ({ theme, setTheme, onExport, onClearData }) => {
       <div className="card-s" style={{marginTop:24}}>
         <div className="eyebrow" style={{marginBottom:14}}>Data</div>
         <p style={{fontSize:13,color:"var(--hf-fg-body)",margin:"0 0 18px",lineHeight:1.65}}>
-          Sessions, tracker entries, and daily plans are saved in your browser's local storage. Export to back them up or analyze externally.
+          Sessions, tracker entries, plans, and your Purpose are saved in this browser's local storage.
+          Each device keeps its own copy — export here and import on the other one to carry your history across.
+          Importing merges: nothing already saved is overwritten or lost.
         </p>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           <button className="btn btn--secondary" onClick={onExport}><Icon name="download" size={14}/> Export JSON</button>
+          <button className="btn btn--secondary" onClick={()=>fileRef.current?.click()}><Icon name="upload" size={14}/> Import JSON</button>
+          <input ref={fileRef} type="file" accept="application/json,.json" style={{display:"none"}}
+            onChange={e=>{
+              const f=e.target.files?.[0]; e.target.value="";
+              if(!f) return;
+              setImportMsg(null);
+              onImport(f).then(m=>setImportMsg({ok:true,text:m})).catch(err=>setImportMsg({ok:false,text:err.message}));
+            }}/>
           {confirmClear
             ? <>
                 <button className="btn btn--danger" onClick={()=>{ onClearData(); setConfirmClear(false); }}>Confirm — erase all</button>
@@ -1667,6 +1958,12 @@ const Settings = ({ theme, setTheme, onExport, onClearData }) => {
             : <button className="btn btn--ghost" onClick={()=>setConfirmClear(true)}>Clear all data</button>
           }
         </div>
+        {importMsg && (
+          <p style={{fontSize:12,marginTop:14,marginBottom:0,color:importMsg.ok?"var(--hf-success)":"#C0392B"}}>{importMsg.text}</p>
+        )}
+        <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:14,marginBottom:0,lineHeight:1.6}}>
+          Clearing erases sessions, tracker entries, plans, and practices. Your Purpose page is kept.
+        </p>
       </div>
       <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:24,fontStyle:"italic"}}>
         Data lives only in this browser. No account, no sync, no servers.
@@ -1682,6 +1979,7 @@ const App = () => {
   const [task,    setTask]    = useState("");
   const [sound,   setSound]   = useState(null);
   const [cmdk,    setCmdk]    = useState(false);
+  const [menuOpen,setMenuOpen]= useState(false);
   const [phase,   setPhase]   = useState("idle");
   const [session, setSession] = useState({index:1, mode:"pomodoro", total:25*60, remaining:25*60});
   const [breakRem,setBreakRem]= useState(5*60);
@@ -1690,6 +1988,9 @@ const App = () => {
   const [mits,        setMits]        = useState(()=>loadLS("hf_mits",{}));
   const [practiceLog, setPracticeLog] = useState(()=>loadLS("hf_practices",[]));
   const [breathDuration, setBreathDuration] = useState(60);
+  const [purpose,     setPurpose]     = useState(()=>({northStar:"",identity:"",goals:[],activeGoalId:null,...loadLS("hf_purpose",{})}));
+  const activeGoalId = purpose.activeGoalId || null;
+  const activeGoal   = (purpose.goals||[]).find(g=>g.id===activeGoalId) || null;
 
   // Wall-clock refs — these are never stale in callbacks
   const sessionStartRef     = useRef(null);   // HH:MM display string when Begin pressed
@@ -1698,6 +1999,7 @@ const App = () => {
   const breakTsRef          = useRef(0);      // Date.now() when break started
   const breakTotalRef       = useRef(5*60);   // total break seconds for current break
   const phaseRef            = useRef("idle"); // always-current phase (for visibilitychange)
+  const lastSessionIdRef    = useRef(null);   // id of the session the rating screen belongs to
   const trackerTargetRef    = useRef(getNextHalfHourMs()); // abs ms of next :00/:30
   const trackerFiredRef     = useRef(false);  // prevents double-fire on same interval
 
@@ -1714,6 +2016,11 @@ const App = () => {
   useEffect(()=>saveLS("hf_tracker",   trackerEntries), [trackerEntries]);
   useEffect(()=>saveLS("hf_mits",      mits),        [mits]);
   useEffect(()=>saveLS("hf_practices", practiceLog), [practiceLog]);
+  useEffect(()=>saveLS("hf_purpose",   purpose),     [purpose]);
+
+  /* Storage health — runs after the persistence effects above, every render */
+  const [storageWarn, setStorageWarn] = useState(false);
+  useEffect(()=>{ if(hasSaveFailed()&&!storageWarn) setStorageWarn(true); });
 
   /* Theme */
   useEffect(()=>{ document.documentElement.setAttribute("data-theme",theme); },[theme]);
@@ -1751,7 +2058,9 @@ const App = () => {
     if(phase==="focusing"&&session.remaining===0){
       playChime();
       sendNotif("Hyper Focus · Session complete", task||"Session finished. Time for a break.");
-      setHistory(h=>[...h,{id:Date.now(),startTime:sessionStartRef.current||nowTime(),time:nowTime(),date:new Date().toISOString(),task:task||"Untitled session.",mode:session.mode,dur:session.total}]);
+      const id=Date.now();
+      lastSessionIdRef.current=id;
+      setHistory(h=>[...h,{id,startTime:sessionStartRef.current||nowTime(),time:nowTime(),date:new Date().toISOString(),task:task||"Untitled session.",mode:session.mode,dur:session.total,goalId:activeGoalId}]);
       setPhase("complete");
     }
   },[session.remaining,phase]);
@@ -1829,12 +2138,14 @@ const App = () => {
   useEffect(()=>{
     const onKey=e=>{
       if((e.metaKey||e.ctrlKey)&&e.key==="k"){e.preventDefault();setCmdk(v=>!v);return;}
-      if(e.key==="Escape"){setCmdk(false);return;}
+      if(e.key==="Escape"){setCmdk(false);setMenuOpen(false);return;}
       if(e.key===" "&&!["INPUT","TEXTAREA","SELECT"].includes(e.target.tagName)){
         e.preventDefault();
         if(view==="session"){
-          if     (phase==="idle")     setPhase("focusing");
-          else if(phase==="focusing") setPhase("idle");
+          // Must go through onBegin/onPause — setting phase directly leaves the
+          // wall-clock refs unset and the session completes instantly.
+          if     (phase==="idle")     onBegin();
+          else if(phase==="focusing") onPause();
         }
       }
     };
@@ -1864,14 +2175,17 @@ const App = () => {
     setSession(s=>({...s,remaining:s.total}));
     if(elapsed>=60){
       // Save with real elapsed duration and show the complete/rating screen
+      const id=Date.now();
+      lastSessionIdRef.current=id;
       setHistory(h=>[...h,{
-        id:        Date.now(),
+        id,
         startTime: sessionStartRef.current||nowTime(),
         time:      nowTime(),
         date:      new Date().toISOString(),
         task:      task||"Untitled session.",
         mode:      session.mode,
         dur:       elapsed,
+        goalId:    activeGoalId,
       }]);
       setPhase("complete");
     } else {
@@ -1891,7 +2205,8 @@ const App = () => {
     setQuote(randQuote()); setPhase("idle");
   };
   const onBreathe       = (mins) => { setBreathDuration(mins*60); setView("breath"); };
-  const rateSession     = (q)    => { setHistory(h=>h.map((s,i)=>i===h.length-1?{...s,quality:q}:s)); };
+  // Rate by id, not by position — deleting a row in Today must not shift the target
+  const rateSession     = (q)    => { const id=lastSessionIdRef.current; if(id==null) return; setHistory(h=>h.map(s=>s.id===id?{...s,quality:q}:s)); };
   const onMitClick      = (text) => { setTask(text); };
   const onRenameSession = (id,newTask) => { setHistory(h=>h.map(s=>s.id===id?{...s,task:newTask}:s)); };
   const onDeleteSession = (id) => { setHistory(h=>h.filter(s=>s.id!==id)); };
@@ -1924,7 +2239,7 @@ const App = () => {
   };
 
   const exportData = () => {
-    const data={history,trackerEntries,mits,practiceLog,exportedAt:new Date().toISOString()};
+    const data={version:2,history,trackerEntries,mits,practiceLog,purpose,exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
@@ -1934,14 +2249,45 @@ const App = () => {
   const clearData = () => {
     setHistory([]); setTrackerEntries([]); setMits({}); setPracticeLog([]);
     saveLS("hf_history",[]); saveLS("hf_tracker",[]); saveLS("hf_mits",{}); saveLS("hf_practices",[]);
+    // Purpose is deliberately preserved — clearing your logs should never
+    // erase your North Star. Delete it by hand on the Purpose page.
   };
 
+  /* Import — merges a previously exported file. Sessions and tracker entries are
+     de-duplicated by id so importing the same backup twice is harmless. */
+  const importData = (file) => new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try {
+        const d=JSON.parse(reader.result);
+        if(!d || typeof d!=="object") throw new Error("Not a Hyper Focus export.");
+        const mergeById=(a,b)=>{
+          const seen=new Map();
+          [...(a||[]),...(b||[])].forEach(x=>{ if(x&&x.id!=null) seen.set(x.id,x); });
+          return [...seen.values()].sort((x,y)=>new Date(x.date||0)-new Date(y.date||0));
+        };
+        const added=mergeById(history,d.history).length-history.length;
+        setHistory(h=>mergeById(h,d.history));
+        setTrackerEntries(t=>mergeById(t,d.trackerEntries));
+        setPracticeLog(p=>mergeById(p,d.practiceLog));
+        if(d.mits && typeof d.mits==="object") setMits(m=>({...m,...d.mits}));
+        if(d.purpose && typeof d.purpose==="object") setPurpose(p=>({
+          ...p, ...d.purpose,
+          goals: mergeById(p.goals, d.purpose.goals),
+        }));
+        resolve(`Imported. ${added} new session${added===1?"":"s"} added.`);
+      } catch(e){ reject(new Error("Could not read that file — is it a Hyper Focus export?")); }
+    };
+    reader.onerror=()=>reject(new Error("Could not read that file."));
+    reader.readAsText(file);
+  });
+
   const cmdAction = id => {
-    if     (id==="begin")   { focusTsRef.current=Date.now(); focusElapsedRef.current=0; sessionStartRef.current=nowTime(); setView("session"); setPhase("focusing"); }
-    else if(id==="pause")   { setPhase("idle"); }
+    if     (id==="begin")   { setView("session"); onBegin(); }
+    else if(id==="pause")   { if(phase==="focusing") onPause(); }
     else if(id==="breath")  { setView("breath"); }
     else if(id==="lognow")  { setTrackerPrompt(true); }
-    else if(["today","stats","sounds","planning","stoic","tracker"].includes(id)) setView(id);
+    else if(["purpose","today","stats","sounds","planning","stoic","tracker","practices"].includes(id)) setView(id);
   };
 
   const today       = todayStr();
@@ -1949,18 +2295,28 @@ const App = () => {
   const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
   const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
 
-  const crumbs=({session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",planning:"Planning",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",tracker:"Tracker"})[view];
-  const section=["sounds","planning","stoic","practices"].includes(view)?"Practice":"Focus";
+  const crumbs=({purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",planning:"Planning",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",tracker:"Tracker"})[view];
+  const section=view==="purpose"?"Compass":["sounds","planning","stoic","practices"].includes(view)?"Practice":"Focus";
   const crumbArr=view==="settings"?["Settings"]:[section,crumbs];
   const soundLabel=sound?({rain:"Soft rain",forest:"Old forest",waves:"Shoreline",cafe:"Quiet café",brown:"Brown noise",fire:"Fireplace"})[sound]:null;
 
   return (
     <div className="app">
-      <Rail current={view} onNav={setView} sounds={soundLabel} theme={theme}/>
+      <Rail current={view} onNav={v=>{ setView(v); setMenuOpen(false); }} sounds={soundLabel} theme={theme} northStar={purpose.northStar} open={menuOpen}/>
+      {menuOpen && <div className="rail-backdrop" onClick={()=>setMenuOpen(false)}/>}
       <main className="canvas">
-        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={fmt(session.remaining)}/>
+        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={fmt(session.remaining)} onMenu={()=>setMenuOpen(true)}/>
 
-        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick}/>}
+        {storageWarn && (
+          <div className="page" style={{paddingBottom:0}}>
+            <div className="warn-banner">
+              This browser refused to save — recent changes may be lost when you close the app.
+              Private/incognito mode or a full storage quota are the usual causes. Export your data from Settings now.
+            </div>
+          </div>
+        )}
+
+        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}/>}
         {view==="today"    && <Today sessions={todayHistory} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
         {view==="stats"    && <Stats sessions={history}/>}
         {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
@@ -1969,7 +2325,8 @@ const App = () => {
         {view==="stoic"     && <Stoic/>}
         {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
         {view==="breath"    && <Breath duration={breathDuration} onDone={()=>{ setView("session"); onBegin(); }}/>}
-        {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onClearData={clearData}/>}
+        {view==="purpose"  && <Purpose purpose={purpose} setPurpose={setPurpose} sessions={history}/>}
+        {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}/>}
       </main>
       {trackerPrompt && <TrackerPrompt onSave={logEntry} onSkip={()=>setTrackerPrompt(false)} periodStart={trackerPeriodStart}/>}
       {manualEntry && <TrackerManualEntry onSave={(text,s,e)=>{ onManualEntry(text,s,e); setManualEntry(false); }} onClose={()=>setManualEntry(false)}/>}
