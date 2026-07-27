@@ -13,7 +13,9 @@ A single-file, offline-first productivity app built with React (Babel standalone
 ### 🧭 Purpose
 The compass the rest of the app points at.
 - **North Star** — one sentence on what you're building toward. Shown in the sidebar and above every session you start.
-- **Identity** — who you are becoming, in the present tense.
+- **Anti-vision** — the inventory of what you don't want, which is easier to write than a vision because you have evidence for it. The two together make a field of tension where inaction costs more than action. Nudges you to revisit monthly.
+- **Identity as accumulated evidence** — identity doesn't install through affirmation. Every finished session is one vote, and the page counts them since the day you wrote the statement.
+- **If-then protocols** — pre-committed responses to predictable trigger moments. Willpower lives in the prefrontal cortex; the impulse fires in the faster limbic system, so the decision is made in advance and surfaced *at* the trigger — the moment a session ends, or a break starts.
 - **Goals** with an hour target. Every session is attributed to the current goal, so progress is measured in hours actually focused, not intentions.
 
 ### ☀️ The Day
@@ -21,12 +23,15 @@ Two rituals, because a timer alone never made anyone come back.
 - **Opening** — the app lands here until you've opened the day: your streak, your North Star, and your three priorities. Ten seconds, and you're anchored.
 - **Closing** — the day's numbers, then three questions (*what moved forward · what pulled you away · one line for tomorrow*) and a rating. A gentle prompt appears in the topbar after 7pm.
 - Every closed day is kept, so you can read the last two weeks back before planning the next one.
+- **Send to second brain** — exports the closed day as a markdown file matching an Obsidian daily-note template, with the day's figures appended. Drop it into your vault's `journal/entries/`.
 
 ### 🎯 Focus Timer
 - Three modes: **Pomodoro** (25 min), **Deep Work** (90 min), **Flowmodoro** (50 min)
 - Wall-clock based timer — never drifts even if the tab is backgrounded or the computer sleeps
 - **+5 min** button to extend a session on the fly without restarting
 - Pre-focus **breathing exercise** (1, 2, or 3 min) before starting
+- **Fill / Empty / Use** — tag what kind of mental work a session is: creating, learning, or letting the mind idle. The Day shows whether the day had all three; a day that is only ever Use is the shape that burns out.
+- **Breaks that actually rest** — the break screen offers real-rest options and afterwards asks whether input was still coming in. Once there is enough data, Stats reports whether real rest measurably improves the next session.
 - **5-star quality rating** at session completion
 - OS notifications when sessions and breaks complete (Web Notifications API)
 - Session title editable before and after — rename any past session in Today
@@ -43,6 +48,7 @@ Two rituals, because a timer alone never made anyone come back.
 - Wall-clock based countdown, fires OS notifications even when on another page/app
 
 ### 📊 Stats
+- **How far you've come** — the last 30 or 90 days against the period before them. Placed deliberately *above* everything else, because every other number in the app measures you against where you want to be. This one measures the distance already travelled.
 - **What the data says** — findings derived from your own sessions: the part of the day your work rates highest, whether longer sessions actually score better, your strongest mode, how many of the last 30 days you showed up, and how long since a 5★ session. Each finding waits until there is enough rated data to mean something.
 - **Where the hours went** — real hours logged against each goal
 - Bar chart (this week) and monthly breakdown
@@ -136,7 +142,7 @@ Or just **double-click `HyperFocus.html`** in your file manager.
 
 - **No server.** The app is a static HTML file.
 - **No account.** Nothing is ever transmitted anywhere.
-- All data lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`, `hf_purpose`, `hf_rituals`.
+- All data lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`, `hf_purpose`, `hf_rituals`, `hf_breaks`.
 - Every one of those is **mirrored into IndexedDB**. If `localStorage` ever comes back empty, the app notices and offers to restore from the mirror instead of silently starting you at zero.
 - Settings tells you how long it has been since your last export, and nags after a week.
 - Use **Settings → Export JSON** to back up your data at any time.

@@ -446,6 +446,59 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
   .rise { animation:none; opacity:1; }
 }
 
+/* ── Evidence / votes ── */
+.votes { display:flex; align-items:baseline; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid var(--hf-border); flex-wrap:wrap; }
+.votes__n { font-family:var(--hf-font-mono); font-weight:300; font-size:34px; line-height:1; color:var(--hf-fg); letter-spacing:-0.02em; }
+.votes__label { font-size:13px; color:var(--hf-fg-muted); line-height:1.5; }
+.votes__label b { color:var(--hf-fg); font-weight:500; }
+
+/* ── Protocols (if-then) ── */
+.proto { padding:14px 0; border-bottom:1px solid var(--hf-border); }
+.proto:last-of-type { border-bottom:0; }
+.proto__line { font-size:14px; line-height:1.6; color:var(--hf-fg-body); }
+.proto__line b { color:var(--hf-fg); font-weight:500; }
+.proto__when { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--hf-fg-subtle); margin-bottom:6px; }
+.proto-card { background:var(--hf-bg-subtle); border:1px solid var(--hf-border); border-left:3px solid var(--hf-sand-400); border-radius:8px;
+  padding:16px 18px; max-width:440px; text-align:left; margin:0 auto; }
+.proto-card__eyebrow { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:8px; }
+.proto-card__line { font-size:14px; line-height:1.65; color:var(--hf-fg); }
+.proto-card__line b { font-weight:500; }
+
+/* ── Rest ── */
+.rest-list { display:flex; flex-direction:column; gap:6px; margin-top:18px; max-width:340px; }
+.rest-list__title { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:4px; }
+.rest-item { font-size:13px; color:var(--hf-fg-body); display:flex; gap:9px; align-items:baseline; line-height:1.55; }
+.rest-item::before { content:"—"; color:var(--hf-fg-subtle); flex-shrink:0; }
+.rest-ask { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+
+/* ── Kind selector ── */
+.kinds { display:flex; gap:5px; justify-content:center; }
+.kind { font-size:11px; padding:4px 12px; border-radius:9999px; color:var(--hf-fg-muted); border:1px solid var(--hf-border); transition:all 140ms; }
+.kind:hover { border-color:var(--hf-sand-400); color:var(--hf-sand-600); }
+.kind--on { background:var(--hf-sand-50); border-color:var(--hf-sand-300); color:var(--hf-sand-700); font-weight:500; }
+[data-theme="dark"] .kind--on { background:rgba(211,184,135,.1); border-color:rgba(211,184,135,.35); color:var(--hf-accent); }
+
+/* ── Day shape (fill/empty/use) ── */
+.shape { display:flex; gap:10px; margin-top:6px; }
+.shape__item { flex:1; border:1px solid var(--hf-border); border-radius:8px; padding:13px 14px; }
+.shape__item--on { border-color:var(--hf-sand-300); background:var(--hf-sand-50); }
+[data-theme="dark"] .shape__item--on { background:rgba(211,184,135,.07); border-color:rgba(211,184,135,.3); }
+.shape__name { font-family:var(--hf-font-serif); font-size:17px; color:var(--hf-fg); line-height:1.1; }
+.shape__item:not(.shape__item--on) .shape__name { color:var(--hf-fg-subtle); }
+.shape__val { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-muted); margin-top:6px; }
+
+/* ── The Gain ── */
+.gain-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.gain { padding:16px 0; }
+.gain__label { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; }
+.gain__row { display:flex; align-items:baseline; gap:10px; margin-top:10px; }
+.gain__then { font-family:var(--hf-font-mono); font-size:16px; color:var(--hf-fg-subtle); }
+.gain__arrow { color:var(--hf-fg-subtle); font-size:12px; }
+.gain__now { font-family:var(--hf-font-mono); font-weight:300; font-size:28px; line-height:1; color:var(--hf-fg); letter-spacing:-0.02em; }
+.gain__delta { font-size:12px; font-family:var(--hf-font-mono); margin-top:8px; }
+.gain__delta--up { color:var(--hf-success); }
+.gain__delta--flat { color:var(--hf-fg-subtle); }
+
 /* ── Findings (derived insights) ── */
 .finding { display:flex; gap:13px; align-items:flex-start; padding:15px 0; border-bottom:1px solid var(--hf-border); }
 .finding:last-child { border-bottom:0; }
@@ -534,7 +587,10 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 
   /* Every fixed multi-column grid collapses */
   .kpi-grid,
+  .gain-grid,
   .day-figures { grid-template-columns:repeat(2,1fr); gap:22px 14px; }
+  .shape { flex-direction:column; gap:8px; }
+  .kinds { flex-wrap:wrap; }
   .kpi__value { font-size:30px; }
   .day-greet { font-size:32px; }
   .day-star { font-size:18px; }
@@ -631,6 +687,34 @@ const STOIC_QUOTES = [
   { text:"You always own the option of having no opinion.", author:"Marcus Aurelius" },
 ];
 
+/* Fill / Empty / Use — Dan Koe's shape of the day. A session is one of three
+   kinds of mental work, and a day that only ever does "Use" burns out. */
+const KINDS = [
+  { id:"use",   label:"Use",   blurb:"Create. High-leverage output, peak energy." },
+  { id:"fill",  label:"Fill",  blurb:"Learn. Reading and input that feeds the next Use." },
+  { id:"empty", label:"Empty", blurb:"Let the mind idle so it can process. Walks, silence." },
+];
+
+/* If-then protocols: pre-committed responses to predictable trigger moments.
+   The vault's note: 2-3x more effective than willpower, because the decision is
+   already made when the limbic system fires. */
+const TRIGGERS = [
+  { id:"session-end", label:"When a work session ends" },
+  { id:"break",       label:"When a break starts" },
+  { id:"day-open",    label:"When I open the day" },
+  { id:"day-close",   label:"When I close the day" },
+];
+
+/* Real rest empties the nervous system; degenerate leisure keeps feeding it
+   input while feeling like recovery. The test is whether input is coming in. */
+const REAL_REST = [
+  "Walk without headphones",
+  "Sit and look out of the window",
+  "Meditation or NSDR",
+  "Stretch, move, breathe",
+  "Eat without a screen",
+];
+
 const MODES = [
   { id:"pomodoro", label:"Pomodoro",   dur:25*60, breakDur:5*60  },
   { id:"deep",     label:"Deep work",  dur:90*60, breakDur:15*60 },
@@ -689,7 +773,7 @@ const PRACTICES = [
    ever read a half-written state. IndexedDB is a mirror: it survives some things
    localStorage does not (per-site storage clears, quota pressure), and gives us
    something to restore from if localStorage ever comes back empty. */
-const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals"];
+const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks"];
 
 const IDB = (() => {
   const DB="hyperfocus", STORE="kv";
@@ -961,7 +1045,7 @@ const StarRating = ({ rated, onRate, label="How focused were you?", captions }) 
   );
 };
 
-const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0 }) => {
+const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0, protocols=[], kind, setKind, onLogBreak }) => {
   const R=46, CIRC=2*Math.PI*R;
   const [editDur, setEditDur] = useState(false);
   const [durVal,  setDurVal]  = useState("");
@@ -977,6 +1061,12 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
 
   // Reset rating when we exit complete phase
   useEffect(()=>{ if(phase!=="complete") setRated(null); },[phase]);
+
+  // The trigger moment: a session ending is the most predictable point at which
+  // attention leaks. Show the protocol that was written for exactly this.
+  const protoFor = (trigger) => (protocols||[]).filter(p=>p.trigger===trigger)[0] || null;
+  const endProto = protoFor("session-end");
+  const breakProto = protoFor("break");
 
   if (phase==="complete") {
     const mode=MODES.find(m=>m.id===session.mode);
@@ -1015,6 +1105,15 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
                 <span className="complete-goal__num">{goalHours.toFixed(1)}h / {activeGoal.target}h</span>
               </div>
               <div className="goal__bar"><i style={{width:`${goalPct}%`}}/></div>
+            </div>
+          )}
+
+          {endProto&&(
+            <div className="rise" style={{animationDelay:"1250ms",marginTop:26}}>
+              <div className="proto-card">
+                <div className="proto-card__eyebrow">You decided this in advance</div>
+                <div className="proto-card__line">If <b>{endProto.when}</b>, then <b>{endProto.then}</b>.</div>
+              </div>
             </div>
           )}
 
@@ -1116,6 +1215,39 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
         </>)}
         {isBreak&&<button className="btn btn--ghost btn--lg" onClick={onNewSession}>Skip break</button>}
       </div>
+
+      {/* Real rest is the absence of input — not the presence of pleasure. */}
+      {isBreak&&(
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginTop:8}}>
+          {breakProto&&(
+            <div className="proto-card" style={{marginBottom:20}}>
+              <div className="proto-card__eyebrow">You decided this in advance</div>
+              <div className="proto-card__line">If <b>{breakProto.when}</b>, then <b>{breakProto.then}</b>.</div>
+            </div>
+          )}
+          <div className="rest-list">
+            <div className="rest-list__title">Rest that actually rests</div>
+            {REAL_REST.map(r=><div className="rest-item" key={r}>{r}</div>)}
+          </div>
+          <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.6,maxWidth:340,marginTop:16,fontStyle:"italic"}}>
+            The test isn't pleasant versus dull — it's whether input is still coming in.
+          </p>
+        </div>
+      )}
+
+      {/* What kind of mental work this is — a day that is only ever Use burns out */}
+      {isIdle && !isPaused && (
+        <div style={{marginTop:22,display:"flex",flexDirection:"column",alignItems:"center",gap:7}}>
+          <div className="kinds">
+            {KINDS.map(k=>(
+              <button key={k.id} className={"kind"+(kind===k.id?" kind--on":"")} onClick={()=>setKind(k.id)} title={k.blurb}>{k.label}</button>
+            ))}
+          </div>
+          <div style={{fontSize:11.5,color:"var(--hf-fg-subtle)",lineHeight:1.5,maxWidth:360,textAlign:"center"}}>
+            {KINDS.find(k=>k.id===kind)?.blurb}
+          </div>
+        </div>
+      )}
 
       {/* Pre-focus breath options */}
       {isIdle && !isPaused && (
@@ -1369,6 +1501,56 @@ const getConsistency = (sessions) => {
   return { days:days.size, pct:Math.round((days.size/30)*100) };
 };
 
+/* Measuring backwards — the Gain, not the Gap. Compares a recent window against
+   the window before it. Everything else in this app measures forward, toward a
+   target you have not reached; this is the one place that measures the distance
+   already travelled. */
+const windowStats = (sessions, fromDaysAgo, toDaysAgo) => {
+  const now=new Date();
+  const from=new Date(now); from.setDate(now.getDate()-fromDaysAgo); const fromKey=localDate(from);
+  const to=new Date(now);   to.setDate(now.getDate()-toDaysAgo);     const toKey=localDate(to);
+  const inWin=sessions.filter(s=>{ if(!s.date) return false; const d=localDate(new Date(s.date)); return d>=fromKey&&d<toKey; });
+  const rated=inWin.filter(s=>s.quality>0);
+  return {
+    hours: inWin.reduce((a,s)=>a+(s.dur||0),0)/3600,
+    sessions: inWin.length,
+    days: new Set(inWin.map(s=>localDate(new Date(s.date)))).size,
+    quality: rated.length ? avg(rated.map(s=>s.quality)) : null,
+  };
+};
+const getGain = (sessions, span=30) => {
+  const now=windowStats(sessions, span, 0);
+  const before=windowStats(sessions, span*2, span);
+  if(now.sessions===0&&before.sessions===0) return null;
+  return { now, before, span };
+};
+
+// Does the kind of break you take change the quality of the session after it?
+const getRestEffect = (sessions, breaks) => {
+  const typed=(breaks||[]).filter(b=>b.type&&b.date);
+  if(typed.length<4) return null;
+  const buckets={real:[],degenerate:[]};
+  sessions.filter(s=>s.quality>0&&s.date).forEach(s=>{
+    const st=new Date(s.date);
+    // the most recent classified break that ended before this session, same day
+    const prior=typed
+      .filter(b=>new Date(b.date)<st&&localDate(new Date(b.date))===localDate(st))
+      .sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+    if(prior) buckets[prior.type].push(s.quality);
+  });
+  if(buckets.real.length<MIN_RATED||buckets.degenerate.length<MIN_RATED) return null;
+  const r=avg(buckets.real), d=avg(buckets.degenerate);
+  if(Math.abs(r-d)<0.4) return null;
+  return { real:r, degenerate:d, nReal:buckets.real.length, nDeg:buckets.degenerate.length };
+};
+
+// Hours by kind of mental work — did the day have all three of its moments?
+const kindSecs = (sessions) => {
+  const out={use:0,fill:0,empty:0};
+  sessions.forEach(s=>{ const k=s.kind||"use"; if(out[k]!=null) out[k]+=(s.dur||0); });
+  return out;
+};
+
 // Hours actually spent per goal.
 const getGoalHours = (sessions, goals=[]) => goals
   .filter(g=>!g.archived)
@@ -1377,8 +1559,9 @@ const getGoalHours = (sessions, goals=[]) => goals
   .sort((a,b)=>b.hours-a.hours);
 
 /* ── Stats ── */
-const Stats = ({ sessions, purpose={} }) => {
+const Stats = ({ sessions, purpose={}, breaks=[] }) => {
   const [period, setPeriod] = useState("week");
+  const [gainSpan, setGainSpan] = useState(30);
   const today   = todayStr();
   const ws      = getWeekStart();
   const monthPfx= localDate().slice(0,7);
@@ -1419,6 +1602,8 @@ const Stats = ({ sessions, purpose={} }) => {
   const consistency = getConsistency(sessions);
   const goalHours   = getGoalHours(sessions, purpose.goals);
   const ratedCount  = sessions.filter(s=>s.quality>0).length;
+  const gain        = getGain(sessions, gainSpan);
+  const restFx      = getRestEffect(sessions, breaks);
 
   const findings = [
     golden && { icon:"sun", text:<>Your sharpest work happens <b>{golden.best.label}</b> — {golden.best.avg.toFixed(1)}★ on average, against {golden.worst.avg.toFixed(1)}★ {golden.worst.label}.</>,
@@ -1426,6 +1611,11 @@ const Stats = ({ sessions, purpose={} }) => {
     lengthFx && { icon:"timer", text:<>Sessions <b>{lengthFx.best.label}</b> rate highest at {lengthFx.best.avg.toFixed(1)}★; {lengthFx.worst.label} sits at {lengthFx.worst.avg.toFixed(1)}★.</>,
       note:lengthFx.best.label==="over an hour" ? "Long stretches are working for you — defend them." : "Longer is not automatically deeper." },
     bestMode && { icon:"target", text:<><b>{bestMode.mode}</b> is your strongest mode, averaging {bestMode.avg.toFixed(1)}★.</> },
+    restFx && { icon:"coffee",
+      text:<>Sessions after <b>real rest</b> average {restFx.real.toFixed(1)}★; after screens, {restFx.degenerate.toFixed(1)}★.</>,
+      note:restFx.real>restFx.degenerate
+        ? "Emptying the input actually restores you. The scroll only felt like a break."
+        : "Unusual — worth watching before you trust it." },
     consistency && { icon:"calendar", text:<>You showed up on <b>{consistency.days} of the last 30 days</b> — {consistency.pct}%.</>,
       note:consistency.pct>=70 ? "That is the number that compounds." : "Frequency beats intensity. A short session still keeps the chain alive." },
     sinceBest && { icon:"star",
@@ -1447,6 +1637,52 @@ const Stats = ({ sessions, purpose={} }) => {
           {flowSessions>0&&<span className="insight-chip"><Icon name="star" size={11}/><b>{flowSessions}</b> {flowSessions===1?"session":"sessions"} rated 4-5★</span>}
         </div>
       )}
+      {/* ── The Gain — measured backwards, deliberately placed before anything
+             that measures forward. ── */}
+      {gain&&(
+        <div style={{marginBottom:28}}>
+          <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:14,flexWrap:"wrap",margin:"28px 0 4px"}}>
+            <h2 className="h-serif" style={{fontSize:24,margin:0}}>How far you've come</h2>
+            <div className="stats-periods" style={{margin:0}}>
+              {[30,90].map(s=>(
+                <button key={s} className={"stats-period"+(gainSpan===s?" stats-period--active":"")} onClick={()=>setGainSpan(s)}>{s} days</button>
+              ))}
+            </div>
+          </div>
+          <p style={{fontSize:12.5,color:"var(--hf-fg-muted)",lineHeight:1.65,margin:"0 0 14px",maxWidth:620}}>
+            The previous {gainSpan} days against the {gainSpan} before them. Everything below this
+            measures you against where you want to be; this measures you against where you were.
+          </p>
+          <div className="card-s">
+            <div className="gain-grid">
+              {[
+                { label:"Hours focused", then:gain.before.hours.toFixed(1)+"h", now:gain.now.hours.toFixed(1)+"h", d:gain.now.hours-gain.before.hours, fmt:v=>v.toFixed(1)+"h" },
+                { label:"Sessions",      then:gain.before.sessions,             now:gain.now.sessions,             d:gain.now.sessions-gain.before.sessions, fmt:v=>String(v) },
+                { label:"Days shown up", then:gain.before.days,                 now:gain.now.days,                 d:gain.now.days-gain.before.days, fmt:v=>String(v) },
+                { label:"Avg quality",   then:gain.before.quality?gain.before.quality.toFixed(1)+"★":"—",
+                                         now:gain.now.quality?gain.now.quality.toFixed(1)+"★":"—",
+                                         d:(gain.now.quality&&gain.before.quality)?gain.now.quality-gain.before.quality:0, fmt:v=>v.toFixed(1)+"★" },
+              ].map(g=>(
+                <div className="gain" key={g.label}>
+                  <div className="gain__label">{g.label}</div>
+                  <div className="gain__row">
+                    <span className="gain__then">{g.then}</span>
+                    <span className="gain__arrow">→</span>
+                    <span className="gain__now">{g.now}</span>
+                  </div>
+                  <div className={"gain__delta "+(g.d>0?"gain__delta--up":"gain__delta--flat")}>
+                    {g.d>0?`+${g.fmt(g.d)} more than before`:g.d<0?`${g.fmt(g.d)} vs before`:"level"}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p style={{fontSize:13,color:"var(--hf-fg-body)",lineHeight:1.7,margin:"20px 0 0",paddingTop:18,borderTop:"1px solid var(--hf-border)",fontStyle:"italic"}}>
+              What do you know today that you didn't know {gainSpan} days ago?
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── What the data says ── */}
       {sessions.length>0&&(
         <div style={{marginBottom:28}}>
@@ -2122,6 +2358,56 @@ const REFLECT_QS = [
   { id:"tomorrow", q:"One line for tomorrow.",        hint:"The first thing you will touch, decided now so morning-you doesn't have to.", ph:"Tomorrow I start with…" },
 ];
 
+/* Export the day's close as a markdown file matching journal/_template-diario.md
+   in the vault, so the capture layer gets fed without opening Obsidian. */
+const journalMarkdown = ({ date, reflection, sessions, focusedSecs, mitsDone, mitsTotal, byKind, energy }) => {
+  const r = reflection || {};
+  const bullets = sessions.map(s=>`- ${s.startTime||""} · ${s.task} (${fmtDur(s.dur||0)}${s.quality?` · ${"★".repeat(s.quality)}`:""})`).join("\n");
+  return `---
+type: journal-entry
+date: ${date}
+energia: ${energy}
+tags: [hyperfocus]
+---
+
+# ${date}
+
+## 🌀 Captura libre
+${r.advanced || ""}
+
+## 🔁 Un pensamiento que se repitió hoy
+
+
+## 💡 Algo que aprendí, confirmé o cuestioné
+${r.derailed || ""}
+
+## ⚡ Una decisión o acción que tomé
+${r.tomorrow || ""}
+
+## 😶 Algo que me sorprendió, incomodó o no esperaba
+
+
+## 🗣️ Frase del día
+
+>
+
+## 🔗 ¿Esto se parece a algo que ya tengo guardado?
+
+
+---
+
+## 📊 El día según Hyper Focus
+*Generado automáticamente — no editar a mano.*
+
+- **Foco total:** ${focusedSecs?fmtDur(focusedSecs):"—"} en ${sessions.length} ${sessions.length===1?"sesión":"sesiones"}
+- **Prioridades:** ${mitsTotal?`${mitsDone}/${mitsTotal}`:"—"}
+- **Forma del día:** Use ${byKind.use?fmtDur(byKind.use):"—"} · Fill ${byKind.fill?fmtDur(byKind.fill):"—"} · Empty ${byKind.empty?fmtDur(byKind.empty):"—"}
+- **Valoración del día:** ${r.rating?`${"★".repeat(r.rating)} (${r.rating}/5)`:"—"}
+
+${sessions.length?`### Sesiones\n${bullets}`:""}
+`;
+};
+
 const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practiceLog, streak, onEnterDay }) => {
   const today    = todayStr();
   const entry    = rituals[today] || {};
@@ -2140,11 +2426,24 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
   const mitsDone    = plan.tasks.filter((t,i)=>t&&plan.done[i]).length;
   const mitsTotal   = plan.tasks.filter(t=>t).length;
   const practices   = practiceLog.filter(p=>p.date&&localDate(new Date(p.date))===today).length;
+  const byKind      = kindSecs(sessions);
 
   const openDay  = () => { setRituals(r=>({...r,[today]:{...(r[today]||{}),openedAt:new Date().toISOString()}})); onEnterDay(); };
   const closeDay = () => {
     setRituals(r=>({...r,[today]:{...(r[today]||{}),closedAt:new Date().toISOString(),reflection:{...draft}}}));
     setEditing(false);
+  };
+
+  const exportJournal = () => {
+    const md = journalMarkdown({
+      date: today, reflection: entry.reflection, sessions, focusedSecs, mitsDone, mitsTotal, byKind,
+      energy: "🔋".repeat(Math.max(1,Math.min(3,Math.ceil((entry.reflection?.rating||3)/2)))),
+    });
+    const blob=new Blob([md],{type:"text/markdown"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=`${today}.md`; a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Past closings, most recent first
@@ -2220,6 +2519,27 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
               <div><div className="day-figure__label">Priorities</div><div className="day-figure__value">{mitsTotal?<>{mitsDone}<small>/{mitsTotal}</small></>:"—"}</div></div>
               <div><div className="day-figure__label">Practices</div><div className="day-figure__value">{practices||"—"}</div></div>
             </div>
+            {/* Did the day have all three of its moments? */}
+            <div style={{marginTop:24,paddingTop:20,borderTop:"1px solid var(--hf-border)"}}>
+              <div className="eyebrow" style={{marginBottom:10}}>The shape of the day</div>
+              <div className="shape">
+                {KINDS.map(k=>{
+                  const secs=byKind[k.id];
+                  return (
+                    <div className={"shape__item"+(secs>0?" shape__item--on":"")} key={k.id} title={k.blurb}>
+                      <div className="shape__name">{k.label}</div>
+                      <div className="shape__val">{secs?fmtDur(secs):"—"}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.6,margin:"12px 0 0"}}>
+                {byKind.use>0&&byKind.fill===0&&byKind.empty===0
+                  ? "All output, no input and no emptying. That is the shape that burns out."
+                  : "Create, learn, and let the mind idle. A day needs all three."}
+              </p>
+            </div>
+
             {mitsTotal>0&&(
               <div style={{marginTop:24,borderTop:"1px solid var(--hf-border)",paddingTop:6}}>
                 {plan.tasks.map((t,i)=>t?(
@@ -2250,10 +2570,18 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
               ):null)}
               {entry.reflection?.rating&&<div className="quality-stars" style={{fontSize:14,marginTop:10}}>{"★".repeat(entry.reflection.rating)}</div>}
             </div>
-            <button className="btn btn--ghost" style={{marginTop:16,padding:"4px 10px",fontSize:12}}
-              onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
-              Edit
-            </button>
+            <div style={{display:"flex",gap:8,marginTop:16,flexWrap:"wrap",alignItems:"center"}}>
+              <button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}}
+                onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
+                Edit
+              </button>
+              <button className="btn btn--secondary" style={{padding:"4px 10px",fontSize:12}} onClick={exportJournal}>
+                <Icon name="download" size={13}/> Send to second brain
+              </button>
+            </div>
+            <p style={{fontSize:11.5,color:"var(--hf-fg-subtle)",lineHeight:1.6,margin:"10px 0 0"}}>
+              Downloads <code>{today}.md</code> in your vault's daily format — drop it into <code>journal/entries/</code>.
+            </p>
           </div>
         ) : reflectFields}
       </div>
@@ -2297,12 +2625,41 @@ const AutoTextarea = ({ value, onChange, className, placeholder }) => {
 const Purpose = ({ purpose, setPurpose, sessions }) => {
   const [newTitle, setNewTitle] = useState("");
   const [newHours, setNewHours] = useState("");
+  const [protoTrigger, setProtoTrigger] = useState("session-end");
+  const [protoIf, setProtoIf] = useState("");
+  const [protoThen, setProtoThen] = useState("");
   const goals  = purpose.goals || [];
   const active = goals.filter(g=>!g.archived);
   const done   = goals.filter(g=>g.archived);
   const hoursFor = id => sessions.reduce((a,s)=>a+(s.goalId===id?(s.dur||0):0),0)/3600;
 
   const patch = p => setPurpose(prev=>({...prev,...p}));
+  // Stamp the moment the identity was first declared — the votes counted below
+  // are the ones cast since then, not a retroactive tally.
+  const setIdentity = (v) => setPurpose(prev=>({
+    ...prev, identity:v,
+    identitySince: prev.identitySince || (v.trim() ? new Date().toISOString() : null),
+  }));
+  const since = purpose.identitySince ? new Date(purpose.identitySince) : null;
+  const votes = since ? sessions.filter(s=>s.date&&new Date(s.date)>=since) : [];
+  // Take the max date rather than the last element — history order is not guaranteed
+  const lastVote = votes.length ? new Date(Math.max(...votes.map(s=>new Date(s.date)))) : null;
+  const daysAgo = (d) => {
+    const n=Math.floor((new Date(localDate()+"T12:00:00")-new Date(localDate(d)+"T12:00:00"))/86400000);
+    return n===0?"today":n===1?"yesterday":`${n} days ago`;
+  };
+
+  const protocols = purpose.protocols || [];
+  const addProto = () => {
+    const t=protoIf.trim(), a=protoThen.trim();
+    if(!t||!a) return;
+    setPurpose(p=>({...p,protocols:[...(p.protocols||[]),{id:"p"+Date.now(),trigger:protoTrigger,when:t,then:a}]}));
+    setProtoIf(""); setProtoThen("");
+  };
+  const removeProto = (id) => setPurpose(p=>({...p,protocols:(p.protocols||[]).filter(x=>x.id!==id)}));
+
+  const avReviewed = purpose.antiVisionReviewedAt ? new Date(purpose.antiVisionReviewedAt) : null;
+  const avStale = purpose.antiVision && (!avReviewed || (Date.now()-avReviewed)/86400000 >= 30);
   const addGoal = () => {
     const title=newTitle.trim(); if(!title) return;
     const target=Math.min(5000,Math.max(1,parseInt(newHours)||40));
@@ -2359,14 +2716,91 @@ const Purpose = ({ purpose, setPurpose, sessions }) => {
         This line follows you: it sits in the sidebar and above every session you start.
       </p>
 
+      {/* ── Anti-vision ── */}
+      <div className="eyebrow" style={{marginBottom:10}}>Anti-vision</div>
+      <div className="card-s" style={{marginBottom:8,borderLeft:"3px solid var(--hf-bone-400)"}}>
+        <AutoTextarea className="purpose-identity__field" value={purpose.antiVision||""}
+          onChange={v=>patch({antiVision:v})}
+          placeholder="What does your life have that you don't want? Where do you end up if you stay on this road?"/>
+        {purpose.antiVision&&(
+          <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--hf-border)",display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+            <button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}}
+              onClick={()=>patch({antiVisionReviewedAt:new Date().toISOString()})}>
+              <Icon name="check" size={13}/> Reviewed today
+            </button>
+            <span style={{fontSize:12,color:avStale?"var(--hf-sand-700)":"var(--hf-fg-subtle)"}}>
+              {avReviewed ? `Last reviewed ${daysAgo(avReviewed)}.` : "Never reviewed."}
+              {avStale&&" It's built from experience — it goes stale."}
+            </span>
+          </div>
+        )}
+      </div>
+      <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.65,margin:"0 0 40px",maxWidth:560}}>
+        Easier to write than a vision, because you have evidence for it. The two together make a
+        field of tension where inaction costs more than action. Revisit it monthly.
+      </p>
+
+      {/* ── Identity as accumulated evidence ── */}
       <div className="eyebrow" style={{marginBottom:10}}>Identity</div>
       <div className="card-s" style={{marginBottom:8}}>
         <AutoTextarea className="purpose-identity__field" value={purpose.identity||""}
-          onChange={v=>patch({identity:v})}
+          onChange={setIdentity}
           placeholder="I am the kind of person who…"/>
+        {purpose.identity&&since&&(
+          <div className="votes">
+            <span className="votes__n">{votes.length}</span>
+            <span className="votes__label">
+              {votes.length===1?"vote":"votes"} cast for this since you wrote it.
+              {lastVote ? <> Last one <b>{daysAgo(lastVote)}</b>.</> : <> None yet — the first session is the first vote.</>}
+            </span>
+          </div>
+        )}
       </div>
       <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.65,margin:"0 0 40px",maxWidth:560}}>
-        Habits follow identity, not goals. Write who you are becoming, in the present tense.
+        Identity doesn't install through affirmation, it installs through accumulated evidence.
+        Every session you finish is one vote. You don't need to win always — you need the pile to
+        grow until believing it is the only rational conclusion left.
+      </p>
+
+      {/* ── If-then protocols ── */}
+      <div className="eyebrow" style={{marginBottom:10}}>If-then protocols</div>
+      <div className="card-s">
+        {protocols.length===0 && (
+          <p style={{fontSize:13,color:"var(--hf-fg-muted)",margin:"4px 0 16px",lineHeight:1.7}}>
+            Nothing pre-committed yet. Decide the response now, while you're calm — the trigger
+            moment is not when you'll be able to.
+          </p>
+        )}
+        {protocols.map(p=>(
+          <div className="proto" key={p.id}>
+            <div className="proto__when">{TRIGGERS.find(t=>t.id===p.trigger)?.label||p.trigger}</div>
+            <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+              <div className="proto__line" style={{flex:1}}>
+                If <b>{p.when}</b>, then <b>{p.then}</b>.
+              </div>
+              <button className="btn btn--danger" style={{padding:"2px 8px",fontSize:11}} onClick={()=>removeProto(p.id)}>Remove</button>
+            </div>
+          </div>
+        ))}
+        <div style={{marginTop:protocols.length?18:0,paddingTop:protocols.length?16:0,borderTop:protocols.length?"1px solid var(--hf-border)":"none"}}>
+          <div className="kinds" style={{justifyContent:"flex-start",marginBottom:10,flexWrap:"wrap"}}>
+            {TRIGGERS.map(t=>(
+              <button key={t.id} className={"kind"+(protoTrigger===t.id?" kind--on":"")} onClick={()=>setProtoTrigger(t.id)}>{t.label}</button>
+            ))}
+          </div>
+          <div className="goal-new" style={{marginTop:0}}>
+            <input className="input" placeholder="If… (e.g. I feel the pull to open Instagram)"
+              value={protoIf} onChange={e=>setProtoIf(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addProto();}}/>
+            <input className="input" placeholder="…then (e.g. I stand up and get a glass of water)"
+              value={protoThen} onChange={e=>setProtoThen(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addProto();}}/>
+            <button className="btn btn--primary" onClick={addProto}><Icon name="plus" size={14}/> Add</button>
+          </div>
+        </div>
+      </div>
+      <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.65,margin:"8px 0 40px",maxWidth:560}}>
+        Willpower lives in the prefrontal cortex; the impulse fires in the limbic system, which is
+        faster. Pre-deciding removes the deliberation from the moment you'd lose it. Hyper Focus
+        knows exactly when a session ends — it will show you the right one there.
       </p>
 
       <div className="eyebrow" style={{marginBottom:10}}>Goals</div>
@@ -2503,6 +2937,9 @@ const App = () => {
   const [breathDuration, setBreathDuration] = useState(60);
   const [lastDur, setLastDur] = useState(0); // seconds of the session the complete screen is showing
   const [lastExport, setLastExport] = useState(()=>loadLS("hf_lastExport",null));
+  const [kind, setKind]     = useState("use");           // Fill / Empty / Use
+  const [breaks, setBreaks] = useState(()=>loadLS("hf_breaks",[]));
+  const [restAsk, setRestAsk] = useState(null);          // {id} of a break awaiting classification
   const [rituals,     setRituals]     = useState(()=>loadLS("hf_rituals",{}));
   const [purpose,     setPurpose]     = useState(()=>({northStar:"",identity:"",goals:[],activeGoalId:null,...loadLS("hf_purpose",{})}));
   const activeGoalId = purpose.activeGoalId || null;
@@ -2534,6 +2971,7 @@ const App = () => {
   usePersist("hf_practices", practiceLog);
   usePersist("hf_purpose",   purpose);
   usePersist("hf_rituals",   rituals);
+  usePersist("hf_breaks",    breaks);
 
   /* Storage health — runs after the persistence effects above, every render */
   const [storageWarn, setStorageWarn] = useState(false);
@@ -2600,7 +3038,7 @@ const App = () => {
       const id=Date.now();
       lastSessionIdRef.current=id;
       setLastDur(session.total);
-      setHistory(h=>[...h,{id,startTime:sessionStartRef.current||nowTime(),time:nowTime(),date:new Date().toISOString(),task:task||"Untitled session.",mode:session.mode,dur:session.total,goalId:activeGoalId}]);
+      setHistory(h=>[...h,{id,startTime:sessionStartRef.current||nowTime(),time:nowTime(),date:new Date().toISOString(),task:task||"Untitled session.",mode:session.mode,dur:session.total,goalId:activeGoalId,kind}]);
       setPhase("complete");
     }
   },[session.remaining,phase]);
@@ -2610,6 +3048,10 @@ const App = () => {
     if(phase==="break"&&breakRem===0){
       playChime();
       sendNotif("Hyper Focus · Break over","Ready for your next session.");
+      // Log the break so its kind can later be correlated with the next session
+      const bid=Date.now();
+      setBreaks(bs=>[...bs,{id:bid,date:new Date().toISOString(),dur:breakTotalRef.current,type:null}]);
+      setRestAsk({id:bid});
       setSession(s=>({...s,remaining:s.total,index:s.index+1}));
       setQuote(randQuote());
       setPhase("idle");
@@ -2727,6 +3169,7 @@ const App = () => {
         mode:      session.mode,
         dur:       elapsed,
         goalId:    activeGoalId,
+        kind,
       }]);
       setPhase("complete");
     } else {
@@ -2753,6 +3196,11 @@ const App = () => {
   const onDeleteSession = (id) => { setHistory(h=>h.filter(s=>s.id!==id)); };
   const onAdd5min       = ()     => { setSession(s=>({...s,total:s.total+300,remaining:s.remaining+300})); };
   const onLogPractice   = (entry)=> { setPracticeLog(l=>[...l,entry]); };
+  const classifyRest    = (type) => {
+    const id=restAsk?.id; if(id==null) return;
+    setBreaks(bs=>bs.map(b=>b.id===id?{...b,type}:b));
+    setRestAsk(null);
+  };
   const onManualEntry   = (text, slotStart, slotEnd) => {
     setTrackerEntries(es=>[...es,{
       id:        Date.now(),
@@ -2876,9 +3324,10 @@ const App = () => {
 
         {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
                                 lastDur={lastDur} streak={calcStreak(history)} todaySecs={todayHistory.reduce((a,s)=>a+(s.dur||0),0)}
-                                goalHours={activeGoalId?history.reduce((a,s)=>a+(s.goalId===activeGoalId?(s.dur||0):0),0)/3600:0}/>}
+                                goalHours={activeGoalId?history.reduce((a,s)=>a+(s.goalId===activeGoalId?(s.dur||0):0),0)/3600:0}
+                                protocols={purpose.protocols} kind={kind} setKind={setKind}/>}
         {view==="today"    && <Today sessions={todayHistory} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
-        {view==="stats"    && <Stats sessions={history} purpose={purpose}/>}
+        {view==="stats"    && <Stats sessions={history} purpose={purpose} breaks={breaks}/>}
         {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
         {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
         {view==="planning" && <Planning mits={mits} setMits={setMits}/>}
@@ -2891,6 +3340,22 @@ const App = () => {
         {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}
                                 lastExport={lastExport} hasData={history.length>0}/>}
       </main>
+      {restAsk && (
+        <div className="tracker-toast">
+          <div className="tracker-toast__header">
+            <span className="tracker-toast__label">That break</span>
+            <button className="iconbtn" onClick={()=>setRestAsk(null)} aria-label="Dismiss"><Icon name="x" size={14}/></button>
+          </div>
+          <div style={{fontSize:14,lineHeight:1.6,color:"var(--hf-fg-body)"}}>
+            Was there input coming in, or not? That — not whether it was pleasant — is what decides
+            whether your nervous system actually recovered.
+          </div>
+          <div className="tracker-toast__actions">
+            <button className="btn btn--primary" onClick={()=>classifyRest("real")}>No input — real rest</button>
+            <button className="btn btn--secondary" onClick={()=>classifyRest("degenerate")}>Screens, feeds, noise</button>
+          </div>
+        </div>
+      )}
       {trackerPrompt && <TrackerPrompt onSave={logEntry} onSkip={()=>setTrackerPrompt(false)} periodStart={trackerPeriodStart}/>}
       {manualEntry && <TrackerManualEntry onSave={(text,s,e)=>{ onManualEntry(text,s,e); setManualEntry(false); }} onClose={()=>setManualEntry(false)}/>}
       {cmdk && <CmdK onClose={()=>setCmdk(false)} onAction={cmdAction}/>}
