@@ -309,6 +309,29 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .tracker-entry__dur  { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-subtle); text-align:right; padding-top:2px; }
 .tracker-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
 
+/* ── Tracker day calendar ── */
+.cal { display:flex; border:1px solid var(--hf-border); border-radius:10px; background:var(--hf-bg-raised); overflow-y:auto; max-height:600px; box-shadow:var(--hf-shadow-sm); }
+.cal__hours { width:54px; flex-shrink:0; position:relative; }
+.cal__hourlabel { position:absolute; right:10px; transform:translateY(-50%); font-family:var(--hf-font-mono); font-size:9.5px; color:var(--hf-fg-subtle); }
+.cal__grid { flex:1; position:relative; border-left:1px solid var(--hf-border); cursor:crosshair; }
+.cal__line { position:absolute; left:0; right:0; border-top:1px solid var(--hf-border); pointer-events:none; }
+.cal__line--half { opacity:.35; }
+.cal__block { position:absolute; left:6px; right:12px; background:var(--hf-sand-50); border:1px solid var(--hf-sand-200); border-left:3px solid var(--hf-sand-400);
+  border-radius:5px; padding:2px 26px 2px 8px; overflow:hidden; cursor:default; }
+.cal__block:hover { border-color:var(--hf-sand-300); }
+.cal__block__text { font-size:11.5px; color:var(--hf-fg); line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cal__block__time { font-family:var(--hf-font-mono); font-size:9px; color:var(--hf-fg-muted); white-space:nowrap; }
+.cal__block__del { position:absolute; top:2px; right:4px; opacity:0; transition:opacity 120ms; padding:2px; color:var(--hf-fg-muted); line-height:0; }
+.cal__block:hover .cal__block__del { opacity:1; }
+.cal__block__del:hover { color:#C0392B; }
+[data-theme="dark"] .cal__block { background:rgba(211,184,135,.09); border-color:rgba(211,184,135,.25); border-left-color:var(--hf-accent); }
+.cal__ghost { position:absolute; left:6px; right:12px; background:rgba(200,169,126,.18); border:1px dashed var(--hf-sand-400); border-radius:5px; pointer-events:none;
+  display:flex; align-items:center; justify-content:center; font-family:var(--hf-font-mono); font-size:10px; color:var(--hf-sand-700); }
+[data-theme="dark"] .cal__ghost { color:var(--hf-accent); }
+.cal__now { position:absolute; left:0; right:0; border-top:1.5px solid #C0392B; pointer-events:none; z-index:2; }
+.cal__now::before { content:""; position:absolute; left:-3px; top:-4px; width:7px; height:7px; border-radius:50%; background:#C0392B; }
+@media (hover: none) { .cal__block__del { opacity:1; } .cal__grid { cursor:default; } }
+
 /* ── Star rating ── */
 .star-rate { margin-top:24px; text-align:center; }
 .star-rate__label { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:14px; }
@@ -358,6 +381,41 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 [data-theme="dark"] .heatmap__cell--l4 { background:var(--hf-accent); }
 .heatmap__months { display:flex; gap:3px; margin-bottom:6px; }
 .heatmap__months span { font-size:9px; color:var(--hf-fg-subtle); letter-spacing:.06em; text-transform:uppercase; font-family:var(--hf-font-mono); }
+
+/* ── War Map ── */
+.wm-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.wm-month { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:16px 16px 14px; }
+.wm-month--current { border-color:var(--hf-sand-300); }
+[data-theme="dark"] .wm-month--current { border-color:rgba(211,184,135,.4); }
+.wm-month__name { font-family:var(--hf-font-serif); font-size:17px; color:var(--hf-fg); margin-bottom:10px; display:flex; justify-content:space-between; align-items:baseline; }
+.wm-month__hours { font-family:var(--hf-font-mono); font-size:10px; color:var(--hf-fg-muted); }
+.wm-days { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.wm-cell { aspect-ratio:1; border-radius:3px; background:var(--hf-bone-100); display:flex; align-items:center; justify-content:center;
+  font-family:var(--hf-font-mono); font-size:8.5px; color:var(--hf-fg-subtle); position:relative; }
+.wm-cell--empty { background:transparent; }
+.wm-cell--future { opacity:.45; }
+.wm-cell--l1 { background:rgba(200,169,126,.3);  color:var(--hf-fg-body); }
+.wm-cell--l2 { background:rgba(200,169,126,.55); color:var(--hf-fg); }
+.wm-cell--l3 { background:rgba(200,169,126,.8);  color:#FBFAF7; }
+.wm-cell--l4 { background:var(--hf-sand-500); color:#FBFAF7; }
+.wm-cell--today { outline:1.5px solid var(--hf-sand-600); outline-offset:1px; }
+.wm-cell--closed::after { content:""; position:absolute; bottom:1.5px; left:50%; transform:translateX(-50%); width:3px; height:3px; border-radius:50%; background:var(--hf-success); }
+[data-theme="dark"] .wm-cell { background:#211F1A; }
+[data-theme="dark"] .wm-cell--empty { background:transparent; }
+[data-theme="dark"] .wm-cell--l1 { background:rgba(211,184,135,.22); }
+[data-theme="dark"] .wm-cell--l2 { background:rgba(211,184,135,.45); }
+[data-theme="dark"] .wm-cell--l3 { background:rgba(211,184,135,.7); color:#12110E; }
+[data-theme="dark"] .wm-cell--l4 { background:var(--hf-accent); color:#12110E; }
+.wm-obj { width:100%; border:0; border-top:1px solid var(--hf-border); background:transparent; outline:none; resize:none; overflow:hidden;
+  font-family:var(--hf-font-sans); font-size:11.5px; line-height:1.5; color:var(--hf-fg-body); margin-top:10px; padding:8px 0 0; display:block; }
+.wm-obj::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+.wm-key { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:14px 0 24px; font-size:11px; color:var(--hf-fg-muted); }
+.wm-key__item { display:inline-flex; align-items:center; gap:6px; }
+.wm-key__swatch { width:12px; height:12px; border-radius:3px; }
+.wm-rule { display:flex; gap:10px; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--hf-border); }
+.wm-rule:last-child { border-bottom:0; }
+.wm-rule__n { font-family:var(--hf-font-mono); font-size:12px; color:var(--hf-fg-subtle); flex-shrink:0; }
+@media (max-width: 860px) { .wm-grid { grid-template-columns:1fr; } }
 
 /* ── Purpose ── */
 .rail__star { font-family:var(--hf-font-serif); font-style:italic; font-size:12.5px; line-height:1.45; color:var(--hf-fg-muted); padding:0 8px 14px; margin-top:-8px; border-bottom:1px solid var(--hf-border); margin-bottom:4px; white-space:normal; }
@@ -774,7 +832,7 @@ const PRACTICES = [
    ever read a half-written state. IndexedDB is a mirror: it survives some things
    localStorage does not (per-site storage clears, quota pressure), and gives us
    something to restore from if localStorage ever comes back empty. */
-const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks","hf_weekly"];
+const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks","hf_weekly","hf_warmap"];
 
 const IDB = (() => {
   const DB="hyperfocus", STORE="kv";
@@ -966,7 +1024,7 @@ const Mark = ({ size=22, theme="light" }) => {
 
 /* ── Rail ── */
 const NAV = [
-  { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"week",label:"The Week",icon:"trend"},{id:"purpose",label:"Purpose",icon:"compass"}] },
+  { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"week",label:"The Week",icon:"trend"},{id:"warmap",label:"War Map",icon:"flag"},{id:"purpose",label:"Purpose",icon:"compass"}] },
   { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
   { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
 ];
@@ -2001,6 +2059,7 @@ const CmdK = ({ onClose, onAction }) => {
     {id:"pause",   label:"Pause session",   icon:"pause",  kbd:"Space"},
     {id:"day",     label:"The Day — open or close",icon:"sun"},
     {id:"week",    label:"The Week — review", icon:"trend"},
+    {id:"warmap",  label:"War Map — the year",icon:"flag"},
     {id:"purpose", label:"Purpose & goals",  icon:"compass"},
     {id:"today",   label:"Go to today",     icon:"calendar"},
     {id:"stats",   label:"Go to stats",     icon:"stats"},
@@ -2060,76 +2119,185 @@ const TrackerPrompt = ({ onSave, onSkip, periodStart }) => {
   );
 };
 
-/* ── Tracker manual entry ── */
-const TrackerManualEntry = ({ onSave, onClose }) => {
-  const slots = getPastSlots();
-  const [slotIdx, setSlotIdx] = useState(0);
+/* ── Tracker entry form — any start, any end, down to 5 minutes ── */
+const minOfDay  = (hhmm) => { const [h,m]=hhmm.split(":").map(Number); return h*60+m; };
+const hhmmOfMin = (m) => `${String(Math.floor(m/60)%24).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
+
+const TrackerEntryForm = ({ start, end, onSave, onClose }) => {
+  const [s, setS] = useState(hhmmOfMin(start));
+  const [e, setE] = useState(hhmmOfMin(end));
   const [val, setVal] = useState("");
   const ref = useRef(null);
   useEffect(()=>{ setTimeout(()=>ref.current?.focus(),50); },[]);
-  const save = () => {
-    const t=val.trim();
-    if(!t||!slots[slotIdx]) return;
-    onSave(t, slots[slotIdx].start, slots[slotIdx].end);
-  };
+  const sMin=minOfDay(s), eMin=minOfDay(e);
+  const valid = val.trim() && eMin>sMin;
+  const save = () => { if(valid) onSave(val.trim(), sMin, eMin); };
   return (
     <div className="tracker-toast">
       <div className="tracker-toast__header">
         <span className="tracker-toast__label">New entry</span>
         <button className="iconbtn" onClick={onClose} style={{marginRight:-6}}><Icon name="x" size={14}/></button>
       </div>
-      {slots.length===0
-        ? <p style={{fontSize:13,color:"var(--hf-fg-muted)",margin:"0 0 14px",fontStyle:"italic"}}>No completed periods yet today — check back after the first 30 minutes.</p>
-        : <select className="input" style={{marginBottom:16,fontSize:14}}
-            value={slotIdx} onChange={e=>setSlotIdx(Number(e.target.value))}>
-            {slots.map((s,i)=><option key={i} value={i}>{s.label}</option>)}
-          </select>
-      }
-      <input ref={ref} className="tracker-toast__input" placeholder="What were you working on?"
-        value={val} onChange={e=>setVal(e.target.value)}
-        onKeyDown={e=>{ if(e.key==="Enter") save(); if(e.key==="Escape") onClose(); }}/>
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:14,flexWrap:"wrap"}}>
+        <input className="input" type="time" step="300" value={s} onChange={ev=>setS(ev.target.value)} style={{width:110,fontFamily:"var(--hf-font-mono)"}}/>
+        <span style={{color:"var(--hf-fg-subtle)"}}>—</span>
+        <input className="input" type="time" step="300" value={e} onChange={ev=>setE(ev.target.value)} style={{width:110,fontFamily:"var(--hf-font-mono)"}}/>
+        <span style={{fontFamily:"var(--hf-font-mono)",fontSize:11,color:eMin>sMin?"var(--hf-fg-muted)":"#C0392B"}}>
+          {eMin>sMin?fmtMins(eMin-sMin):"end before start"}
+        </span>
+      </div>
+      <input ref={ref} className="tracker-toast__input" placeholder="What were you doing?"
+        value={val} onChange={ev=>setVal(ev.target.value)}
+        onKeyDown={ev=>{ if(ev.key==="Enter") save(); if(ev.key==="Escape") onClose(); }}/>
       <div className="tracker-toast__actions">
-        <button className="btn btn--primary" onClick={save} disabled={!val.trim()||slots.length===0}>Log</button>
+        <button className="btn btn--primary" onClick={save} disabled={!valid}>Log</button>
         <button className="btn btn--ghost" onClick={onClose}>Cancel</button>
       </div>
     </div>
   );
 };
 
-/* ── Tracker view ── */
-const Tracker = ({ entries, countdown, enabled=true, onLogNow, onNewEntry }) => {
+/* ── Tracker view — the day as a calendar ─────────────────────────────────
+   Drag on the grid to create an entry of ANY length (snapped to 5 min), like
+   a calendar. On touch devices drag is left to scrolling — "New entry" opens
+   the same form with free start/end times. */
+const HOUR_PX = 48;         // one hour of the day, in pixels
+const CAL_SNAP = 5;         // minutes
+const Tracker = ({ allEntries, countdown, enabled=true, onLogNow, onAddEntry, onDeleteEntry }) => {
   const fmtC=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
   const now=new Date();
-  const dStr=now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const today=todayStr();
+
+  // The calendar is a real calendar: every logged day stays, and you can walk
+  // back to it. Entries pin to their date forever; today is just the default.
+  const [day, setDay] = useState(today);
+  const isToday = day===today;
+  const shiftDay = (n) => setDay(d=>{ const dt=new Date(d+"T12:00:00"); dt.setDate(dt.getDate()+n); const nd=localDate(dt); return nd>today?today:nd; });
+  const entries = allEntries.filter(e=>e.date&&localDate(new Date(e.date))===day);
+  const loggedDays = new Set(allEntries.filter(e=>e.date).map(e=>localDate(new Date(e.date))));
+
+  const dStr=new Date(day+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
   const totalMins=entries.reduce((a,e)=>a+(e.duration||0),0);
+
+  const [drag,  setDrag]  = useState(null);   // {a,b} minutes while dragging
+  const [draft, setDraft] = useState(null);   // {start,end} → entry form open
+  const gridRef   = useRef(null);
+  const scrollRef = useRef(null);
+  const dragRef   = useRef(null);
+  useEffect(()=>{ dragRef.current=drag; },[drag]);
+
+  // Land the viewport on the working part of the day, not on 00:00.
+  useEffect(()=>{
+    const el=scrollRef.current; if(!el) return;
+    const target=Math.max(0,(Math.min(nowMin,20*60)-120)/60*HOUR_PX);
+    el.scrollTop=target;
+  },[]);
+
+  const minToY = m => m/60*HOUR_PX;
+  const snap   = m => Math.round(m/CAL_SNAP)*CAL_SNAP;
+  const minAt  = (clientY) => {
+    const r=gridRef.current.getBoundingClientRect();
+    return Math.max(0,Math.min(24*60,(clientY-r.top)/HOUR_PX*60));
+  };
+
+  const onDown = (e) => {
+    if(e.pointerType!=="mouse") return;               // touch scrolls; button covers mobile
+    if(e.target.closest(".cal__block")) return;       // blocks are not a drawing surface
+    const m=snap(minAt(e.clientY));
+    setDrag({a:m,b:m});
+    try { gridRef.current.setPointerCapture(e.pointerId); } catch(err) {}
+  };
+  const onMove = (e) => { if(dragRef.current) setDrag(d=>({...d,b:snap(minAt(e.clientY))})); };
+  const onUp   = () => {
+    const d=dragRef.current; if(!d) return;
+    setDrag(null);
+    const s=Math.min(d.a,d.b), en=Math.max(d.a,d.b);
+    // a plain click (no real drag) proposes a 30-min block starting there
+    setDraft(en-s>=CAL_SNAP ? {start:s,end:en} : {start:s,end:Math.min(s+30,24*60)});
+  };
+
+  const blocks=[...entries]
+    .map(e=>({...e, s:minOfDay(e.startTime), e:Math.max(minOfDay(e.endTime),minOfDay(e.startTime)+CAL_SNAP)}))
+    .sort((a,b)=>a.s-b.s);
+
   return (
     <div className="page">
-      <div style={{marginBottom:28}}><div className="eyebrow">{dStr}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Time tracker</h1></div>
+      <div style={{marginBottom:28}}>
+        <div className="eyebrow">{dStr}{isToday?"":" · past day"}</div>
+        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+          <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Time tracker</h1>
+          <div style={{display:"flex",gap:4,alignItems:"center",marginTop:8}}>
+            <button className="iconbtn" title="Previous day" onClick={()=>shiftDay(-1)} style={{transform:"rotate(180deg)"}}><Icon name="chevronRight" size={15}/></button>
+            <button className="iconbtn" title="Next day" onClick={()=>shiftDay(1)} disabled={isToday} style={isToday?{opacity:.3,cursor:"default"}:{}}><Icon name="chevronRight" size={15}/></button>
+            {!isToday&&<button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}} onClick={()=>setDay(today)}>Back to today</button>}
+          </div>
+        </div>
+      </div>
       <div className="card-s" style={{marginBottom:28}}>
         <div className="tracker-summary">
           <div className="kpi"><div className="kpi__label">Next check-in</div><div className="kpi__value" style={{fontSize:32}}>{enabled?fmtC(countdown):<span style={{color:"var(--hf-fg-subtle)",fontSize:16}}>Off</span>}</div></div>
-          <div className="kpi"><div className="kpi__label">Entries today</div><div className="kpi__value" style={{fontSize:32}}>{entries.length}</div></div>
+          <div className="kpi"><div className="kpi__label">{isToday?"Entries today":"Entries that day"}</div><div className="kpi__value" style={{fontSize:32}}>{entries.length}</div></div>
           <div className="kpi"><div className="kpi__label">Time logged</div><div className="kpi__value" style={{fontSize:32}}>{totalMins>0?<span>{fmtMins(totalMins)}</span>:<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
         </div>
         <div style={{marginTop:20,display:"flex",gap:8,flexWrap:"wrap"}}>
           <button className="btn btn--primary" onClick={onLogNow}><Icon name="plus" size={14}/> Log now</button>
-          <button className="btn btn--secondary" onClick={onNewEntry}><Icon name="calendar" size={14}/> New entry</button>
+          <button className="btn btn--secondary" onClick={()=>setDraft({start:snap(Math.max(0,nowMin-60)),end:snap(nowMin)||30})}><Icon name="calendar" size={14}/> New entry</button>
         </div>
       </div>
+
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:12}}>
-        <h2 className="h-serif" style={{fontSize:24,margin:0}}>Today's log</h2>
-        {entries.length>0&&<span style={{fontSize:12,color:"var(--hf-fg-muted)",fontFamily:"var(--hf-font-mono)"}}>{entries.length} {entries.length===1?"entry":"entries"}</span>}
+        <h2 className="h-serif" style={{fontSize:24,margin:0}}>The day</h2>
+        <span style={{fontSize:12,color:"var(--hf-fg-muted)"}}>Drag on the grid to log any stretch of time — down to 5 minutes.</span>
       </div>
-      <div className="tracker-timeline">
-        {entries.length===0&&<div style={{padding:"32px 0",color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic"}}>Nothing logged yet. First check-in in {fmtC(countdown)}.</div>}
-        {[...entries].sort((a,b)=>a.startTime.localeCompare(b.startTime)).map((e,i)=>(
-          <div key={i} className="tracker-entry">
-            <span className="tracker-entry__time">{e.startTime} — {e.endTime}</span>
-            <span className="tracker-entry__text">{e.text}</span>
-            <span className="tracker-entry__dur">{e.duration!=null?fmtMins(e.duration):"—"}</span>
-          </div>
-        ))}
+
+      <div className="cal" ref={scrollRef}>
+        <div className="cal__hours" style={{height:24*HOUR_PX}}>
+          {Array.from({length:23},(_,i)=>i+1).map(h=>(
+            <span key={h} className="cal__hourlabel" style={{top:minToY(h*60)}}>{String(h).padStart(2,"0")}:00</span>
+          ))}
+        </div>
+        <div className="cal__grid" ref={gridRef} style={{height:24*HOUR_PX}}
+          onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={()=>setDrag(null)}>
+          {Array.from({length:47},(_,i)=>i+1).map(i=>(
+            <div key={i} className={"cal__line"+(i%2?" cal__line--half":"")} style={{top:minToY(i*30)}}/>
+          ))}
+          {blocks.map(b=>(
+            <div key={b.id} className="cal__block" style={{top:minToY(b.s),height:Math.max(14,minToY(b.e-b.s))}}
+              title={`${b.startTime} — ${b.endTime} · ${b.duration!=null?fmtMins(b.duration):""}\n${b.text}`}>
+              <div className="cal__block__text">{b.text}</div>
+              {b.e-b.s>=25&&<div className="cal__block__time">{b.startTime} — {b.endTime} · {fmtMins(b.duration||b.e-b.s)}</div>}
+              <button className="cal__block__del" title="Delete entry"
+                onPointerDown={e=>e.stopPropagation()} onClick={()=>onDeleteEntry(b.id)}>
+                <Icon name="x" size={11}/>
+              </button>
+            </div>
+          ))}
+          {drag&&(()=>{ const s=Math.min(drag.a,drag.b), en=Math.max(drag.a,drag.b); return (
+            <div className="cal__ghost" style={{top:minToY(s),height:Math.max(10,minToY(en-s))}}>
+              {hhmmOfMin(s)} — {hhmmOfMin(en)}{en>s?` · ${fmtMins(en-s)}`:""}
+            </div>
+          );})()}
+          {isToday&&<div className="cal__now" style={{top:minToY(nowMin)}}/>}
+        </div>
       </div>
+
+      {entries.length===0&&(
+        <p style={{fontSize:13,color:"var(--hf-fg-muted)",fontStyle:"italic",marginTop:14}}>
+          {isToday
+            ? <>Nothing logged yet. Drag on the grid, or wait for the check-in ({enabled?fmtC(countdown):"off"}).</>
+            : <>Nothing was logged this day. You can still fill it in — drag on the grid.</>}
+        </p>
+      )}
+      {loggedDays.size>1&&(
+        <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:8}}>
+          {loggedDays.size} days logged so far — use the arrows to walk back through them.
+        </p>
+      )}
+
+      {draft&&<TrackerEntryForm start={draft.start} end={draft.end}
+        onSave={(text,s,en)=>{ onAddEntry(text,s,en,day); setDraft(null); }}
+        onClose={()=>setDraft(null)}/>}
     </div>
   );
 };
@@ -2328,13 +2496,13 @@ const REFLECT_QS = [
   { id:"tomorrow", q:"One line for tomorrow.",        hint:"The first thing you will touch, decided now so morning-you doesn't have to.", ph:"Tomorrow I start with…" },
 ];
 
-/* Optional questions that map 1:1 to sections of the vault's daily template.
-   All optional — a 3-line entry counts the same as a 30-line one. */
+/* Optional questions that map 1:1 to sections of the vault's daily template
+   (simplified 2026-08-01). All optional — a 3-line entry counts the same as a
+   30-line one. "¿Cómo puedo mejorar?" is separate and always visible. */
 const JOURNAL_QS = [
-  { id:"freeform", q:"Captura libre",                          hint:"Whatever it is, unfiltered. Start with \"hoy fue…\" if nothing comes.", ph:"Hoy fue…" },
-  { id:"repeated", q:"A thought that kept coming back",        hint:"The idea that returned all day, even if you don't know why.", ph:"No dejé de pensar en…" },
-  { id:"surprised",q:"Something that surprised or unsettled you", hint:"Discomfort is information — don't filter it.", ph:"No esperaba…" },
-  { id:"phrase",   q:"Phrase of the day",                      hint:"Yours or borrowed. If there is none, invent one — the day in one line.", ph:"…" },
+  { id:"freeform", q:"Captura libre",           hint:"Whatever it is, unfiltered. Start with \"hoy fue…\" if nothing comes.", ph:"Hoy fue…" },
+  { id:"learned",  q:"Something I learned today", hint:"From a book, a mistake, a customer, a number in Dropi — whatever.", ph:"Aprendí que…" },
+  { id:"phrase",   q:"Phrase of the day",        hint:"Yours or borrowed. If there is none, invent one — the day in one line.", ph:"…" },
 ];
 
 /* Export the day's close as a markdown file matching journal/_template-diario.md
@@ -2357,23 +2525,18 @@ tags: [hyperfocus]
 ## 🌀 Captura libre
 ${r.freeform || ""}
 
-## 🔁 Un pensamiento que se repitió hoy
-${r.repeated || ""}
+## 💡 Algo que aprendí hoy
+${r.learned || ""}
 
-## 💡 Algo que aprendí, confirmé o cuestioné
+## 📈 ¿Cómo puedo mejorar?
 
-
-## ⚡ Una decisión o acción que tomé
-
-
-## 😶 Algo que me sorprendió, incomodó o no esperaba
-${r.surprised || ""}
+1. ${r.improve1 || ""}
+2. ${r.improve2 || ""}
+3. ${r.improve3 || ""}
 
 ## 🗣️ Frase del día
 
 >${r.phrase ? " "+r.phrase : ""}
-
-## 🔗 ¿Esto se parece a algo que ya tengo guardado?
 
 
 ---
@@ -2402,7 +2565,7 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
   const entry    = rituals[today] || {};
   const opened   = !!entry.openedAt;
   const closed   = !!entry.closedAt;
-  const [draft, setDraft]   = useState(()=>({advanced:"",derailed:"",tomorrow:"",freeform:"",repeated:"",surprised:"",phrase:"",rating:null, ...(rituals[todayStr()]?.reflection||{})}));
+  const [draft, setDraft]   = useState(()=>({advanced:"",derailed:"",tomorrow:"",freeform:"",learned:"",phrase:"",improve1:"",improve2:"",improve3:"",rating:null, ...(rituals[todayStr()]?.reflection||{})}));
   const [editing, setEditing] = useState(false);
   const [journalOpen, setJournalOpen] = useState(false);
   const hour     = new Date().getHours();
@@ -2481,6 +2644,17 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
             value={draft[r.id]||""} onChange={v=>setDraft(d=>({...d,[r.id]:v}))}/>
         </div>
       ))}
+      {/* ¿Cómo puedo mejorar? — three concrete slots, from the Daily Planner. */}
+      <div className="reflect">
+        <div className="reflect__q">How can I improve?<span>Three concrete things for tomorrow. Tiny ones count the same as big ones.</span></div>
+        {[1,2,3].map(n=>(
+          <div key={n} style={{display:"flex",gap:10,alignItems:"baseline",marginBottom:6}}>
+            <span style={{fontFamily:"var(--hf-font-mono)",fontSize:12,color:"var(--hf-fg-subtle)",flexShrink:0}}>{n}.</span>
+            <AutoTextarea className="reflect__field" placeholder={["Mañana puedo…","Otra cosa…","Una más…"][n-1]}
+              value={draft["improve"+n]||""} onChange={v=>setDraft(d=>({...d,["improve"+n]:v}))}/>
+          </div>
+        ))}
+      </div>
       {/* Optional journal capture — feeds journal/entries/ in the vault. */}
       <div className="reflect" style={{borderBottom:journalOpen?"":0}}>
         <button className="btn btn--ghost" style={{padding:"4px 0",fontSize:12.5}} onClick={()=>setJournalOpen(v=>!v)}>
@@ -2607,11 +2781,16 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
               {REFLECT_QS.map(r=>entry.reflection?.[r.id]?(
                 <div className="day-log__line" key={r.id}><b>{r.q}</b>{entry.reflection[r.id]}</div>
               ):null)}
+              {[1,2,3].some(n=>entry.reflection?.["improve"+n])&&(
+                <div className="day-log__line"><b>How can I improve?</b>
+                  {[1,2,3].map(n=>entry.reflection?.["improve"+n]?<div key={n}>{n}. {entry.reflection["improve"+n]}</div>:null)}
+                </div>
+              )}
               {entry.reflection?.rating&&<div className="quality-stars" style={{fontSize:14,marginTop:10}}>{"★".repeat(entry.reflection.rating)}</div>}
             </div>
             <div style={{display:"flex",gap:8,marginTop:16,flexWrap:"wrap",alignItems:"center"}}>
               <button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}}
-                onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",freeform:"",repeated:"",surprised:"",phrase:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
+                onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",freeform:"",learned:"",phrase:"",improve1:"",improve2:"",improve3:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
                 Edit
               </button>
               <button className="btn btn--secondary" style={{padding:"4px 10px",fontSize:12}} onClick={exportJournal}>
@@ -2673,6 +2852,111 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+/* ── War Map ──────────────────────────────────────────────────────────────
+   The year at war-room altitude: twelve months, every day colored by the focus
+   it actually held. Unlike the spreadsheet it comes from, nothing is painted by
+   hand — the color IS the data. Objectives per month and five standing rules. */
+const WarMap = ({ warmap, setWarmap, sessions, rituals }) => {
+  const year = new Date().getFullYear();
+  const today = todayStr();
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  // minutes of focus per local day
+  const dayMins = {};
+  sessions.forEach(s=>{ if(s.date){ const d=localDate(new Date(s.date)); dayMins[d]=(dayMins[d]||0)+Math.floor((s.dur||0)/60); } });
+  const level = (m) => m===0?0:m<20?1:m<45?2:m<90?3:4;
+
+  const objectives = warmap.objectives||{};
+  const rules = warmap.rules||["","","","",""];
+  const setObjective = (key,v) => setWarmap(w=>({...w,objectives:{...(w.objectives||{}),[key]:v}}));
+  const setRule = (i,v) => setWarmap(w=>{ const r=[...(w.rules||["","","","",""])]; r[i]=v; return {...w,rules:r}; });
+
+  const monthCells = (mi) => {
+    const first=new Date(year,mi,1);
+    const pad=(first.getDay()+6)%7;                    // Monday-first offset
+    const days=new Date(year,mi+1,0).getDate();
+    const cells=[];
+    for(let i=0;i<pad;i++) cells.push(null);
+    for(let d=1;d<=days;d++){
+      const key=`${year}-${String(mi+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      cells.push({ d, key, mins:dayMins[key]||0, closed:!!rituals[key]?.closedAt, rating:rituals[key]?.reflection?.rating });
+    }
+    return cells;
+  };
+  const monthHours = (mi) => {
+    const pfx=`${year}-${String(mi+1).padStart(2,"0")}`;
+    const mins=Object.entries(dayMins).filter(([k])=>k.startsWith(pfx)).reduce((a,[,m])=>a+m,0);
+    return mins>=60?`${(mins/60).toFixed(0)}h`:mins>0?`${mins}m`:"";
+  };
+  const curMonth = new Date().getMonth();
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:20}}>
+        <div className="eyebrow">{year}</div>
+        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>War Map</h1>
+        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8,lineHeight:1.7,maxWidth:620}}>
+          The whole year in one glance. Nothing here is painted by hand — every day carries the
+          color of the focus it actually held. The map doesn't lie, so the only way to color it
+          is to show up.
+        </p>
+      </div>
+
+      <div className="wm-key">
+        <span className="wm-key__item"><span className="wm-key__swatch" style={{background:"var(--hf-bone-100)",border:"1px solid var(--hf-border)"}}/>no focus</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l1"/>&lt;20m</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l2"/>&lt;45m</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l3"/>&lt;90m</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l4"/>90m+</span>
+        <span className="wm-key__item"><span style={{width:5,height:5,borderRadius:"50%",background:"var(--hf-success)",display:"inline-block"}}/>day closed</span>
+      </div>
+
+      <div className="wm-grid">
+        {MONTHS.map((name,mi)=>{
+          const key=`${year}-${String(mi+1).padStart(2,"0")}`;
+          return (
+            <div key={mi} className={"wm-month"+(mi===curMonth?" wm-month--current":"")}>
+              <div className="wm-month__name">{name}<span className="wm-month__hours">{monthHours(mi)}</span></div>
+              <div className="wm-days">
+                {monthCells(mi).map((c,i)=>c===null
+                  ? <div key={i} className="wm-cell wm-cell--empty"/>
+                  : <div key={i}
+                      className={"wm-cell"
+                        +(level(c.mins)>0?` wm-cell--l${level(c.mins)}`:"")
+                        +(c.key===today?" wm-cell--today":"")
+                        +(c.closed?" wm-cell--closed":"")
+                        +(c.key>today?" wm-cell--future":"")}
+                      title={`${c.key}${c.mins?` · ${fmtMins(c.mins)}`:""}${c.rating?` · ${"★".repeat(c.rating)}`:""}`}>
+                      {c.d}
+                    </div>
+                )}
+              </div>
+              <AutoTextarea className="wm-obj" placeholder="Main objective…"
+                value={objectives[key]||""} onChange={v=>setObjective(key,v)}/>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Rules ── */}
+      <div className="eyebrow" style={{margin:"32px 0 10px"}}>Rules of engagement</div>
+      <div className="card-s">
+        {[0,1,2,3,4].map(i=>(
+          <div className="wm-rule" key={i}>
+            <span className="wm-rule__n">{i+1} —</span>
+            <AutoTextarea className="reflect__field" placeholder={i===0?"e.g. No phone during the deep block":"…"}
+              value={rules[i]||""} onChange={v=>setRule(i,v)}/>
+          </div>
+        ))}
+      </div>
+      <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.65,margin:"8px 0 0",maxWidth:560}}>
+        Five standing rules for the year. Rules you don't have to re-decide every day are the
+        cheapest discipline there is.
+      </p>
     </div>
   );
 };
@@ -3157,7 +3441,7 @@ const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport
           </p>
         )}
         <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:14,marginBottom:0,lineHeight:1.6}}>
-          Clearing erases sessions, tracker entries, plans, practices, closed days, breaks, and weekly reviews. Your Purpose page is kept.
+          Clearing erases sessions, tracker entries, plans, practices, closed days, breaks, and weekly reviews. Your Purpose page and War Map objectives/rules are kept.
         </p>
       </div>
       <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:24,fontStyle:"italic"}}>
@@ -3203,6 +3487,7 @@ const App = () => {
   const [restAsk, setRestAsk] = useState(null);          // {id} of a break awaiting classification
   const [rituals,     setRituals]     = useState(()=>loadLS("hf_rituals",{}));
   const [weekly,      setWeekly]      = useState(()=>loadLS("hf_weekly",{}));
+  const [warmap,      setWarmap]      = useState(()=>loadLS("hf_warmap",{}));
   const [trackerOn,   setTrackerOn]   = useState(()=>loadLS("hf_trackerOn",true));
   const [purpose,     setPurpose]     = useState(()=>({northStar:"",identity:"",goals:[],activeGoalId:null,...loadLS("hf_purpose",{})}));
   const activeGoalId = purpose.activeGoalId || null;
@@ -3225,7 +3510,6 @@ const App = () => {
   // Tracker
   const [trackerEntries,   setTrackerEntries]   = useState(()=>loadLS("hf_tracker",[]));
   const [trackerPrompt,    setTrackerPrompt]    = useState(false);
-  const [manualEntry,      setManualEntry]      = useState(false);
   const [trackerCountdown, setTrackerCountdown] = useState(()=>Math.max(0,Math.round((getNextHalfHourMs()-Date.now())/1000)));
   const [trackerPeriodStart, setTrackerPeriodStart] = useState(()=>getLastHalfHourDate());
 
@@ -3239,6 +3523,7 @@ const App = () => {
   usePersist("hf_rituals",   rituals);
   usePersist("hf_breaks",    breaks);
   usePersist("hf_weekly",    weekly);
+  usePersist("hf_warmap",    warmap);
   usePersist("hf_trackerOn", trackerOn);
 
   /* Storage health — runs after the persistence effects above, every render */
@@ -3257,7 +3542,7 @@ const App = () => {
     return ()=>{ cancelled=true; };
   },[]);
   const restoreFromMirror = async () => {
-    const [h,t,m,p,pu,r,b,w]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
+    const [h,t,m,p,pu,r,b,w,wm]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
     if(Array.isArray(h)) setHistory(h);
     if(Array.isArray(t)) setTrackerEntries(t);
     if(m&&typeof m==="object") setMits(m);
@@ -3266,6 +3551,7 @@ const App = () => {
     if(r&&typeof r==="object") setRituals(r);
     if(Array.isArray(b)) setBreaks(b);
     if(w&&typeof w==="object") setWeekly(w);
+    if(wm&&typeof wm==="object") setWarmap(wm);
     setRecovery(null);
   };
 
@@ -3486,16 +3772,21 @@ const App = () => {
     setBreaks(bs=>bs.map(b=>b.id===id?{...b,type}:b));
     setRestAsk(null);
   };
-  const onManualEntry   = (text, slotStart, slotEnd) => {
+  // Free-range entry from the calendar: any start, any end, on the day being viewed.
+  const onAddEntry = (text, startMin, endMin, dayStr) => {
+    const base = dayStr ? new Date(dayStr+"T12:00:00") : new Date();
+    const mk=(m)=>{ const d=new Date(base); d.setHours(0,0,0,0); d.setMinutes(m); return d; };
+    const s=mk(startMin), e=mk(endMin);
     setTrackerEntries(es=>[...es,{
       id:        Date.now(),
-      startTime: formatHHMM(slotStart),
-      endTime:   formatHHMM(slotEnd),
-      date:      slotEnd.toISOString(),
-      duration:  30,
+      startTime: formatHHMM(s),
+      endTime:   formatHHMM(e),
+      date:      e.toISOString(),
+      duration:  endMin-startMin,
       text,
     }]);
   };
+  const onDeleteEntry = (id) => setTrackerEntries(es=>es.filter(e=>e.id!==id));
 
   const logEntry = (text) => {
     const now = new Date();
@@ -3513,7 +3804,7 @@ const App = () => {
   };
 
   const exportData = () => {
-    const data={version:4,history,trackerEntries,mits,practiceLog,purpose,rituals,breaks,weekly,exportedAt:new Date().toISOString()};
+    const data={version:4,history,trackerEntries,mits,practiceLog,purpose,rituals,breaks,weekly,warmap,exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
@@ -3551,6 +3842,10 @@ const App = () => {
         if(d.rituals && typeof d.rituals==="object") setRituals(r=>({...r,...d.rituals}));
         if(Array.isArray(d.breaks)) setBreaks(b=>mergeById(b,d.breaks));
         if(d.weekly && typeof d.weekly==="object") setWeekly(w=>({...w,...d.weekly}));
+        if(d.warmap && typeof d.warmap==="object") setWarmap(w=>({
+          ...w, ...d.warmap,
+          objectives:{...(w.objectives||{}),...(d.warmap.objectives||{})},
+        }));
         if(d.purpose && typeof d.purpose==="object") setPurpose(p=>({
           ...p, ...d.purpose,
           goals: mergeById(p.goals, d.purpose.goals),
@@ -3568,16 +3863,15 @@ const App = () => {
     else if(id==="breath")  { setView("breath"); }
     else if(id==="preload") { setView("preload"); }
     else if(id==="lognow")  { setTrackerPrompt(true); }
-    else if(["day","week","purpose","today","stats","sounds","stoic","tracker","practices"].includes(id)) setView(id);
+    else if(["day","week","warmap","purpose","today","stats","sounds","stoic","tracker","practices"].includes(id)) setView(id);
   };
 
   const today       = todayStr();
   const todayHistory = history.filter(s=>s.date&&localDate(new Date(s.date))===today);
-  const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
   const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
 
-  const crumbs=({day:"The Day",week:"The Week",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker"})[view];
-  const section=["purpose","day","week"].includes(view)?"Compass":["sounds","stoic","practices"].includes(view)?"Practice":"Focus";
+  const crumbs=({day:"The Day",week:"The Week",warmap:"War Map",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker"})[view];
+  const section=["purpose","day","week","warmap"].includes(view)?"Compass":["sounds","stoic","practices"].includes(view)?"Practice":"Focus";
   const crumbArr=view==="settings"?["Settings"]:[section,crumbs];
   const soundLabel=sound?({rain:"Soft rain",forest:"Old forest",waves:"Shoreline",cafe:"Quiet café",brown:"Brown noise",fire:"Fireplace"})[sound]:null;
 
@@ -3617,7 +3911,7 @@ const App = () => {
                                 protocols={purpose.protocols} kind={kind} setKind={setKind} onPreload={(mins)=>{ setPreloadDuration(mins*60); setView("preload"); }}/>}
         {view==="today"    && <Today sessions={todayHistory} streak={calcStreak(history)} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
         {view==="stats"    && <Stats sessions={history} purpose={purpose} breaks={breaks}/>}
-        {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
+        {view==="tracker"  && <Tracker allEntries={trackerEntries} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onAddEntry={onAddEntry} onDeleteEntry={onDeleteEntry}/>}
         {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
         {view==="stoic"     && <Stoic/>}
         {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
@@ -3626,6 +3920,7 @@ const App = () => {
         {view==="day"      && <TheDay rituals={rituals} setRituals={setRituals} purpose={purpose} mits={mits} setMits={setMits}
                                 sessions={todayHistory} practiceLog={practiceLog} breaks={breaks} streak={calcStreak(history)} onEnterDay={()=>setView("session")}/>}
         {view==="week"     && <TheWeek weekly={weekly} setWeekly={setWeekly} purpose={purpose} sessions={history} rituals={rituals} breaks={breaks}/>}
+        {view==="warmap"   && <WarMap warmap={warmap} setWarmap={setWarmap} sessions={history} rituals={rituals}/>}
         {view==="purpose"  && <Purpose purpose={purpose} setPurpose={setPurpose} sessions={history}/>}
         {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}
                                 lastExport={lastExport} hasData={history.length>0} trackerOn={trackerOn} setTrackerOn={setTrackerOn}/>}
@@ -3647,7 +3942,6 @@ const App = () => {
         </div>
       )}
       {trackerPrompt && <TrackerPrompt onSave={logEntry} onSkip={()=>setTrackerPrompt(false)} periodStart={trackerPeriodStart}/>}
-      {manualEntry && <TrackerManualEntry onSave={(text,s,e)=>{ onManualEntry(text,s,e); setManualEntry(false); }} onClose={()=>setManualEntry(false)}/>}
       {cmdk && <CmdK onClose={()=>setCmdk(false)} onAction={cmdAction}/>}
     </div>
   );
