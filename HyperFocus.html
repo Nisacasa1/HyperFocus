@@ -2163,11 +2163,21 @@ const TrackerEntryForm = ({ start, end, onSave, onClose }) => {
    the same form with free start/end times. */
 const HOUR_PX = 48;         // one hour of the day, in pixels
 const CAL_SNAP = 5;         // minutes
-const Tracker = ({ entries, countdown, enabled=true, onLogNow, onAddEntry, onDeleteEntry }) => {
+const Tracker = ({ allEntries, countdown, enabled=true, onLogNow, onAddEntry, onDeleteEntry }) => {
   const fmtC=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
   const now=new Date();
   const nowMin=now.getHours()*60+now.getMinutes();
-  const dStr=now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  const today=todayStr();
+
+  // The calendar is a real calendar: every logged day stays, and you can walk
+  // back to it. Entries pin to their date forever; today is just the default.
+  const [day, setDay] = useState(today);
+  const isToday = day===today;
+  const shiftDay = (n) => setDay(d=>{ const dt=new Date(d+"T12:00:00"); dt.setDate(dt.getDate()+n); const nd=localDate(dt); return nd>today?today:nd; });
+  const entries = allEntries.filter(e=>e.date&&localDate(new Date(e.date))===day);
+  const loggedDays = new Set(allEntries.filter(e=>e.date).map(e=>localDate(new Date(e.date))));
+
+  const dStr=new Date(day+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
   const totalMins=entries.reduce((a,e)=>a+(e.duration||0),0);
 
   const [drag,  setDrag]  = useState(null);   // {a,b} minutes while dragging
@@ -2213,11 +2223,21 @@ const Tracker = ({ entries, countdown, enabled=true, onLogNow, onAddEntry, onDel
 
   return (
     <div className="page">
-      <div style={{marginBottom:28}}><div className="eyebrow">{dStr}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Time tracker</h1></div>
+      <div style={{marginBottom:28}}>
+        <div className="eyebrow">{dStr}{isToday?"":" · past day"}</div>
+        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+          <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Time tracker</h1>
+          <div style={{display:"flex",gap:4,alignItems:"center",marginTop:8}}>
+            <button className="iconbtn" title="Previous day" onClick={()=>shiftDay(-1)} style={{transform:"rotate(180deg)"}}><Icon name="chevronRight" size={15}/></button>
+            <button className="iconbtn" title="Next day" onClick={()=>shiftDay(1)} disabled={isToday} style={isToday?{opacity:.3,cursor:"default"}:{}}><Icon name="chevronRight" size={15}/></button>
+            {!isToday&&<button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}} onClick={()=>setDay(today)}>Back to today</button>}
+          </div>
+        </div>
+      </div>
       <div className="card-s" style={{marginBottom:28}}>
         <div className="tracker-summary">
           <div className="kpi"><div className="kpi__label">Next check-in</div><div className="kpi__value" style={{fontSize:32}}>{enabled?fmtC(countdown):<span style={{color:"var(--hf-fg-subtle)",fontSize:16}}>Off</span>}</div></div>
-          <div className="kpi"><div className="kpi__label">Entries today</div><div className="kpi__value" style={{fontSize:32}}>{entries.length}</div></div>
+          <div className="kpi"><div className="kpi__label">{isToday?"Entries today":"Entries that day"}</div><div className="kpi__value" style={{fontSize:32}}>{entries.length}</div></div>
           <div className="kpi"><div className="kpi__label">Time logged</div><div className="kpi__value" style={{fontSize:32}}>{totalMins>0?<span>{fmtMins(totalMins)}</span>:<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}</div></div>
         </div>
         <div style={{marginTop:20,display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -2258,18 +2278,25 @@ const Tracker = ({ entries, countdown, enabled=true, onLogNow, onAddEntry, onDel
               {hhmmOfMin(s)} — {hhmmOfMin(en)}{en>s?` · ${fmtMins(en-s)}`:""}
             </div>
           );})()}
-          <div className="cal__now" style={{top:minToY(nowMin)}}/>
+          {isToday&&<div className="cal__now" style={{top:minToY(nowMin)}}/>}
         </div>
       </div>
 
       {entries.length===0&&(
         <p style={{fontSize:13,color:"var(--hf-fg-muted)",fontStyle:"italic",marginTop:14}}>
-          Nothing logged yet. Drag on the grid, or wait for the check-in ({enabled?fmtC(countdown):"off"}).
+          {isToday
+            ? <>Nothing logged yet. Drag on the grid, or wait for the check-in ({enabled?fmtC(countdown):"off"}).</>
+            : <>Nothing was logged this day. You can still fill it in — drag on the grid.</>}
+        </p>
+      )}
+      {loggedDays.size>1&&(
+        <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:8}}>
+          {loggedDays.size} days logged so far — use the arrows to walk back through them.
         </p>
       )}
 
       {draft&&<TrackerEntryForm start={draft.start} end={draft.end}
-        onSave={(text,s,en)=>{ onAddEntry(text,s,en); setDraft(null); }}
+        onSave={(text,s,en)=>{ onAddEntry(text,s,en,day); setDraft(null); }}
         onClose={()=>setDraft(null)}/>}
     </div>
   );
@@ -3745,9 +3772,10 @@ const App = () => {
     setBreaks(bs=>bs.map(b=>b.id===id?{...b,type}:b));
     setRestAsk(null);
   };
-  // Free-range entry from the calendar: any start, any end, today.
-  const onAddEntry = (text, startMin, endMin) => {
-    const mk=(m)=>{ const d=new Date(); d.setHours(0,0,0,0); d.setMinutes(m); return d; };
+  // Free-range entry from the calendar: any start, any end, on the day being viewed.
+  const onAddEntry = (text, startMin, endMin, dayStr) => {
+    const base = dayStr ? new Date(dayStr+"T12:00:00") : new Date();
+    const mk=(m)=>{ const d=new Date(base); d.setHours(0,0,0,0); d.setMinutes(m); return d; };
     const s=mk(startMin), e=mk(endMin);
     setTrackerEntries(es=>[...es,{
       id:        Date.now(),
@@ -3840,7 +3868,6 @@ const App = () => {
 
   const today       = todayStr();
   const todayHistory = history.filter(s=>s.date&&localDate(new Date(s.date))===today);
-  const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
   const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
 
   const crumbs=({day:"The Day",week:"The Week",warmap:"War Map",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker"})[view];
@@ -3884,7 +3911,7 @@ const App = () => {
                                 protocols={purpose.protocols} kind={kind} setKind={setKind} onPreload={(mins)=>{ setPreloadDuration(mins*60); setView("preload"); }}/>}
         {view==="today"    && <Today sessions={todayHistory} streak={calcStreak(history)} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
         {view==="stats"    && <Stats sessions={history} purpose={purpose} breaks={breaks}/>}
-        {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onAddEntry={onAddEntry} onDeleteEntry={onDeleteEntry}/>}
+        {view==="tracker"  && <Tracker allEntries={trackerEntries} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onAddEntry={onAddEntry} onDeleteEntry={onDeleteEntry}/>}
         {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
         {view==="stoic"     && <Stoic/>}
         {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
