@@ -24,7 +24,8 @@ Two rituals, because a timer alone never made anyone come back.
 - **Closing** — the day's numbers, then three questions (*what moved forward · what pulled you away · one line for tomorrow*) and a rating. A gentle prompt appears in the topbar after 7pm.
 - Every closed day is kept, so you can read the last two weeks back before planning the next one.
 - **The closing metric** — two badges answered from data, never asked: did you do the deep block (any session ≥ 50 min), and did you actually rest or just stop working (from your classified breaks).
-- **Send to second brain** — exports the closed day as a markdown file matching an Obsidian daily-note template. The app's own reflection questions live in a dedicated Hyper Focus section; the vault template's sections (free capture, repeated thought, what surprised you, phrase of the day) are asked as optional questions at close, so the export is a genuine daily journal entry. Drop it into your vault's `journal/entries/`.
+- **How can I improve?** — three concrete slots at every close, straight from the Daily Planner format.
+- **Send to second brain** — exports the closed day as a markdown file matching the vault's daily template (simplified 2026-08-01: free capture · something I learned · how can I improve ×3 · phrase of the day). The app's own reflection questions live in a dedicated Hyper Focus section, so the export is a genuine daily journal entry. Drop it into your vault's `journal/entries/`.
 
 ### 📅 The Week
 The vault's weekly protocol, composed from data the app already has.
@@ -33,6 +34,13 @@ The vault's weekly protocol, composed from data the app already has.
 - **Deliberate emptiness** — whether the week held any Empty sessions or real rest at all.
 - **Leak audit** — open loops, sustained judgments, draining relations. Named, so they stop being ambient.
 - **Send seed to second brain** — exports `YYYY-WW-hyperfocus.md`, a data seed for the vault's weekly synthesis.
+
+### 🗺 War Map
+The year at war-room altitude — twelve months on one screen.
+- Every day is colored by the focus it actually held (nothing is painted by hand — the color **is** the data), with a dot for closed days and today outlined.
+- **Main objective** per month, one line each.
+- **Rules of engagement** — five standing rules for the year, so they never have to be re-decided.
+- Objectives and rules survive "Clear all data", like the Purpose page.
 
 ### 🎯 Focus Timer
 - Three modes: **Pomodoro** (25 min), **Deep Work** (90 min), **Flowmodoro** (50 min)
@@ -155,7 +163,7 @@ Or just **double-click `HyperFocus.html`** in your file manager.
 
 - **No server.** The app is a static HTML file.
 - **No account.** Nothing is ever transmitted anywhere.
-- All data lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`, `hf_purpose`, `hf_rituals`, `hf_breaks`, `hf_weekly`.
+- All data lives in your browser's `localStorage` under the keys `hf_history`, `hf_mits`, `hf_tracker`, `hf_practices`, `hf_purpose`, `hf_rituals`, `hf_breaks`, `hf_weekly`, `hf_warmap`.
 - Every one of those is **mirrored into IndexedDB**. If `localStorage` ever comes back empty, the app notices and offers to restore from the mirror instead of silently starting you at zero.
 - Settings tells you how long it has been since your last export, and nags after a week.
 - Use **Settings → Export JSON** to back up your data at any time.

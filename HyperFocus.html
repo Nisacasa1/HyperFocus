@@ -359,6 +359,41 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .heatmap__months { display:flex; gap:3px; margin-bottom:6px; }
 .heatmap__months span { font-size:9px; color:var(--hf-fg-subtle); letter-spacing:.06em; text-transform:uppercase; font-family:var(--hf-font-mono); }
 
+/* ── War Map ── */
+.wm-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.wm-month { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:16px 16px 14px; }
+.wm-month--current { border-color:var(--hf-sand-300); }
+[data-theme="dark"] .wm-month--current { border-color:rgba(211,184,135,.4); }
+.wm-month__name { font-family:var(--hf-font-serif); font-size:17px; color:var(--hf-fg); margin-bottom:10px; display:flex; justify-content:space-between; align-items:baseline; }
+.wm-month__hours { font-family:var(--hf-font-mono); font-size:10px; color:var(--hf-fg-muted); }
+.wm-days { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.wm-cell { aspect-ratio:1; border-radius:3px; background:var(--hf-bone-100); display:flex; align-items:center; justify-content:center;
+  font-family:var(--hf-font-mono); font-size:8.5px; color:var(--hf-fg-subtle); position:relative; }
+.wm-cell--empty { background:transparent; }
+.wm-cell--future { opacity:.45; }
+.wm-cell--l1 { background:rgba(200,169,126,.3);  color:var(--hf-fg-body); }
+.wm-cell--l2 { background:rgba(200,169,126,.55); color:var(--hf-fg); }
+.wm-cell--l3 { background:rgba(200,169,126,.8);  color:#FBFAF7; }
+.wm-cell--l4 { background:var(--hf-sand-500); color:#FBFAF7; }
+.wm-cell--today { outline:1.5px solid var(--hf-sand-600); outline-offset:1px; }
+.wm-cell--closed::after { content:""; position:absolute; bottom:1.5px; left:50%; transform:translateX(-50%); width:3px; height:3px; border-radius:50%; background:var(--hf-success); }
+[data-theme="dark"] .wm-cell { background:#211F1A; }
+[data-theme="dark"] .wm-cell--empty { background:transparent; }
+[data-theme="dark"] .wm-cell--l1 { background:rgba(211,184,135,.22); }
+[data-theme="dark"] .wm-cell--l2 { background:rgba(211,184,135,.45); }
+[data-theme="dark"] .wm-cell--l3 { background:rgba(211,184,135,.7); color:#12110E; }
+[data-theme="dark"] .wm-cell--l4 { background:var(--hf-accent); color:#12110E; }
+.wm-obj { width:100%; border:0; border-top:1px solid var(--hf-border); background:transparent; outline:none; resize:none; overflow:hidden;
+  font-family:var(--hf-font-sans); font-size:11.5px; line-height:1.5; color:var(--hf-fg-body); margin-top:10px; padding:8px 0 0; display:block; }
+.wm-obj::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
+.wm-key { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:14px 0 24px; font-size:11px; color:var(--hf-fg-muted); }
+.wm-key__item { display:inline-flex; align-items:center; gap:6px; }
+.wm-key__swatch { width:12px; height:12px; border-radius:3px; }
+.wm-rule { display:flex; gap:10px; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--hf-border); }
+.wm-rule:last-child { border-bottom:0; }
+.wm-rule__n { font-family:var(--hf-font-mono); font-size:12px; color:var(--hf-fg-subtle); flex-shrink:0; }
+@media (max-width: 860px) { .wm-grid { grid-template-columns:1fr; } }
+
 /* ── Purpose ── */
 .rail__star { font-family:var(--hf-font-serif); font-style:italic; font-size:12.5px; line-height:1.45; color:var(--hf-fg-muted); padding:0 8px 14px; margin-top:-8px; border-bottom:1px solid var(--hf-border); margin-bottom:4px; white-space:normal; }
 .rail__star:empty { display:none; }
@@ -774,7 +809,7 @@ const PRACTICES = [
    ever read a half-written state. IndexedDB is a mirror: it survives some things
    localStorage does not (per-site storage clears, quota pressure), and gives us
    something to restore from if localStorage ever comes back empty. */
-const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks","hf_weekly"];
+const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks","hf_weekly","hf_warmap"];
 
 const IDB = (() => {
   const DB="hyperfocus", STORE="kv";
@@ -966,7 +1001,7 @@ const Mark = ({ size=22, theme="light" }) => {
 
 /* ── Rail ── */
 const NAV = [
-  { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"week",label:"The Week",icon:"trend"},{id:"purpose",label:"Purpose",icon:"compass"}] },
+  { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"week",label:"The Week",icon:"trend"},{id:"warmap",label:"War Map",icon:"flag"},{id:"purpose",label:"Purpose",icon:"compass"}] },
   { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
   { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
 ];
@@ -2001,6 +2036,7 @@ const CmdK = ({ onClose, onAction }) => {
     {id:"pause",   label:"Pause session",   icon:"pause",  kbd:"Space"},
     {id:"day",     label:"The Day — open or close",icon:"sun"},
     {id:"week",    label:"The Week — review", icon:"trend"},
+    {id:"warmap",  label:"War Map — the year",icon:"flag"},
     {id:"purpose", label:"Purpose & goals",  icon:"compass"},
     {id:"today",   label:"Go to today",     icon:"calendar"},
     {id:"stats",   label:"Go to stats",     icon:"stats"},
@@ -2328,13 +2364,13 @@ const REFLECT_QS = [
   { id:"tomorrow", q:"One line for tomorrow.",        hint:"The first thing you will touch, decided now so morning-you doesn't have to.", ph:"Tomorrow I start with…" },
 ];
 
-/* Optional questions that map 1:1 to sections of the vault's daily template.
-   All optional — a 3-line entry counts the same as a 30-line one. */
+/* Optional questions that map 1:1 to sections of the vault's daily template
+   (simplified 2026-08-01). All optional — a 3-line entry counts the same as a
+   30-line one. "¿Cómo puedo mejorar?" is separate and always visible. */
 const JOURNAL_QS = [
-  { id:"freeform", q:"Captura libre",                          hint:"Whatever it is, unfiltered. Start with \"hoy fue…\" if nothing comes.", ph:"Hoy fue…" },
-  { id:"repeated", q:"A thought that kept coming back",        hint:"The idea that returned all day, even if you don't know why.", ph:"No dejé de pensar en…" },
-  { id:"surprised",q:"Something that surprised or unsettled you", hint:"Discomfort is information — don't filter it.", ph:"No esperaba…" },
-  { id:"phrase",   q:"Phrase of the day",                      hint:"Yours or borrowed. If there is none, invent one — the day in one line.", ph:"…" },
+  { id:"freeform", q:"Captura libre",           hint:"Whatever it is, unfiltered. Start with \"hoy fue…\" if nothing comes.", ph:"Hoy fue…" },
+  { id:"learned",  q:"Something I learned today", hint:"From a book, a mistake, a customer, a number in Dropi — whatever.", ph:"Aprendí que…" },
+  { id:"phrase",   q:"Phrase of the day",        hint:"Yours or borrowed. If there is none, invent one — the day in one line.", ph:"…" },
 ];
 
 /* Export the day's close as a markdown file matching journal/_template-diario.md
@@ -2357,23 +2393,18 @@ tags: [hyperfocus]
 ## 🌀 Captura libre
 ${r.freeform || ""}
 
-## 🔁 Un pensamiento que se repitió hoy
-${r.repeated || ""}
+## 💡 Algo que aprendí hoy
+${r.learned || ""}
 
-## 💡 Algo que aprendí, confirmé o cuestioné
+## 📈 ¿Cómo puedo mejorar?
 
-
-## ⚡ Una decisión o acción que tomé
-
-
-## 😶 Algo que me sorprendió, incomodó o no esperaba
-${r.surprised || ""}
+1. ${r.improve1 || ""}
+2. ${r.improve2 || ""}
+3. ${r.improve3 || ""}
 
 ## 🗣️ Frase del día
 
 >${r.phrase ? " "+r.phrase : ""}
-
-## 🔗 ¿Esto se parece a algo que ya tengo guardado?
 
 
 ---
@@ -2402,7 +2433,7 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
   const entry    = rituals[today] || {};
   const opened   = !!entry.openedAt;
   const closed   = !!entry.closedAt;
-  const [draft, setDraft]   = useState(()=>({advanced:"",derailed:"",tomorrow:"",freeform:"",repeated:"",surprised:"",phrase:"",rating:null, ...(rituals[todayStr()]?.reflection||{})}));
+  const [draft, setDraft]   = useState(()=>({advanced:"",derailed:"",tomorrow:"",freeform:"",learned:"",phrase:"",improve1:"",improve2:"",improve3:"",rating:null, ...(rituals[todayStr()]?.reflection||{})}));
   const [editing, setEditing] = useState(false);
   const [journalOpen, setJournalOpen] = useState(false);
   const hour     = new Date().getHours();
@@ -2481,6 +2512,17 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
             value={draft[r.id]||""} onChange={v=>setDraft(d=>({...d,[r.id]:v}))}/>
         </div>
       ))}
+      {/* ¿Cómo puedo mejorar? — three concrete slots, from the Daily Planner. */}
+      <div className="reflect">
+        <div className="reflect__q">How can I improve?<span>Three concrete things for tomorrow. Tiny ones count the same as big ones.</span></div>
+        {[1,2,3].map(n=>(
+          <div key={n} style={{display:"flex",gap:10,alignItems:"baseline",marginBottom:6}}>
+            <span style={{fontFamily:"var(--hf-font-mono)",fontSize:12,color:"var(--hf-fg-subtle)",flexShrink:0}}>{n}.</span>
+            <AutoTextarea className="reflect__field" placeholder={["Mañana puedo…","Otra cosa…","Una más…"][n-1]}
+              value={draft["improve"+n]||""} onChange={v=>setDraft(d=>({...d,["improve"+n]:v}))}/>
+          </div>
+        ))}
+      </div>
       {/* Optional journal capture — feeds journal/entries/ in the vault. */}
       <div className="reflect" style={{borderBottom:journalOpen?"":0}}>
         <button className="btn btn--ghost" style={{padding:"4px 0",fontSize:12.5}} onClick={()=>setJournalOpen(v=>!v)}>
@@ -2607,11 +2649,16 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
               {REFLECT_QS.map(r=>entry.reflection?.[r.id]?(
                 <div className="day-log__line" key={r.id}><b>{r.q}</b>{entry.reflection[r.id]}</div>
               ):null)}
+              {[1,2,3].some(n=>entry.reflection?.["improve"+n])&&(
+                <div className="day-log__line"><b>How can I improve?</b>
+                  {[1,2,3].map(n=>entry.reflection?.["improve"+n]?<div key={n}>{n}. {entry.reflection["improve"+n]}</div>:null)}
+                </div>
+              )}
               {entry.reflection?.rating&&<div className="quality-stars" style={{fontSize:14,marginTop:10}}>{"★".repeat(entry.reflection.rating)}</div>}
             </div>
             <div style={{display:"flex",gap:8,marginTop:16,flexWrap:"wrap",alignItems:"center"}}>
               <button className="btn btn--ghost" style={{padding:"4px 10px",fontSize:12}}
-                onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",freeform:"",repeated:"",surprised:"",phrase:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
+                onClick={()=>{ setDraft({advanced:"",derailed:"",tomorrow:"",freeform:"",learned:"",phrase:"",improve1:"",improve2:"",improve3:"",rating:null,...(entry.reflection||{})}); setEditing(true); }}>
                 Edit
               </button>
               <button className="btn btn--secondary" style={{padding:"4px 10px",fontSize:12}} onClick={exportJournal}>
@@ -2673,6 +2720,111 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+/* ── War Map ──────────────────────────────────────────────────────────────
+   The year at war-room altitude: twelve months, every day colored by the focus
+   it actually held. Unlike the spreadsheet it comes from, nothing is painted by
+   hand — the color IS the data. Objectives per month and five standing rules. */
+const WarMap = ({ warmap, setWarmap, sessions, rituals }) => {
+  const year = new Date().getFullYear();
+  const today = todayStr();
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  // minutes of focus per local day
+  const dayMins = {};
+  sessions.forEach(s=>{ if(s.date){ const d=localDate(new Date(s.date)); dayMins[d]=(dayMins[d]||0)+Math.floor((s.dur||0)/60); } });
+  const level = (m) => m===0?0:m<20?1:m<45?2:m<90?3:4;
+
+  const objectives = warmap.objectives||{};
+  const rules = warmap.rules||["","","","",""];
+  const setObjective = (key,v) => setWarmap(w=>({...w,objectives:{...(w.objectives||{}),[key]:v}}));
+  const setRule = (i,v) => setWarmap(w=>{ const r=[...(w.rules||["","","","",""])]; r[i]=v; return {...w,rules:r}; });
+
+  const monthCells = (mi) => {
+    const first=new Date(year,mi,1);
+    const pad=(first.getDay()+6)%7;                    // Monday-first offset
+    const days=new Date(year,mi+1,0).getDate();
+    const cells=[];
+    for(let i=0;i<pad;i++) cells.push(null);
+    for(let d=1;d<=days;d++){
+      const key=`${year}-${String(mi+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      cells.push({ d, key, mins:dayMins[key]||0, closed:!!rituals[key]?.closedAt, rating:rituals[key]?.reflection?.rating });
+    }
+    return cells;
+  };
+  const monthHours = (mi) => {
+    const pfx=`${year}-${String(mi+1).padStart(2,"0")}`;
+    const mins=Object.entries(dayMins).filter(([k])=>k.startsWith(pfx)).reduce((a,[,m])=>a+m,0);
+    return mins>=60?`${(mins/60).toFixed(0)}h`:mins>0?`${mins}m`:"";
+  };
+  const curMonth = new Date().getMonth();
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:20}}>
+        <div className="eyebrow">{year}</div>
+        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>War Map</h1>
+        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8,lineHeight:1.7,maxWidth:620}}>
+          The whole year in one glance. Nothing here is painted by hand — every day carries the
+          color of the focus it actually held. The map doesn't lie, so the only way to color it
+          is to show up.
+        </p>
+      </div>
+
+      <div className="wm-key">
+        <span className="wm-key__item"><span className="wm-key__swatch" style={{background:"var(--hf-bone-100)",border:"1px solid var(--hf-border)"}}/>no focus</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l1"/>&lt;20m</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l2"/>&lt;45m</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l3"/>&lt;90m</span>
+        <span className="wm-key__item"><span className="wm-key__swatch wm-cell--l4"/>90m+</span>
+        <span className="wm-key__item"><span style={{width:5,height:5,borderRadius:"50%",background:"var(--hf-success)",display:"inline-block"}}/>day closed</span>
+      </div>
+
+      <div className="wm-grid">
+        {MONTHS.map((name,mi)=>{
+          const key=`${year}-${String(mi+1).padStart(2,"0")}`;
+          return (
+            <div key={mi} className={"wm-month"+(mi===curMonth?" wm-month--current":"")}>
+              <div className="wm-month__name">{name}<span className="wm-month__hours">{monthHours(mi)}</span></div>
+              <div className="wm-days">
+                {monthCells(mi).map((c,i)=>c===null
+                  ? <div key={i} className="wm-cell wm-cell--empty"/>
+                  : <div key={i}
+                      className={"wm-cell"
+                        +(level(c.mins)>0?` wm-cell--l${level(c.mins)}`:"")
+                        +(c.key===today?" wm-cell--today":"")
+                        +(c.closed?" wm-cell--closed":"")
+                        +(c.key>today?" wm-cell--future":"")}
+                      title={`${c.key}${c.mins?` · ${fmtMins(c.mins)}`:""}${c.rating?` · ${"★".repeat(c.rating)}`:""}`}>
+                      {c.d}
+                    </div>
+                )}
+              </div>
+              <AutoTextarea className="wm-obj" placeholder="Main objective…"
+                value={objectives[key]||""} onChange={v=>setObjective(key,v)}/>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Rules ── */}
+      <div className="eyebrow" style={{margin:"32px 0 10px"}}>Rules of engagement</div>
+      <div className="card-s">
+        {[0,1,2,3,4].map(i=>(
+          <div className="wm-rule" key={i}>
+            <span className="wm-rule__n">{i+1} —</span>
+            <AutoTextarea className="reflect__field" placeholder={i===0?"e.g. No phone during the deep block":"…"}
+              value={rules[i]||""} onChange={v=>setRule(i,v)}/>
+          </div>
+        ))}
+      </div>
+      <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.65,margin:"8px 0 0",maxWidth:560}}>
+        Five standing rules for the year. Rules you don't have to re-decide every day are the
+        cheapest discipline there is.
+      </p>
     </div>
   );
 };
@@ -3157,7 +3309,7 @@ const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport
           </p>
         )}
         <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:14,marginBottom:0,lineHeight:1.6}}>
-          Clearing erases sessions, tracker entries, plans, practices, closed days, breaks, and weekly reviews. Your Purpose page is kept.
+          Clearing erases sessions, tracker entries, plans, practices, closed days, breaks, and weekly reviews. Your Purpose page and War Map objectives/rules are kept.
         </p>
       </div>
       <p style={{fontSize:12,color:"var(--hf-fg-subtle)",marginTop:24,fontStyle:"italic"}}>
@@ -3203,6 +3355,7 @@ const App = () => {
   const [restAsk, setRestAsk] = useState(null);          // {id} of a break awaiting classification
   const [rituals,     setRituals]     = useState(()=>loadLS("hf_rituals",{}));
   const [weekly,      setWeekly]      = useState(()=>loadLS("hf_weekly",{}));
+  const [warmap,      setWarmap]      = useState(()=>loadLS("hf_warmap",{}));
   const [trackerOn,   setTrackerOn]   = useState(()=>loadLS("hf_trackerOn",true));
   const [purpose,     setPurpose]     = useState(()=>({northStar:"",identity:"",goals:[],activeGoalId:null,...loadLS("hf_purpose",{})}));
   const activeGoalId = purpose.activeGoalId || null;
@@ -3239,6 +3392,7 @@ const App = () => {
   usePersist("hf_rituals",   rituals);
   usePersist("hf_breaks",    breaks);
   usePersist("hf_weekly",    weekly);
+  usePersist("hf_warmap",    warmap);
   usePersist("hf_trackerOn", trackerOn);
 
   /* Storage health — runs after the persistence effects above, every render */
@@ -3257,7 +3411,7 @@ const App = () => {
     return ()=>{ cancelled=true; };
   },[]);
   const restoreFromMirror = async () => {
-    const [h,t,m,p,pu,r,b,w]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
+    const [h,t,m,p,pu,r,b,w,wm]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
     if(Array.isArray(h)) setHistory(h);
     if(Array.isArray(t)) setTrackerEntries(t);
     if(m&&typeof m==="object") setMits(m);
@@ -3266,6 +3420,7 @@ const App = () => {
     if(r&&typeof r==="object") setRituals(r);
     if(Array.isArray(b)) setBreaks(b);
     if(w&&typeof w==="object") setWeekly(w);
+    if(wm&&typeof wm==="object") setWarmap(wm);
     setRecovery(null);
   };
 
@@ -3513,7 +3668,7 @@ const App = () => {
   };
 
   const exportData = () => {
-    const data={version:4,history,trackerEntries,mits,practiceLog,purpose,rituals,breaks,weekly,exportedAt:new Date().toISOString()};
+    const data={version:4,history,trackerEntries,mits,practiceLog,purpose,rituals,breaks,weekly,warmap,exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
@@ -3551,6 +3706,10 @@ const App = () => {
         if(d.rituals && typeof d.rituals==="object") setRituals(r=>({...r,...d.rituals}));
         if(Array.isArray(d.breaks)) setBreaks(b=>mergeById(b,d.breaks));
         if(d.weekly && typeof d.weekly==="object") setWeekly(w=>({...w,...d.weekly}));
+        if(d.warmap && typeof d.warmap==="object") setWarmap(w=>({
+          ...w, ...d.warmap,
+          objectives:{...(w.objectives||{}),...(d.warmap.objectives||{})},
+        }));
         if(d.purpose && typeof d.purpose==="object") setPurpose(p=>({
           ...p, ...d.purpose,
           goals: mergeById(p.goals, d.purpose.goals),
@@ -3568,7 +3727,7 @@ const App = () => {
     else if(id==="breath")  { setView("breath"); }
     else if(id==="preload") { setView("preload"); }
     else if(id==="lognow")  { setTrackerPrompt(true); }
-    else if(["day","week","purpose","today","stats","sounds","stoic","tracker","practices"].includes(id)) setView(id);
+    else if(["day","week","warmap","purpose","today","stats","sounds","stoic","tracker","practices"].includes(id)) setView(id);
   };
 
   const today       = todayStr();
@@ -3576,8 +3735,8 @@ const App = () => {
   const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
   const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
 
-  const crumbs=({day:"The Day",week:"The Week",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker"})[view];
-  const section=["purpose","day","week"].includes(view)?"Compass":["sounds","stoic","practices"].includes(view)?"Practice":"Focus";
+  const crumbs=({day:"The Day",week:"The Week",warmap:"War Map",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker"})[view];
+  const section=["purpose","day","week","warmap"].includes(view)?"Compass":["sounds","stoic","practices"].includes(view)?"Practice":"Focus";
   const crumbArr=view==="settings"?["Settings"]:[section,crumbs];
   const soundLabel=sound?({rain:"Soft rain",forest:"Old forest",waves:"Shoreline",cafe:"Quiet café",brown:"Brown noise",fire:"Fireplace"})[sound]:null;
 
@@ -3626,6 +3785,7 @@ const App = () => {
         {view==="day"      && <TheDay rituals={rituals} setRituals={setRituals} purpose={purpose} mits={mits} setMits={setMits}
                                 sessions={todayHistory} practiceLog={practiceLog} breaks={breaks} streak={calcStreak(history)} onEnterDay={()=>setView("session")}/>}
         {view==="week"     && <TheWeek weekly={weekly} setWeekly={setWeekly} purpose={purpose} sessions={history} rituals={rituals} breaks={breaks}/>}
+        {view==="warmap"   && <WarMap warmap={warmap} setWarmap={setWarmap} sessions={history} rituals={rituals}/>}
         {view==="purpose"  && <Purpose purpose={purpose} setPurpose={setPurpose} sessions={history}/>}
         {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}
                                 lastExport={lastExport} hasData={history.length>0} trackerOn={trackerOn} setTrackerOn={setTrackerOn}/>}
