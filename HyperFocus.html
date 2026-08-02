@@ -391,78 +391,6 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .insight-chip svg { color:var(--hf-fg-muted); flex-shrink:0; }
 .insight-chip b { color:var(--hf-fg); font-weight:500; }
 
-/* ── Dashboard ── */
-.dash-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
-.dash-widget { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:20px 22px; }
-.dash-widget__label { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:14px; }
-.streak-dots { display:flex; gap:4px; margin-top:6px; }
-.streak-dot { width:8px; height:8px; border-radius:50%; background:var(--hf-bone-200); flex-shrink:0; }
-.streak-dot--on { background:var(--hf-sand-400); }
-[data-theme="dark"] .streak-dot { background:var(--hf-border); }
-.goal-bar-row { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
-.goal-bar-row:last-child { margin-bottom:0; }
-.goal-bar-row__label { display:flex; justify-content:space-between; font-size:12px; color:var(--hf-fg-body); }
-.goal-bar-track { height:4px; background:var(--hf-bone-200); border-radius:2px; overflow:hidden; margin-top:2px; }
-.goal-bar-fill  { height:100%; background:var(--hf-sand-400); border-radius:2px; transition:width 400ms var(--hf-ease-out); }
-[data-theme="dark"] .goal-bar-track { background:var(--hf-border); }
-.skill-level-dots { display:flex; gap:4px; margin-top:8px; }
-.skill-level-dot  { width:7px; height:7px; border-radius:50%; background:var(--hf-bone-200); flex-shrink:0; }
-.skill-level-dot--on { background:var(--hf-sand-400); }
-[data-theme="dark"] .skill-level-dot  { background:var(--hf-border); }
-.dash-stoic { font-family:var(--hf-font-serif); font-style:italic; font-size:14px; color:var(--hf-fg-muted); line-height:1.65; }
-.dash-stoic cite { display:block; font-style:normal; font-family:var(--hf-font-sans); font-size:10px; letter-spacing:.1em; text-transform:uppercase; margin-top:6px; }
-
-/* ── Goals ── */
-.goals-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
-.goal-card { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:20px 22px; display:flex; flex-direction:column; gap:12px; cursor:pointer; transition:border-color 160ms; }
-.goal-card:hover { border-color:var(--hf-border-strong); }
-.goal-card__area { font-size:10px; font-weight:500; padding:3px 10px; border-radius:9999px; display:inline-block; width:fit-content; text-transform:uppercase; letter-spacing:.06em; }
-.goal-card__area--mind    { background:#EEF4F0; color:#2D6A4F; border:1px solid #B7D6C2; }
-.goal-card__area--body    { background:#FEF0E6; color:#9B3A1E; border:1px solid #FBCFB4; }
-.goal-card__area--work    { background:#EFF3FE; color:#2246A3; border:1px solid #B6C7F5; }
-.goal-card__area--spirit  { background:var(--hf-sand-50); color:var(--hf-sand-700); border:1px solid var(--hf-sand-200); }
-.goal-card__area--other   { background:var(--hf-bone-100); color:var(--hf-fg-muted); border:1px solid var(--hf-border); }
-[data-theme="dark"] .goal-card__area--mind   { background:rgba(45,106,79,.15); color:#76C494; border-color:rgba(45,106,79,.3); }
-[data-theme="dark"] .goal-card__area--body   { background:rgba(155,58,30,.15); color:#F08060; border-color:rgba(155,58,30,.3); }
-[data-theme="dark"] .goal-card__area--work   { background:rgba(34,70,163,.15); color:#7094E8; border-color:rgba(34,70,163,.3); }
-.goal-card__title { font-family:var(--hf-font-serif); font-size:20px; color:var(--hf-fg); letter-spacing:-0.01em; line-height:1.2; }
-.goal-card__progress { display:flex; flex-direction:column; gap:4px; }
-.goal-card__progress-label { display:flex; justify-content:space-between; font-size:11px; color:var(--hf-fg-muted); font-family:var(--hf-font-mono); }
-.goal-card__milestones { display:flex; flex-direction:column; gap:7px; margin-top:4px; }
-.goal-milestone { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--hf-fg-body); cursor:pointer; }
-.goal-milestone--done { text-decoration:line-through; color:var(--hf-fg-subtle); }
-.goal-form { background:var(--hf-bg-raised); border:1px solid var(--hf-border-strong); border-radius:10px; padding:24px; display:flex; flex-direction:column; gap:14px; margin-bottom:24px; }
-.goal-form__row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.goal-form__label { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:6px; display:block; }
-
-/* ── To-Do ── */
-.todo-quickadd { display:flex; align-items:center; gap:10px; background:var(--hf-bg-raised); border:1px solid var(--hf-border-strong); border-radius:8px; padding:12px 16px; margin-bottom:20px; transition:border-color 160ms; }
-.todo-quickadd:focus-within { border-color:var(--hf-sand-400); box-shadow:0 0 0 3px rgba(200,169,126,.2); }
-.todo-quickadd input { flex:1; border:0; outline:none; background:transparent; font-size:14px; }
-.todo-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--hf-border); font-size:13px; position:relative; }
-.todo-row__priority { width:8px; height:8px; border-radius:50%; flex-shrink:0; cursor:pointer; }
-.todo-row__priority--high   { background:#E74C3C; }
-.todo-row__priority--medium { background:var(--hf-sand-400); }
-.todo-row__priority--low    { background:var(--hf-fg-subtle); }
-.todo-row__text { flex:1; }
-.todo-row__text--done { text-decoration:line-through; color:var(--hf-fg-subtle); }
-.todo-row__due { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-muted); white-space:nowrap; }
-.todo-row__due--today { color:var(--hf-sand-600); font-weight:500; }
-.todo-row__del { opacity:0; transition:opacity 140ms; }
-.todo-row:hover .todo-row__del { opacity:1; }
-.todo-row__mit { opacity:0; transition:opacity 140ms; font-size:11px; color:var(--hf-fg-muted); white-space:nowrap; border:1px solid var(--hf-border); border-radius:9999px; padding:2px 8px; }
-.todo-row:hover .todo-row__mit { opacity:1; }
-.todo-row__mit:hover { border-color:var(--hf-sand-400); color:var(--hf-sand-600); background:var(--hf-sand-50); }
-
-/* ── Skills ── */
-.skills-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-.skill-card { background:var(--hf-bg-raised); border:1px solid var(--hf-border); border-radius:10px; padding:18px 20px; }
-.skill-card__name { font-family:var(--hf-font-serif); font-size:18px; color:var(--hf-fg); letter-spacing:-0.01em; margin-bottom:4px; }
-.skill-card__cat { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:10px; }
-.skill-card__footer { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
-.skill-card__last { font-size:11px; color:var(--hf-fg-subtle); font-family:var(--hf-font-mono); }
-.skill-update-form { border-top:1px solid var(--hf-border); margin-top:14px; padding-top:14px; display:flex; flex-direction:column; gap:10px; }
-
 /* ── Ambient ─────────────────────────────────────────────────────────────
    A slow warm bloom behind the ring. Present but almost subliminal while idle,
    breathing once you are actually focusing. */
@@ -846,7 +774,7 @@ const PRACTICES = [
    ever read a half-written state. IndexedDB is a mirror: it survives some things
    localStorage does not (per-site storage clears, quota pressure), and gives us
    something to restore from if localStorage ever comes back empty. */
-const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks","hf_weekly","hf_goals","hf_todos","hf_skills","hf_name"];
+const DATA_KEYS = ["hf_history","hf_tracker","hf_mits","hf_practices","hf_purpose","hf_rituals","hf_breaks","hf_weekly"];
 
 const IDB = (() => {
   const DB="hyperfocus", STORE="kv";
@@ -1022,11 +950,6 @@ const Icon = ({ name, size=16 }) => {
     trend:        <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
     target:       <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></>,
     star:         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
-    list:         <><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>,
-    award:        <><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></>,
-    grid:         <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,
-    journal:      <><path d="M4 2h12l4 4v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><line x1="7" y1="10" x2="15" y2="10"/><line x1="7" y1="14" x2="12" y2="14"/></>,
-    refresh:      <><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></>,
     compass:      <><circle cx="12" cy="12" r="9"/><polygon points="16.2 7.8 14.1 14.1 7.8 16.2 9.9 9.9 16.2 7.8"/></>,
     menu:         <path d="M3 6h18M3 12h18M3 18h18"/>,
     upload:       <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></>,
@@ -1043,10 +966,8 @@ const Mark = ({ size=22, theme="light" }) => {
 
 /* ── Rail ── */
 const NAV = [
-  { sec:"Command",  items:[{id:"dashboard",label:"Dashboard",icon:"grid"}] },
   { sec:"Compass",  items:[{id:"day",label:"The Day",icon:"sun"},{id:"week",label:"The Week",icon:"trend"},{id:"purpose",label:"Purpose",icon:"compass"}] },
   { sec:"Focus",    items:[{id:"session",label:"Session",icon:"timer"},{id:"today",label:"Today",icon:"calendar"},{id:"stats",label:"Stats",icon:"stats"},{id:"tracker",label:"Tracker",icon:"blocks"}] },
-  { sec:"Build",    items:[{id:"goals",label:"Goals",icon:"flag"},{id:"todos",label:"To-do",icon:"list"},{id:"planning",label:"Planning",icon:"target"},{id:"skills",label:"Skills",icon:"award"}] },
   { sec:"Practice", items:[{id:"sounds",label:"Soundscapes",icon:"mic"},{id:"stoic",label:"Stoicism",icon:"book"},{id:"practices",label:"Daily Practices",icon:"target"}] },
 ];
 
@@ -1511,22 +1432,6 @@ const getAvgLen = (sessions) => {
   if(!sessions.length) return null;
   return Math.floor(sessions.reduce((a,s)=>a+s.dur,0)/sessions.length/60);
 };
-
-const calcDayStreak = (days) => {
-  const sorted=[...new Set(days)].sort();
-  if(!sorted.length) return 0;
-  const today=localDate();
-  const yest=new Date(); yest.setDate(yest.getDate()-1); const ystStr=localDate(yest);
-  if(sorted[sorted.length-1]!==today&&sorted[sorted.length-1]!==ystStr) return 0;
-  let streak=1;
-  for(let i=sorted.length-2;i>=0;i--){
-    const diff=Math.round((new Date(sorted[i+1]+"T12:00:00")-new Date(sorted[i]+"T12:00:00"))/86400000);
-    if(diff===1) streak++; else break;
-  }
-  return streak;
-};
-const calcPracticeStreak = (practiceLog) =>
-  calcDayStreak(practiceLog.map(e=>e.date?localDate(new Date(e.date)):null).filter(Boolean));
 
 /* ── Derived insights ──────────────────────────────────────────────────────
    Everything below reads only data the app already records. Each finding needs
@@ -2092,25 +1997,19 @@ const Preload = ({ onDone, duration=600 }) => {
 /* ── CmdK ── */
 const CmdK = ({ onClose, onAction }) => {
   const items=[
-    {id:"dashboard",label:"Dashboard",        icon:"grid"},
-    {id:"begin",    label:"Begin session",    icon:"play",    kbd:"Space"},
-    {id:"pause",    label:"Pause session",    icon:"pause",   kbd:"Space"},
-    {id:"day",      label:"The Day — open or close", icon:"sun"},
-    {id:"week",     label:"The Week — review", icon:"trend"},
-    {id:"purpose",  label:"Purpose & goals",  icon:"compass"},
-    {id:"today",    label:"Go to Today",      icon:"calendar"},
-    {id:"stats",    label:"Stats",            icon:"stats"},
-    {id:"tracker",  label:"Time tracker",     icon:"blocks"},
-    {id:"goals",    label:"Goals",            icon:"flag"},
-    {id:"todos",    label:"To-do",            icon:"list"},
-    {id:"planning", label:"Planning",         icon:"target"},
-    {id:"skills",   label:"Skills",           icon:"award"},
-    {id:"sounds",   label:"Soundscapes",      icon:"mic"},
-    {id:"practices",label:"Daily Practices",  icon:"zap"},
-    {id:"stoic",    label:"Stoicism",         icon:"book"},
-    {id:"breath",   label:"Pre-focus breath", icon:"coffee"},
-    {id:"preload",  label:"Preload — empty the mind", icon:"target"},
-    {id:"lognow",   label:"Log now",          icon:"plus"},
+    {id:"begin",   label:"Begin session",   icon:"play",   kbd:"Space"},
+    {id:"pause",   label:"Pause session",   icon:"pause",  kbd:"Space"},
+    {id:"day",     label:"The Day — open or close",icon:"sun"},
+    {id:"week",    label:"The Week — review", icon:"trend"},
+    {id:"purpose", label:"Purpose & goals",  icon:"compass"},
+    {id:"today",   label:"Go to today",     icon:"calendar"},
+    {id:"stats",   label:"Go to stats",     icon:"stats"},
+    {id:"sounds",  label:"Soundscapes",     icon:"mic"},
+    {id:"stoic",   label:"Stoicism",        icon:"book"},
+    {id:"breath",  label:"Pre-focus breath",icon:"coffee"},
+    {id:"preload", label:"Preload — empty the mind", icon:"target"},
+    {id:"tracker", label:"Time tracker",    icon:"blocks"},
+    {id:"lognow",  label:"Log now",         icon:"plus"},
   ];
   const [q,setQ]=useState("");
   const [sel,setSel]=useState(0);
@@ -2421,479 +2320,7 @@ const DailyPractices = ({ practiceLog, onLogPractice }) => {
   );
 };
 
-/* ── Dashboard ── */
-const Dashboard = ({ history, mits, goals, todos, practiceLog, skills, name }) => {
-  const today = todayStr();
-  const dayOfYear = Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
-  const dailyQuote = STOIC_QUOTES[dayOfYear%STOIC_QUOTES.length];
-  const hour = new Date().getHours();
-  const greeting = hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
-
-  const todayHistory = history.filter(s=>s.date&&localDate(new Date(s.date))===today);
-  const todayMit = mits[today]||{tasks:["","",""],done:[false,false,false]};
-  const todayFocusSecs = todayHistory.reduce((a,s)=>a+s.dur,0);
-
-  const focusStreak    = calcStreak(history);
-  const practiceStreak = calcPracticeStreak(practiceLog);
-
-  const last7 = Array.from({length:7},(_,i)=>{ const d=new Date(); d.setDate(d.getDate()-6+i); return localDate(d); });
-  const focusDays    = new Set(history.filter(s=>s.date).map(s=>localDate(new Date(s.date))));
-  const practiceDays = new Set(practiceLog.filter(e=>e.date).map(e=>localDate(new Date(e.date))));
-
-  const activeGoals   = goals.filter(g=>g.status!=="done").slice(0,3);
-  const dueTodayTodos = todos.filter(t=>!t.done&&t.dueDate===today);
-  const topSkills     = skills.slice(0,4);
-
-
-  const ws = getWeekStart();
-  const wsDate = new Date(ws+"T00:00:00");
-  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  const todayDayIdx = (new Date().getDay()+6)%7;
-  const weekMins = Array(7).fill(0);
-  history.filter(s=>s.date&&localDate(new Date(s.date))>=ws).forEach(s=>{
-    const diff=Math.floor((new Date(localDate(new Date(s.date))+"T00:00:00")-wsDate)/86400000);
-    if(diff>=0&&diff<7) weekMins[diff]+=Math.floor(s.dur/60);
-  });
-  const maxMins = Math.max(...weekMins,1);
-
-  return (
-    <div className="page">
-      <div style={{marginBottom:32}}>
-        <div className="eyebrow">Overview</div>
-        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>{greeting}{name?`, ${name}`:""}</h1>
-      </div>
-      <div className="dash-grid">
-
-        {/* Today's Focus */}
-        <div className="dash-widget">
-          <div className="dash-widget__label">Today's focus</div>
-          <div style={{fontFamily:"var(--hf-font-mono)",fontSize:36,fontWeight:300,letterSpacing:"-0.02em",lineHeight:1}}>
-            {todayFocusSecs?fmtDur(todayFocusSecs):<span style={{color:"var(--hf-fg-subtle)"}}>—</span>}
-          </div>
-          <div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:5}}>{todayHistory.length} session{todayHistory.length!==1?"s":""}</div>
-          {todayMit.tasks.some(t=>t)&&(
-            <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:6}}>
-              {todayMit.tasks.map((t,i)=>t?(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:todayMit.done[i]?"var(--hf-fg-subtle)":"var(--hf-fg-body)"}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:todayMit.done[i]?"var(--hf-fg-subtle)":"var(--hf-sand-400)",flexShrink:0}}/>
-                  <span style={{textDecoration:todayMit.done[i]?"line-through":"none"}}>{t}</span>
-                </div>
-              ):null)}
-            </div>
-          )}
-        </div>
-
-        {/* Streaks */}
-        <div className="dash-widget">
-          <div className="dash-widget__label">Streaks · last 7 days</div>
-          <div style={{display:"flex",flexDirection:"column",gap:14}}>
-            {[{label:"Focus",streak:focusStreak,days:focusDays},{label:"Practice",streak:practiceStreak,days:practiceDays}].map(({label,streak,days:ds})=>(
-              <div key={label}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                  <span style={{fontSize:12,color:"var(--hf-fg-muted)"}}>{label}</span>
-                  <span style={{fontFamily:"var(--hf-font-mono)",fontSize:12,color:streak>0?"var(--hf-fg)":"var(--hf-fg-subtle)"}}>{streak>0?`${streak}d streak`:"—"}</span>
-                </div>
-                <div className="streak-dots">{last7.map(d=><div key={d} className={"streak-dot"+(ds.has(d)?" streak-dot--on":"")}/>)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Active Goals */}
-        <div className="dash-widget">
-          <div className="dash-widget__label">Active goals</div>
-          {activeGoals.length===0
-            ?<div style={{fontSize:13,color:"var(--hf-fg-muted)",fontStyle:"italic"}}>No goals yet.</div>
-            :activeGoals.map(g=>{
-              const pct=g.targetValue>0?Math.min(100,(g.currentValue||0)/g.targetValue*100):0;
-              return (
-                <div key={g.id} className="goal-bar-row">
-                  <div className="goal-bar-row__label">
-                    <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"60%"}}>{g.title}</span>
-                    <span style={{color:"var(--hf-fg-muted)",flexShrink:0}}>{g.currentValue||0}/{g.targetValue||"?"} {g.unit}</span>
-                  </div>
-                  <div className="goal-bar-track"><div className="goal-bar-fill" style={{width:`${pct}%`}}/></div>
-                </div>
-              );
-            })
-          }
-        </div>
-
-        {/* This Week */}
-        <div className="dash-widget">
-          <div className="dash-widget__label">This week</div>
-          <div className="chart" style={{height:80}}>
-            {weekMins.map((m,i)=>(
-              <div key={i} className={"chart__bar"+(i===todayDayIdx?" chart__bar--today":i>todayDayIdx?" chart__bar--dim":"")} style={{height:`${(m/maxMins)*100}%`}}/>
-            ))}
-          </div>
-          <div className="chart__labels">{days.map(d=><span key={d}>{d}</span>)}</div>
-        </div>
-
-        {/* Skills Snapshot */}
-        {topSkills.length>0&&(
-          <div className="dash-widget">
-            <div className="dash-widget__label">Skills snapshot</div>
-            <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              {topSkills.map(sk=>(
-                <div key={sk.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:13,color:"var(--hf-fg-body)"}}>{sk.name}</span>
-                  <div className="skill-level-dots">{[1,2,3,4,5].map(l=><div key={l} className={"skill-level-dot"+(l<=sk.level?" skill-level-dot--on":"")}/>)}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Due today */}
-        {dueTodayTodos.length>0&&(
-          <div className="dash-widget">
-            <div className="dash-widget__label">Due today ({dueTodayTodos.length})</div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {dueTodayTodos.slice(0,5).map(t=>(
-                <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:"var(--hf-fg-body)"}}>
-                  <div className={"todo-row__priority todo-row__priority--"+(t.priority||"medium")}/>
-                  <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Stoic of the day */}
-        <div className="dash-widget">
-          <div className="dash-widget__label">Stoic of the day</div>
-          <div className="dash-stoic">"{dailyQuote.text}"<cite>— {dailyQuote.author}</cite></div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
-
-/* ── Goals ── */
-const GoalsView = ({ goals, setGoals }) => {
-  const [filter,   setFilter]   = useState("all");
-  const [showForm, setShowForm] = useState(false);
-  const [expandId, setExpandId] = useState(null);
-  const [form, setForm] = useState({title:"",area:"mind",description:"",targetValue:"",unit:"",targetDate:"",milestones:["","",""]});
-
-  const areas = ["all","mind","body","work","spirit","other"];
-  const filtered  = goals.filter(g=>g.status!=="done"&&(filter==="all"||g.area===filter));
-  const completed = goals.filter(g=>g.status==="done");
-
-  const addGoal = () => {
-    if(!form.title.trim()) return;
-    const ms=form.milestones.filter(m=>m.trim()).map(t=>({id:Date.now()+Math.random(),text:t.trim(),done:false}));
-    setGoals(gs=>[...gs,{id:Date.now(),title:form.title.trim(),area:form.area,description:form.description,targetValue:Number(form.targetValue)||0,currentValue:0,unit:form.unit,targetDate:form.targetDate,createdAt:new Date().toISOString(),completedAt:null,status:"active",milestones:ms}]);
-    setForm({title:"",area:"mind",description:"",targetValue:"",unit:"",targetDate:"",milestones:["","",""]});
-    setShowForm(false);
-  };
-
-  const toggleMilestone=(goalId,msId)=>setGoals(gs=>gs.map(g=>g.id===goalId?{...g,milestones:g.milestones.map(m=>m.id===msId?{...m,done:!m.done}:m)}:g));
-  const updateProgress =(goalId,val)=>setGoals(gs=>gs.map(g=>g.id===goalId?{...g,currentValue:Math.max(0,Number(val)||0)}:g));
-  const markDone       =(goalId)   =>setGoals(gs=>gs.map(g=>g.id===goalId?{...g,status:"done",completedAt:new Date().toISOString()}:g));
-  const deleteGoal     =(goalId)   =>setGoals(gs=>gs.filter(g=>g.id!==goalId));
-
-  return (
-    <div className="page">
-      <div style={{marginBottom:32}}>
-        <div className="eyebrow">Build</div>
-        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Goals</h1>
-        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8}}>What you're working toward. Focus on process, measure progress.</p>
-      </div>
-
-      <div style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>
-        {areas.map(a=>(
-          <button key={a} className={"stats-period"+(filter===a?" stats-period--active":"")} onClick={()=>setFilter(a)} style={{textTransform:"capitalize"}}>
-            {a==="all"?"All":a.charAt(0).toUpperCase()+a.slice(1)}
-          </button>
-        ))}
-        <button className="btn btn--primary" style={{marginLeft:"auto"}} onClick={()=>setShowForm(v=>!v)}>
-          <Icon name="plus" size={14}/> New goal
-        </button>
-      </div>
-
-      {showForm&&(
-        <div className="goal-form">
-          <div><label className="goal-form__label">Title</label><input className="input" placeholder="What do you want to achieve?" value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))}/></div>
-          <div className="goal-form__row">
-            <div><label className="goal-form__label">Area</label>
-              <select className="input" value={form.area} onChange={e=>setForm(f=>({...f,area:e.target.value}))}>
-                {["mind","body","work","spirit","other"].map(a=><option key={a} value={a}>{a.charAt(0).toUpperCase()+a.slice(1)}</option>)}
-              </select>
-            </div>
-            <div><label className="goal-form__label">Target date</label><input type="date" className="input" value={form.targetDate} onChange={e=>setForm(f=>({...f,targetDate:e.target.value}))}/></div>
-          </div>
-          <div className="goal-form__row">
-            <div><label className="goal-form__label">Target value</label><input type="number" className="input" placeholder="e.g. 24" value={form.targetValue} onChange={e=>setForm(f=>({...f,targetValue:e.target.value}))}/></div>
-            <div><label className="goal-form__label">Unit</label><input className="input" placeholder="e.g. books, kg, sessions" value={form.unit} onChange={e=>setForm(f=>({...f,unit:e.target.value}))}/></div>
-          </div>
-          <div><label className="goal-form__label">Description (optional)</label><textarea className="journal-textarea" style={{minHeight:60}} placeholder="Why does this matter?" value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))}/></div>
-          <div>
-            <label className="goal-form__label">Milestones (optional)</label>
-            {form.milestones.map((m,i)=>(
-              <input key={i} className="input" style={{marginBottom:8}} placeholder={`Milestone ${i+1}`} value={m} onChange={e=>setForm(f=>({...f,milestones:f.milestones.map((x,j)=>j===i?e.target.value:x)}))}/>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:8}}>
-            <button className="btn btn--primary" onClick={addGoal} disabled={!form.title.trim()}>Add goal</button>
-            <button className="btn btn--ghost" onClick={()=>setShowForm(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      <div className="goals-grid">
-        {filtered.map(g=>{
-          const pct=g.targetValue>0?Math.min(100,(g.currentValue||0)/g.targetValue*100):0;
-          const open=expandId===g.id;
-          return (
-            <div key={g.id} className="goal-card" onClick={()=>setExpandId(open?null:g.id)}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <span className={"goal-card__area goal-card__area--"+g.area}>{g.area}</span>
-                <button className="iconbtn btn--danger" style={{opacity:0.5,zIndex:1}} title="Delete" onClick={e=>{e.stopPropagation();deleteGoal(g.id);}}><Icon name="x" size={12}/></button>
-              </div>
-              <div className="goal-card__title">{g.title}</div>
-              {g.targetValue>0&&(
-                <div className="goal-card__progress">
-                  <div className="goal-card__progress-label"><span>Progress</span><span>{g.currentValue||0}/{g.targetValue} {g.unit}</span></div>
-                  <div className="goal-bar-track"><div className="goal-bar-fill" style={{width:`${pct}%`}}/></div>
-                </div>
-              )}
-              {g.targetDate&&<div style={{fontSize:11,color:"var(--hf-fg-muted)",fontFamily:"var(--hf-font-mono)"}}>Target: {new Date(g.targetDate+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>}
-              {open&&(
-                <div onClick={e=>e.stopPropagation()}>
-                  {g.description&&<div style={{fontSize:13,color:"var(--hf-fg-body)",lineHeight:1.65,paddingTop:4}}>{g.description}</div>}
-                  {g.targetValue>0&&(
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginTop:10}}>
-                      <span style={{fontSize:12,color:"var(--hf-fg-muted)"}}>Current:</span>
-                      <input type="number" className="input" style={{width:80,fontSize:13,padding:"4px 8px"}} value={g.currentValue||0} onChange={e=>updateProgress(g.id,e.target.value)} onClick={e=>e.stopPropagation()}/>
-                      <span style={{fontSize:12,color:"var(--hf-fg-muted)"}}>{g.unit}</span>
-                    </div>
-                  )}
-                  {g.milestones.length>0&&(
-                    <div className="goal-card__milestones">
-                      {g.milestones.map(m=>(
-                        <label key={m.id} className={"goal-milestone"+(m.done?" goal-milestone--done":"")} onClick={e=>e.stopPropagation()}>
-                          <input type="checkbox" checked={m.done} onChange={()=>toggleMilestone(g.id,m.id)} style={{accentColor:"var(--hf-sand-400)",flexShrink:0}}/>{m.text}
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                  <div style={{display:"flex",gap:8,marginTop:12}}>
-                    <button className="btn btn--secondary" style={{fontSize:12}} onClick={e=>{e.stopPropagation();markDone(g.id);}}><Icon name="check" size={12}/> Complete</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {filtered.length===0&&!showForm&&(
-        <div style={{padding:"32px 0",color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic"}}>
-          {filter==="all"?"No active goals. Add one above.":"No goals in this area."}
-        </div>
-      )}
-
-      {completed.length>0&&(
-        <div style={{marginTop:40}}>
-          <h2 className="h-serif" style={{fontSize:22,margin:"0 0 16px",color:"var(--hf-fg-muted)"}}>Completed</h2>
-          {completed.map(g=>(
-            <div key={g.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 0",borderBottom:"1px solid var(--hf-border)",fontSize:13}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <span style={{textDecoration:"line-through",color:"var(--hf-fg-muted)"}}>{g.title}</span>
-                <span className={"goal-card__area goal-card__area--"+g.area} style={{fontSize:10,padding:"2px 8px"}}>{g.area}</span>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                {g.completedAt&&<span style={{fontSize:11,color:"var(--hf-fg-subtle)",fontFamily:"var(--hf-font-mono)"}}>{new Date(g.completedAt).toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span>}
-                <button className="iconbtn btn--danger" style={{opacity:0.5}} onClick={()=>deleteGoal(g.id)}><Icon name="x" size={12}/></button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* ── To-Do ── */
-const TodoView = ({ todos, setTodos, onSendToMit }) => {
-  const [input,         setInput]         = useState("");
-  const [filter,        setFilter]        = useState("all");
-  const [showCompleted, setShowCompleted] = useState(false);
-  const inputRef = useRef(null);
-  const today = todayStr();
-
-  const addTodo = () => {
-    const text=input.trim(); if(!text) return;
-    setTodos(ts=>[...ts,{id:Date.now(),text,note:"",area:"",goalId:null,priority:"medium",dueDate:"",createdAt:new Date().toISOString(),completedAt:null,done:false}]);
-    setInput("");
-  };
-  const toggleTodo  = (id)          => setTodos(ts=>ts.map(t=>t.id===id?{...t,done:!t.done,completedAt:!t.done?new Date().toISOString():null}:t));
-  const deleteTodo  = (id)          => setTodos(ts=>ts.filter(t=>t.id!==id));
-  const setPriority = (id,priority) => setTodos(ts=>ts.map(t=>t.id===id?{...t,priority}:t));
-
-  const active    = todos.filter(t=>!t.done);
-  const completed = todos.filter(t=>t.done);
-  const filtered  = active.filter(t=>{
-    if(filter==="high")  return t.priority==="high";
-    if(filter==="today") return t.dueDate===today;
-    return true;
-  });
-
-  return (
-    <div className="page">
-      <div style={{marginBottom:28}}>
-        <div className="eyebrow">Build</div>
-        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>To-do</h1>
-      </div>
-
-      <div className="todo-quickadd">
-        <Icon name="plus" size={16}/>
-        <input ref={inputRef} placeholder="Add a task — press Enter" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addTodo();}}/>
-        <button className="btn btn--primary" style={{padding:"5px 12px",fontSize:12}} onClick={addTodo} disabled={!input.trim()}>Add</button>
-      </div>
-
-      <div style={{display:"flex",gap:6,marginBottom:16}}>
-        {[{id:"all",label:`All (${active.length})`},{id:"high",label:"High priority"},{id:"today",label:"Due today"}].map(f=>(
-          <button key={f.id} className={"stats-period"+(filter===f.id?" stats-period--active":"")} onClick={()=>setFilter(f.id)}>{f.label}</button>
-        ))}
-      </div>
-
-      <div>
-        {filtered.length===0&&<div style={{padding:"24px 0",color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic"}}>{filter==="all"?"Nothing to do. Add a task above.":"Nothing matches this filter."}</div>}
-        {filtered.map(t=>(
-          <div key={t.id} className="todo-row">
-            <div className={"todo-row__priority todo-row__priority--"+(t.priority||"medium")} title={`Priority: ${t.priority||"medium"} — click to cycle`} onClick={()=>setPriority(t.id,t.priority==="high"?"medium":t.priority==="medium"?"low":"high")}/>
-            <input type="checkbox" className="mit-check" checked={false} onChange={()=>toggleTodo(t.id)}/>
-            <span className="todo-row__text">{t.text}</span>
-            {t.dueDate&&<span className={"todo-row__due"+(t.dueDate===today?" todo-row__due--today":"")}>
-              {t.dueDate===today?"Today":new Date(t.dueDate+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}
-            </span>}
-            {onSendToMit&&(
-              <button className="todo-row__mit" onClick={()=>onSendToMit(t.text)} title="Send to today's planning">→ MIT</button>
-            )}
-            <button className="iconbtn btn--danger todo-row__del" onClick={()=>deleteTodo(t.id)}><Icon name="x" size={13}/></button>
-          </div>
-        ))}
-      </div>
-
-      {completed.length>0&&(
-        <div style={{marginTop:28}}>
-          <button className="btn btn--ghost" style={{fontSize:12,padding:"4px 0",marginBottom:10}} onClick={()=>setShowCompleted(v=>!v)}>
-            <Icon name={showCompleted?"chevronDown":"chevronRight"} size={12}/> Completed ({completed.length})
-          </button>
-          {showCompleted&&completed.map(t=>(
-            <div key={t.id} className="todo-row" style={{opacity:0.5}}>
-              <div className="todo-row__priority" style={{background:"var(--hf-fg-subtle)"}}/>
-              <input type="checkbox" className="mit-check" checked={true} onChange={()=>toggleTodo(t.id)}/>
-              <span className="todo-row__text todo-row__text--done">{t.text}</span>
-              <button className="iconbtn btn--danger todo-row__del" onClick={()=>deleteTodo(t.id)}><Icon name="x" size={13}/></button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* ── Skills ── */
-const SkillsView = ({ skills, setSkills }) => {
-  const CATS = ["Mind","Body","Craft","Character","Social"];
-  const LEVEL_NAMES = ["Novice","Beginner","Competent","Proficient","Mastery"];
-  const [activeCat,   setActiveCat]   = useState("all");
-  const [showForm,    setShowForm]    = useState(false);
-  const [newSkill,    setNewSkill]    = useState({name:"",category:"Craft"});
-  const [updateId,    setUpdateId]    = useState(null);
-  const [updateLevel, setUpdateLevel] = useState(1);
-  const [updateNote,  setUpdateNote]  = useState("");
-
-  const filtered = skills.filter(s=>activeCat==="all"||s.category===activeCat);
-
-  const addSkill = () => {
-    if(!newSkill.name.trim()) return;
-    setSkills(ss=>[...ss,{id:Date.now(),name:newSkill.name.trim(),category:newSkill.category,level:1,history:[],updatedAt:new Date().toISOString()}]);
-    setNewSkill({name:"",category:"Craft"});
-    setShowForm(false);
-  };
-
-  const saveUpdate = (id) => {
-    setSkills(ss=>ss.map(s=>s.id===id?{...s,level:updateLevel,updatedAt:new Date().toISOString(),history:[...s.history,{date:todayStr(),level:updateLevel,note:updateNote}]}:s));
-    setUpdateId(null); setUpdateNote("");
-  };
-  const deleteSkill = (id) => setSkills(ss=>ss.filter(s=>s.id!==id));
-
-  return (
-    <div className="page">
-      <div style={{marginBottom:28}}>
-        <div className="eyebrow">Build</div>
-        <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Skills</h1>
-        <p style={{color:"var(--hf-fg-muted)",fontSize:13,marginTop:8}}>Track your growth across every area of life.</p>
-      </div>
-
-      <div style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>
-        {["all",...CATS].map(c=>(
-          <button key={c} className={"stats-period"+(activeCat===c?" stats-period--active":"")} onClick={()=>setActiveCat(c)}>{c==="all"?"All":c}</button>
-        ))}
-        <button className="btn btn--primary" style={{marginLeft:"auto"}} onClick={()=>setShowForm(v=>!v)}><Icon name="plus" size={14}/> Add skill</button>
-      </div>
-
-      {showForm&&(
-        <div className="goal-form" style={{marginBottom:20}}>
-          <div className="goal-form__row">
-            <div><label className="goal-form__label">Skill name</label><input className="input" placeholder="e.g. Portuguese, Deadlift, Public speaking" value={newSkill.name} onChange={e=>setNewSkill(n=>({...n,name:e.target.value}))}/></div>
-            <div><label className="goal-form__label">Category</label>
-              <select className="input" value={newSkill.category} onChange={e=>setNewSkill(n=>({...n,category:e.target.value}))}>
-                {CATS.map(c=><option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-          <div style={{display:"flex",gap:8}}>
-            <button className="btn btn--primary" onClick={addSkill} disabled={!newSkill.name.trim()}>Add</button>
-            <button className="btn btn--ghost" onClick={()=>setShowForm(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      <div className="skills-grid">
-        {filtered.map(sk=>(
-          <div key={sk.id} className="skill-card">
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-              <div><div className="skill-card__cat">{sk.category}</div><div className="skill-card__name">{sk.name}</div></div>
-              <button className="iconbtn btn--danger" style={{opacity:0.4}} onClick={()=>deleteSkill(sk.id)}><Icon name="x" size={12}/></button>
-            </div>
-            <div className="skill-level-dots">{[1,2,3,4,5].map(l=><div key={l} className={"skill-level-dot"+(l<=sk.level?" skill-level-dot--on":"")} title={LEVEL_NAMES[l-1]}/>)}</div>
-            <div className="skill-card__footer">
-              <span className="skill-card__last">{LEVEL_NAMES[sk.level-1]}</span>
-              <button className="btn btn--ghost" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>{setUpdateId(updateId===sk.id?null:sk.id);setUpdateLevel(sk.level);setUpdateNote("");}}>
-                {updateId===sk.id?"Cancel":"Update"}
-              </button>
-            </div>
-            {updateId===sk.id&&(
-              <div className="skill-update-form">
-                <div>
-                  <div style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"var(--hf-fg-muted)",fontWeight:500,marginBottom:8}}>New level</div>
-                  <div style={{display:"flex",gap:6,marginBottom:4}}>
-                    {[1,2,3,4,5].map(l=>(
-                      <button key={l} onClick={()=>setUpdateLevel(l)} title={LEVEL_NAMES[l-1]} style={{width:28,height:28,borderRadius:4,border:"1px solid",fontSize:12,borderColor:updateLevel===l?"var(--hf-sand-400)":"var(--hf-border)",background:updateLevel===l?"var(--hf-sand-50)":"transparent",color:updateLevel===l?"var(--hf-sand-700)":"var(--hf-fg-muted)",cursor:"pointer"}}>{l}</button>
-                    ))}
-                  </div>
-                  <div style={{fontSize:11,color:"var(--hf-fg-muted)"}}>{LEVEL_NAMES[updateLevel-1]}</div>
-                </div>
-                <input className="input" placeholder="Note (optional)" style={{fontSize:13}} value={updateNote} onChange={e=>setUpdateNote(e.target.value)}/>
-                <button className="btn btn--primary" style={{fontSize:12}} onClick={()=>saveUpdate(sk.id)}>Save</button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      {filtered.length===0&&<div style={{padding:"32px 0",color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic"}}>No skills yet. Add one above.</div>}
-    </div>
-  );
-};
-
-
+/* ── Settings ── */
 /* ── The Day ── */
 const REFLECT_QS = [
   { id:"advanced", q:"What actually moved forward?",  hint:"Name the thing itself, not the hours you spent near it.", ph:"Today I moved…" },
@@ -3661,7 +3088,7 @@ const Purpose = ({ purpose, setPurpose, sessions }) => {
   );
 };
 
-const Settings = ({ theme, setTheme, onExport, onImport, onClearData, name, setName, lastExport, hasData, trackerOn, setTrackerOn }) => {
+const Settings = ({ theme, setTheme, onExport, onImport, onClearData, lastExport, hasData, trackerOn, setTrackerOn }) => {
   const daysSinceExport = lastExport ? Math.floor((Date.now()-lastExport)/86400000) : null;
   const nudge = hasData && (daysSinceExport===null || daysSinceExport>=7);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -3672,10 +3099,6 @@ const Settings = ({ theme, setTheme, onExport, onImport, onClearData, name, setN
       <div className="eyebrow">Preferences</div>
       <h1 className="h-serif" style={{fontSize:44,margin:"8px 0 32px"}}>Settings</h1>
       <div className="card-s">
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid var(--hf-border)"}}>
-          <div><div style={{fontSize:14,fontWeight:500}}>Your name</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>Used in the Dashboard greeting.</div></div>
-          <input className="input" style={{width:180,fontSize:13}} placeholder="e.g. Marcus" value={name||""} onChange={e=>setName(e.target.value)}/>
-        </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid var(--hf-border)"}}>
           <div><div style={{fontSize:14,fontWeight:500}}>Theme</div><div style={{fontSize:12,color:"var(--hf-fg-muted)",marginTop:2}}>Light paper or deep charcoal.</div></div>
           <button className="btn btn--secondary" onClick={()=>setTheme(t=>t==="light"?"dark":"light")}><Icon name={theme==="dark"?"sun":"moon"} size={14}/>{theme==="dark"?"Light":"Dark"}</button>
@@ -3757,8 +3180,8 @@ const usePersist = (key, value) => {
 
 /* ── App ── */
 const App = () => {
-  // Land on the day's opening ritual until it has been done, then go straight to the dashboard.
-  const [view,    setView]    = useState(()=>loadLS("hf_rituals",{})[todayStr()]?.openedAt ? "dashboard" : "day");
+  // Land on the day's opening ritual until it has been done, then go straight to work.
+  const [view,    setView]    = useState(()=>loadLS("hf_rituals",{})[todayStr()]?.openedAt ? "session" : "day");
   const [theme,   setTheme]   = useState(()=>loadLS("hf_theme","light"));
   const [task,    setTask]    = useState("");
   const [sound,   setSound]   = useState(null);
@@ -3771,10 +3194,6 @@ const App = () => {
   const [quote,       setQuote]       = useState(()=>randQuote());
   const [mits,        setMits]        = useState(()=>loadLS("hf_mits",{}));
   const [practiceLog, setPracticeLog] = useState(()=>loadLS("hf_practices",[]));
-  const [goals,       setGoals]       = useState(()=>loadLS("hf_goals",[]));
-  const [todos,       setTodos]       = useState(()=>loadLS("hf_todos",[]));
-  const [skills,      setSkills]      = useState(()=>loadLS("hf_skills",[]));
-  const [name,        setName]        = useState(()=>loadLS("hf_name",""));
   const [breathDuration, setBreathDuration] = useState(60);
   const [preloadDuration, setPreloadDuration] = useState(10*60);
   const [lastDur, setLastDur] = useState(0); // seconds of the session the complete screen is showing
@@ -3821,10 +3240,6 @@ const App = () => {
   usePersist("hf_breaks",    breaks);
   usePersist("hf_weekly",    weekly);
   usePersist("hf_trackerOn", trackerOn);
-  usePersist("hf_goals",     goals);
-  usePersist("hf_todos",     todos);
-  usePersist("hf_skills",    skills);
-  usePersist("hf_name",      name);
 
   /* Storage health — runs after the persistence effects above, every render */
   const [storageWarn, setStorageWarn] = useState(false);
@@ -3842,7 +3257,7 @@ const App = () => {
     return ()=>{ cancelled=true; };
   },[]);
   const restoreFromMirror = async () => {
-    const [h,t,m,p,pu,r,b,w,g,td,sk,nm]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
+    const [h,t,m,p,pu,r,b,w]=await Promise.all(DATA_KEYS.map(k=>IDB.get(k)));
     if(Array.isArray(h)) setHistory(h);
     if(Array.isArray(t)) setTrackerEntries(t);
     if(m&&typeof m==="object") setMits(m);
@@ -3851,10 +3266,6 @@ const App = () => {
     if(r&&typeof r==="object") setRituals(r);
     if(Array.isArray(b)) setBreaks(b);
     if(w&&typeof w==="object") setWeekly(w);
-    if(Array.isArray(g)) setGoals(g);
-    if(Array.isArray(td)) setTodos(td);
-    if(Array.isArray(sk)) setSkills(sk);
-    if(typeof nm==="string") setName(nm);
     setRecovery(null);
   };
 
@@ -4102,7 +3513,7 @@ const App = () => {
   };
 
   const exportData = () => {
-    const data={version:4,history,trackerEntries,mits,practiceLog,purpose,rituals,breaks,weekly,goals,todos,skills,name,exportedAt:new Date().toISOString()};
+    const data={version:4,history,trackerEntries,mits,practiceLog,purpose,rituals,breaks,weekly,exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
@@ -4113,10 +3524,8 @@ const App = () => {
   };
   const clearData = () => {
     setHistory([]); setTrackerEntries([]); setMits({}); setPracticeLog([]); setRituals({}); setBreaks([]); setWeekly({});
-    setGoals([]); setTodos([]); setSkills([]);
     saveLS("hf_history",[]); saveLS("hf_tracker",[]); saveLS("hf_mits",{}); saveLS("hf_practices",[]);
     saveLS("hf_rituals",{}); saveLS("hf_breaks",[]); saveLS("hf_weekly",{});
-    saveLS("hf_goals",[]); saveLS("hf_todos",[]); saveLS("hf_skills",[]);
     // Purpose is deliberately preserved — clearing your logs should never
     // erase your North Star. Delete it by hand on the Purpose page.
   };
@@ -4159,19 +3568,7 @@ const App = () => {
     else if(id==="breath")  { setView("breath"); }
     else if(id==="preload") { setView("preload"); }
     else if(id==="lognow")  { setTrackerPrompt(true); }
-    else if(["dashboard","day","week","purpose","today","stats","sounds","planning","stoic","tracker","goals","todos","skills","practices"].includes(id)) setView(id);
-  };
-
-  const sendTodoToMit = (text) => {
-    setMits(m=>{
-      const today2=todayStr();
-      const todayPlan=m[today2]||{tasks:["","",""],done:[false,false,false]};
-      const emptyIdx=todayPlan.tasks.findIndex(x=>!x);
-      if(emptyIdx<0) return m;
-      const newTasks=[...todayPlan.tasks]; newTasks[emptyIdx]=text;
-      return {...m,[today2]:{...todayPlan,tasks:newTasks}};
-    });
-    setView("planning");
+    else if(["day","week","purpose","today","stats","sounds","stoic","tracker","practices"].includes(id)) setView(id);
   };
 
   const today       = todayStr();
@@ -4179,9 +3576,9 @@ const App = () => {
   const todayTracker = trackerEntries.filter(e=>e.date&&localDate(new Date(e.date))===today);
   const todayMit     = mits[today] || {tasks:["","",""],done:[false,false,false]};
 
-  const crumbs=({dashboard:"Dashboard",day:"The Day",week:"The Week",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",planning:"Planning",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker",goals:"Goals",todos:"To-do",skills:"Skills"})[view];
-  const section=view==="dashboard"?"Command":["purpose","day","week"].includes(view)?"Compass":["sounds","planning","stoic","practices"].includes(view)?"Practice":["goals","todos","skills"].includes(view)?"Build":"Focus";
-  const crumbArr=view==="settings"?["Settings"]:view==="dashboard"?["Dashboard"]:[section,crumbs];
+  const crumbs=({day:"The Day",week:"The Week",purpose:"Purpose",session:"Session",today:"Today",stats:"Stats",sounds:"Soundscapes",stoic:"Stoicism",practices:"Daily Practices",settings:"Settings",breath:"Begin",preload:"Preload",tracker:"Tracker"})[view];
+  const section=["purpose","day","week"].includes(view)?"Compass":["sounds","stoic","practices"].includes(view)?"Practice":"Focus";
+  const crumbArr=view==="settings"?["Settings"]:[section,crumbs];
   const soundLabel=sound?({rain:"Soft rain",forest:"Old forest",waves:"Shoreline",cafe:"Quiet café",brown:"Brown noise",fire:"Fireplace"})[sound]:null;
 
   return (
@@ -4214,7 +3611,6 @@ const App = () => {
           </div>
         )}
 
-        {view==="dashboard" && <Dashboard history={history} mits={mits} goals={goals} todos={todos} practiceLog={practiceLog} skills={skills} name={name}/>}
         {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
                                 lastDur={lastDur} streak={calcStreak(history)} todaySecs={todayHistory.reduce((a,s)=>a+(s.dur||0),0)}
                                 goalHours={activeGoalId?history.reduce((a,s)=>a+(s.goalId===activeGoalId?(s.dur||0):0),0)/3600:0}
@@ -4222,20 +3618,16 @@ const App = () => {
         {view==="today"    && <Today sessions={todayHistory} streak={calcStreak(history)} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
         {view==="stats"    && <Stats sessions={history} purpose={purpose} breaks={breaks}/>}
         {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
-        {view==="goals"    && <GoalsView goals={goals} setGoals={setGoals}/>}
-        {view==="todos"    && <TodoView todos={todos} setTodos={setTodos} onSendToMit={sendTodoToMit}/>}
-        {view==="planning" && <Planning mits={mits} setMits={setMits}/>}
-        {view==="skills"   && <SkillsView skills={skills} setSkills={setSkills}/>}
         {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
-        {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
         {view==="stoic"     && <Stoic/>}
+        {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
         {view==="breath"    && <Breath duration={breathDuration} onDone={()=>{ setView("session"); onBegin(); }}/>}
         {view==="preload"   && <Preload duration={preloadDuration} onDone={()=>setView("session")}/>}
         {view==="day"      && <TheDay rituals={rituals} setRituals={setRituals} purpose={purpose} mits={mits} setMits={setMits}
                                 sessions={todayHistory} practiceLog={practiceLog} breaks={breaks} streak={calcStreak(history)} onEnterDay={()=>setView("session")}/>}
         {view==="week"     && <TheWeek weekly={weekly} setWeekly={setWeekly} purpose={purpose} sessions={history} rituals={rituals} breaks={breaks}/>}
         {view==="purpose"  && <Purpose purpose={purpose} setPurpose={setPurpose} sessions={history}/>}
-        {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData} name={name} setName={setName}
+        {view==="settings" && <Settings theme={theme} setTheme={setTheme} onExport={exportData} onImport={importData} onClearData={clearData}
                                 lastExport={lastExport} hasData={history.length>0} trackerOn={trackerOn} setTrackerOn={setTrackerOn}/>}
       </main>
       {restAsk && (
