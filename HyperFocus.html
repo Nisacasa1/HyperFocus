@@ -309,6 +309,29 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .tracker-entry__dur  { font-family:var(--hf-font-mono); font-size:11px; color:var(--hf-fg-subtle); text-align:right; padding-top:2px; }
 .tracker-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
 
+/* ── Tracker day calendar ── */
+.cal { display:flex; border:1px solid var(--hf-border); border-radius:10px; background:var(--hf-bg-raised); overflow-y:auto; max-height:600px; box-shadow:var(--hf-shadow-sm); }
+.cal__hours { width:54px; flex-shrink:0; position:relative; }
+.cal__hourlabel { position:absolute; right:10px; transform:translateY(-50%); font-family:var(--hf-font-mono); font-size:9.5px; color:var(--hf-fg-subtle); }
+.cal__grid { flex:1; position:relative; border-left:1px solid var(--hf-border); cursor:crosshair; }
+.cal__line { position:absolute; left:0; right:0; border-top:1px solid var(--hf-border); pointer-events:none; }
+.cal__line--half { opacity:.35; }
+.cal__block { position:absolute; left:6px; right:12px; background:var(--hf-sand-50); border:1px solid var(--hf-sand-200); border-left:3px solid var(--hf-sand-400);
+  border-radius:5px; padding:2px 26px 2px 8px; overflow:hidden; cursor:default; }
+.cal__block:hover { border-color:var(--hf-sand-300); }
+.cal__block__text { font-size:11.5px; color:var(--hf-fg); line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cal__block__time { font-family:var(--hf-font-mono); font-size:9px; color:var(--hf-fg-muted); white-space:nowrap; }
+.cal__block__del { position:absolute; top:2px; right:4px; opacity:0; transition:opacity 120ms; padding:2px; color:var(--hf-fg-muted); line-height:0; }
+.cal__block:hover .cal__block__del { opacity:1; }
+.cal__block__del:hover { color:#C0392B; }
+[data-theme="dark"] .cal__block { background:rgba(211,184,135,.09); border-color:rgba(211,184,135,.25); border-left-color:var(--hf-accent); }
+.cal__ghost { position:absolute; left:6px; right:12px; background:rgba(200,169,126,.18); border:1px dashed var(--hf-sand-400); border-radius:5px; pointer-events:none;
+  display:flex; align-items:center; justify-content:center; font-family:var(--hf-font-mono); font-size:10px; color:var(--hf-sand-700); }
+[data-theme="dark"] .cal__ghost { color:var(--hf-accent); }
+.cal__now { position:absolute; left:0; right:0; border-top:1.5px solid #C0392B; pointer-events:none; z-index:2; }
+.cal__now::before { content:""; position:absolute; left:-3px; top:-4px; width:7px; height:7px; border-radius:50%; background:#C0392B; }
+@media (hover: none) { .cal__block__del { opacity:1; } .cal__grid { cursor:default; } }
+
 /* ── Star rating ── */
 .star-rate { margin-top:24px; text-align:center; }
 .star-rate__label { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:14px; }
@@ -2096,48 +2119,98 @@ const TrackerPrompt = ({ onSave, onSkip, periodStart }) => {
   );
 };
 
-/* ── Tracker manual entry ── */
-const TrackerManualEntry = ({ onSave, onClose }) => {
-  const slots = getPastSlots();
-  const [slotIdx, setSlotIdx] = useState(0);
+/* ── Tracker entry form — any start, any end, down to 5 minutes ── */
+const minOfDay  = (hhmm) => { const [h,m]=hhmm.split(":").map(Number); return h*60+m; };
+const hhmmOfMin = (m) => `${String(Math.floor(m/60)%24).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
+
+const TrackerEntryForm = ({ start, end, onSave, onClose }) => {
+  const [s, setS] = useState(hhmmOfMin(start));
+  const [e, setE] = useState(hhmmOfMin(end));
   const [val, setVal] = useState("");
   const ref = useRef(null);
   useEffect(()=>{ setTimeout(()=>ref.current?.focus(),50); },[]);
-  const save = () => {
-    const t=val.trim();
-    if(!t||!slots[slotIdx]) return;
-    onSave(t, slots[slotIdx].start, slots[slotIdx].end);
-  };
+  const sMin=minOfDay(s), eMin=minOfDay(e);
+  const valid = val.trim() && eMin>sMin;
+  const save = () => { if(valid) onSave(val.trim(), sMin, eMin); };
   return (
     <div className="tracker-toast">
       <div className="tracker-toast__header">
         <span className="tracker-toast__label">New entry</span>
         <button className="iconbtn" onClick={onClose} style={{marginRight:-6}}><Icon name="x" size={14}/></button>
       </div>
-      {slots.length===0
-        ? <p style={{fontSize:13,color:"var(--hf-fg-muted)",margin:"0 0 14px",fontStyle:"italic"}}>No completed periods yet today — check back after the first 30 minutes.</p>
-        : <select className="input" style={{marginBottom:16,fontSize:14}}
-            value={slotIdx} onChange={e=>setSlotIdx(Number(e.target.value))}>
-            {slots.map((s,i)=><option key={i} value={i}>{s.label}</option>)}
-          </select>
-      }
-      <input ref={ref} className="tracker-toast__input" placeholder="What were you working on?"
-        value={val} onChange={e=>setVal(e.target.value)}
-        onKeyDown={e=>{ if(e.key==="Enter") save(); if(e.key==="Escape") onClose(); }}/>
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:14,flexWrap:"wrap"}}>
+        <input className="input" type="time" step="300" value={s} onChange={ev=>setS(ev.target.value)} style={{width:110,fontFamily:"var(--hf-font-mono)"}}/>
+        <span style={{color:"var(--hf-fg-subtle)"}}>—</span>
+        <input className="input" type="time" step="300" value={e} onChange={ev=>setE(ev.target.value)} style={{width:110,fontFamily:"var(--hf-font-mono)"}}/>
+        <span style={{fontFamily:"var(--hf-font-mono)",fontSize:11,color:eMin>sMin?"var(--hf-fg-muted)":"#C0392B"}}>
+          {eMin>sMin?fmtMins(eMin-sMin):"end before start"}
+        </span>
+      </div>
+      <input ref={ref} className="tracker-toast__input" placeholder="What were you doing?"
+        value={val} onChange={ev=>setVal(ev.target.value)}
+        onKeyDown={ev=>{ if(ev.key==="Enter") save(); if(ev.key==="Escape") onClose(); }}/>
       <div className="tracker-toast__actions">
-        <button className="btn btn--primary" onClick={save} disabled={!val.trim()||slots.length===0}>Log</button>
+        <button className="btn btn--primary" onClick={save} disabled={!valid}>Log</button>
         <button className="btn btn--ghost" onClick={onClose}>Cancel</button>
       </div>
     </div>
   );
 };
 
-/* ── Tracker view ── */
-const Tracker = ({ entries, countdown, enabled=true, onLogNow, onNewEntry }) => {
+/* ── Tracker view — the day as a calendar ─────────────────────────────────
+   Drag on the grid to create an entry of ANY length (snapped to 5 min), like
+   a calendar. On touch devices drag is left to scrolling — "New entry" opens
+   the same form with free start/end times. */
+const HOUR_PX = 48;         // one hour of the day, in pixels
+const CAL_SNAP = 5;         // minutes
+const Tracker = ({ entries, countdown, enabled=true, onLogNow, onAddEntry, onDeleteEntry }) => {
   const fmtC=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
   const now=new Date();
+  const nowMin=now.getHours()*60+now.getMinutes();
   const dStr=now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
   const totalMins=entries.reduce((a,e)=>a+(e.duration||0),0);
+
+  const [drag,  setDrag]  = useState(null);   // {a,b} minutes while dragging
+  const [draft, setDraft] = useState(null);   // {start,end} → entry form open
+  const gridRef   = useRef(null);
+  const scrollRef = useRef(null);
+  const dragRef   = useRef(null);
+  useEffect(()=>{ dragRef.current=drag; },[drag]);
+
+  // Land the viewport on the working part of the day, not on 00:00.
+  useEffect(()=>{
+    const el=scrollRef.current; if(!el) return;
+    const target=Math.max(0,(Math.min(nowMin,20*60)-120)/60*HOUR_PX);
+    el.scrollTop=target;
+  },[]);
+
+  const minToY = m => m/60*HOUR_PX;
+  const snap   = m => Math.round(m/CAL_SNAP)*CAL_SNAP;
+  const minAt  = (clientY) => {
+    const r=gridRef.current.getBoundingClientRect();
+    return Math.max(0,Math.min(24*60,(clientY-r.top)/HOUR_PX*60));
+  };
+
+  const onDown = (e) => {
+    if(e.pointerType!=="mouse") return;               // touch scrolls; button covers mobile
+    if(e.target.closest(".cal__block")) return;       // blocks are not a drawing surface
+    const m=snap(minAt(e.clientY));
+    setDrag({a:m,b:m});
+    try { gridRef.current.setPointerCapture(e.pointerId); } catch(err) {}
+  };
+  const onMove = (e) => { if(dragRef.current) setDrag(d=>({...d,b:snap(minAt(e.clientY))})); };
+  const onUp   = () => {
+    const d=dragRef.current; if(!d) return;
+    setDrag(null);
+    const s=Math.min(d.a,d.b), en=Math.max(d.a,d.b);
+    // a plain click (no real drag) proposes a 30-min block starting there
+    setDraft(en-s>=CAL_SNAP ? {start:s,end:en} : {start:s,end:Math.min(s+30,24*60)});
+  };
+
+  const blocks=[...entries]
+    .map(e=>({...e, s:minOfDay(e.startTime), e:Math.max(minOfDay(e.endTime),minOfDay(e.startTime)+CAL_SNAP)}))
+    .sort((a,b)=>a.s-b.s);
+
   return (
     <div className="page">
       <div style={{marginBottom:28}}><div className="eyebrow">{dStr}</div><h1 className="h-serif" style={{fontSize:44,margin:"8px 0 0"}}>Time tracker</h1></div>
@@ -2149,23 +2222,55 @@ const Tracker = ({ entries, countdown, enabled=true, onLogNow, onNewEntry }) => 
         </div>
         <div style={{marginTop:20,display:"flex",gap:8,flexWrap:"wrap"}}>
           <button className="btn btn--primary" onClick={onLogNow}><Icon name="plus" size={14}/> Log now</button>
-          <button className="btn btn--secondary" onClick={onNewEntry}><Icon name="calendar" size={14}/> New entry</button>
+          <button className="btn btn--secondary" onClick={()=>setDraft({start:snap(Math.max(0,nowMin-60)),end:snap(nowMin)||30})}><Icon name="calendar" size={14}/> New entry</button>
         </div>
       </div>
+
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:12}}>
-        <h2 className="h-serif" style={{fontSize:24,margin:0}}>Today's log</h2>
-        {entries.length>0&&<span style={{fontSize:12,color:"var(--hf-fg-muted)",fontFamily:"var(--hf-font-mono)"}}>{entries.length} {entries.length===1?"entry":"entries"}</span>}
+        <h2 className="h-serif" style={{fontSize:24,margin:0}}>The day</h2>
+        <span style={{fontSize:12,color:"var(--hf-fg-muted)"}}>Drag on the grid to log any stretch of time — down to 5 minutes.</span>
       </div>
-      <div className="tracker-timeline">
-        {entries.length===0&&<div style={{padding:"32px 0",color:"var(--hf-fg-muted)",fontSize:14,fontStyle:"italic"}}>Nothing logged yet. First check-in in {fmtC(countdown)}.</div>}
-        {[...entries].sort((a,b)=>a.startTime.localeCompare(b.startTime)).map((e,i)=>(
-          <div key={i} className="tracker-entry">
-            <span className="tracker-entry__time">{e.startTime} — {e.endTime}</span>
-            <span className="tracker-entry__text">{e.text}</span>
-            <span className="tracker-entry__dur">{e.duration!=null?fmtMins(e.duration):"—"}</span>
-          </div>
-        ))}
+
+      <div className="cal" ref={scrollRef}>
+        <div className="cal__hours" style={{height:24*HOUR_PX}}>
+          {Array.from({length:23},(_,i)=>i+1).map(h=>(
+            <span key={h} className="cal__hourlabel" style={{top:minToY(h*60)}}>{String(h).padStart(2,"0")}:00</span>
+          ))}
+        </div>
+        <div className="cal__grid" ref={gridRef} style={{height:24*HOUR_PX}}
+          onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={()=>setDrag(null)}>
+          {Array.from({length:47},(_,i)=>i+1).map(i=>(
+            <div key={i} className={"cal__line"+(i%2?" cal__line--half":"")} style={{top:minToY(i*30)}}/>
+          ))}
+          {blocks.map(b=>(
+            <div key={b.id} className="cal__block" style={{top:minToY(b.s),height:Math.max(14,minToY(b.e-b.s))}}
+              title={`${b.startTime} — ${b.endTime} · ${b.duration!=null?fmtMins(b.duration):""}\n${b.text}`}>
+              <div className="cal__block__text">{b.text}</div>
+              {b.e-b.s>=25&&<div className="cal__block__time">{b.startTime} — {b.endTime} · {fmtMins(b.duration||b.e-b.s)}</div>}
+              <button className="cal__block__del" title="Delete entry"
+                onPointerDown={e=>e.stopPropagation()} onClick={()=>onDeleteEntry(b.id)}>
+                <Icon name="x" size={11}/>
+              </button>
+            </div>
+          ))}
+          {drag&&(()=>{ const s=Math.min(drag.a,drag.b), en=Math.max(drag.a,drag.b); return (
+            <div className="cal__ghost" style={{top:minToY(s),height:Math.max(10,minToY(en-s))}}>
+              {hhmmOfMin(s)} — {hhmmOfMin(en)}{en>s?` · ${fmtMins(en-s)}`:""}
+            </div>
+          );})()}
+          <div className="cal__now" style={{top:minToY(nowMin)}}/>
+        </div>
       </div>
+
+      {entries.length===0&&(
+        <p style={{fontSize:13,color:"var(--hf-fg-muted)",fontStyle:"italic",marginTop:14}}>
+          Nothing logged yet. Drag on the grid, or wait for the check-in ({enabled?fmtC(countdown):"off"}).
+        </p>
+      )}
+
+      {draft&&<TrackerEntryForm start={draft.start} end={draft.end}
+        onSave={(text,s,en)=>{ onAddEntry(text,s,en); setDraft(null); }}
+        onClose={()=>setDraft(null)}/>}
     </div>
   );
 };
@@ -3378,7 +3483,6 @@ const App = () => {
   // Tracker
   const [trackerEntries,   setTrackerEntries]   = useState(()=>loadLS("hf_tracker",[]));
   const [trackerPrompt,    setTrackerPrompt]    = useState(false);
-  const [manualEntry,      setManualEntry]      = useState(false);
   const [trackerCountdown, setTrackerCountdown] = useState(()=>Math.max(0,Math.round((getNextHalfHourMs()-Date.now())/1000)));
   const [trackerPeriodStart, setTrackerPeriodStart] = useState(()=>getLastHalfHourDate());
 
@@ -3641,16 +3745,20 @@ const App = () => {
     setBreaks(bs=>bs.map(b=>b.id===id?{...b,type}:b));
     setRestAsk(null);
   };
-  const onManualEntry   = (text, slotStart, slotEnd) => {
+  // Free-range entry from the calendar: any start, any end, today.
+  const onAddEntry = (text, startMin, endMin) => {
+    const mk=(m)=>{ const d=new Date(); d.setHours(0,0,0,0); d.setMinutes(m); return d; };
+    const s=mk(startMin), e=mk(endMin);
     setTrackerEntries(es=>[...es,{
       id:        Date.now(),
-      startTime: formatHHMM(slotStart),
-      endTime:   formatHHMM(slotEnd),
-      date:      slotEnd.toISOString(),
-      duration:  30,
+      startTime: formatHHMM(s),
+      endTime:   formatHHMM(e),
+      date:      e.toISOString(),
+      duration:  endMin-startMin,
       text,
     }]);
   };
+  const onDeleteEntry = (id) => setTrackerEntries(es=>es.filter(e=>e.id!==id));
 
   const logEntry = (text) => {
     const now = new Date();
@@ -3776,7 +3884,7 @@ const App = () => {
                                 protocols={purpose.protocols} kind={kind} setKind={setKind} onPreload={(mins)=>{ setPreloadDuration(mins*60); setView("preload"); }}/>}
         {view==="today"    && <Today sessions={todayHistory} streak={calcStreak(history)} onStart={()=>setView("session")} onRename={onRenameSession} onDelete={onDeleteSession}/>}
         {view==="stats"    && <Stats sessions={history} purpose={purpose} breaks={breaks}/>}
-        {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onNewEntry={()=>setManualEntry(true)}/>}
+        {view==="tracker"  && <Tracker entries={todayTracker} countdown={trackerCountdown} enabled={trackerOn} onLogNow={()=>setTrackerPrompt(true)} onAddEntry={onAddEntry} onDeleteEntry={onDeleteEntry}/>}
         {view==="sounds"   && <Soundscapes active={sound} setActive={setSound}/>}
         {view==="stoic"     && <Stoic/>}
         {view==="practices" && <DailyPractices practiceLog={practiceLog} onLogPractice={onLogPractice}/>}
@@ -3807,7 +3915,6 @@ const App = () => {
         </div>
       )}
       {trackerPrompt && <TrackerPrompt onSave={logEntry} onSkip={()=>setTrackerPrompt(false)} periodStart={trackerPeriodStart}/>}
-      {manualEntry && <TrackerManualEntry onSave={(text,s,e)=>{ onManualEntry(text,s,e); setManualEntry(false); }} onClose={()=>setManualEntry(false)}/>}
       {cmdk && <CmdK onClose={()=>setCmdk(false)} onAction={cmdAction}/>}
     </div>
   );

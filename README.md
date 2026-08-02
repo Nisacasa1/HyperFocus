@@ -61,11 +61,11 @@ Lives inside **The Day** — one place to decide, one place to review.
 - Past days' plans preserved for review at the bottom of The Day
 
 ### ⏱ Time Tracker
+- **The day as a calendar** — a 24-hour vertical grid. Drag from any start to any end to log a block of **any length, down to 5 minutes**; a plain click proposes a 30-minute block. Entries render as blocks with a red now-line, and delete on hover.
+- **New entry** opens the same form with free start/end time pickers (this is also the mobile path, where dragging is left to scrolling)
 - Automatic **30-min check-in prompts** at :00 and :30 of every hour
 - **Never interrupts a focus session** — if the mark passes while you're focusing or on a break, the block is logged automatically under the session's task, silently
 - Can be switched **off entirely** in Settings
-- **Manual entry** — fill in any past period you missed while the app was closed
-- Chronological timeline of logged blocks with duration
 - Wall-clock based countdown, fires OS notifications even when on another page/app
 
 ### 📊 Stats
