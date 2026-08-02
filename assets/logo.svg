@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" fill="none">
+  <circle cx="32" cy="32" r="26" stroke="#12110E" stroke-width="1.5"></circle>
+  <circle cx="32" cy="32" r="14" stroke="#12110E" stroke-width="1.5"></circle>
+  <circle cx="32" cy="32" r="3" fill="#12110E"></circle>
+  <text x="76" y="42" font-family="Instrument Serif, Georgia, serif" font-size="34" font-weight="400" fill="#12110E" letter-spacing="-0.5">Hyper Focus</text>
+</svg>
