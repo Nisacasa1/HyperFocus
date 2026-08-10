@@ -353,12 +353,18 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .cal__grid { flex:1; position:relative; border-left:1px solid var(--hf-border); cursor:crosshair; }
 .cal__line { position:absolute; left:0; right:0; border-top:1px solid var(--hf-border); pointer-events:none; }
 .cal__line--half { opacity:.35; }
-/* Left/right lane is set inline per block: entries on the left, sessions and
-   breaks on the right, so overlapping time never hides one behind the other. */
-.cal__block { position:absolute; background:var(--hf-sand-50); border:1px solid var(--hf-sand-200); border-left:3px solid var(--hf-sand-400);
-  border-radius:5px; padding:2px 8px; overflow:hidden; cursor:default; }
+/* `left` and `z-index` are set inline per block. Everything runs to the right
+   edge; an overlapping block is indented and drawn on top, leaving a strip of
+   the one beneath visible — the calendar cascade. Hover lifts a block above the
+   stack so the one underneath is always reachable. */
+.cal__block { position:absolute; right:8px; background:var(--hf-sand-50); border:1px solid var(--hf-sand-200); border-left:3px solid var(--hf-sand-400);
+  border-radius:5px; padding:2px 8px; overflow:hidden; cursor:default;
+  transition:box-shadow 140ms var(--hf-ease-out); }
 .cal__block--entry { padding-right:26px; }
-.cal__block:hover { border-color:var(--hf-sand-300); }
+.cal__block--stacked { box-shadow:-3px 0 8px -2px rgba(18,17,14,.22); }
+[data-theme="dark"] .cal__block--stacked { box-shadow:-3px 0 8px -2px rgba(0,0,0,.5); }
+.cal__block:hover,
+.cal__block--raised { border-color:var(--hf-sand-300); z-index:40 !important; box-shadow:var(--hf-shadow-md); }
 .cal__block__text { font-size:11.5px; color:var(--hf-fg); line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   display:flex; align-items:center; gap:4px; }
 .cal__block__text svg { flex-shrink:0; opacity:.7; }
@@ -375,7 +381,7 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 [data-theme="dark"] .cal__block--session { background:var(--hf-sand-400); border-color:var(--hf-sand-400); border-left-color:var(--hf-sand-600); }
 [data-theme="dark"] .cal__block--session .cal__block__text { color:var(--hf-bone-900); }
 [data-theme="dark"] .cal__block--session .cal__block__time { color:var(--hf-bone-800); }
-.cal__block--break { background:transparent; border-style:dashed; border-left-style:solid; border-left-color:var(--hf-bone-400); }
+.cal__block--break { background:var(--hf-bg-raised); border-style:dashed; border-left-style:solid; border-left-color:var(--hf-bone-400); }
 .cal__block--break .cal__block__text { color:var(--hf-fg-muted); }
 
 .cal-key { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:10px; font-size:11px; color:var(--hf-fg-muted); }
@@ -2341,6 +2347,10 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
 
   const [drag,  setDrag]  = useState(null);   // {a,b} minutes while dragging
   const [draft, setDraft] = useState(null);   // {start,end} → entry form open
+  /* Hover lifts a buried block on a mouse, but a phone has no hover — so a tap
+     raises it too. Without this, the delete button of a block under the stack
+     is physically unreachable on touch. */
+  const [raised, setRaised] = useState(null);
   const gridRef   = useRef(null);
   const scrollRef = useRef(null);
   const dragRef   = useRef(null);
@@ -2389,28 +2399,35 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
       return {...e, s, e:end, pe:Math.max(end,s+MIN_BLOCK_MIN)};
     });
 
-  /* Sessions keep their own lane on the right, so a manual entry covering the
-     same stretch never hides them. Within each lane, blocks that overlap in
-     time are packed into side-by-side columns — a five-minute quick log dropped
-     inside a half-hour check-in has to stay readable, not sit on top of it. */
-  const packLane = (list, from, to) => {
+  /* Overlap layout, the way a calendar does it: one full-width column, and
+     anything that overlaps cascades on top of what it overlaps — indented from
+     the left, still running to the right edge, so the block underneath keeps a
+     visible strip. Alone on its stretch, a block takes the whole width.
+
+     Depth comes from the classic greedy column assignment, so a block reuses a
+     level as soon as the one occupying it has ended. Sessions and breaks are
+     placed first, which puts them at the back: they are the context your logged
+     time sits inside, not another note competing with it. */
+  const INDENT_PCT = 13;   // per level of overlap
+  const MAX_INDENT = 65;   // never push a block past this, however deep it goes
+  const rankOf = (b) => b.kind==="entry" ? 1 : 0;
+
+  const packCascade = (list) => {
     const sorted=[...list].sort((a,b)=>a.s-b.s||a.pe-b.pe);
     const out=[];
     let cluster=[], clusterEnd=-1;
     const flush=()=>{
       if(!cluster.length) return;
-      const colEnds=[];                         // last drawn end per column
-      cluster.forEach(b=>{
-        let c=colEnds.findIndex(end=>end<=b.s); // first column this fits after
-        if(c===-1){ c=colEnds.length; }
-        colEnds[c]=b.pe;
-        b.__col=c;
-      });
-      const cols=colEnds.length;
-      cluster.forEach(b=>{
-        const w=(to-from)/cols;
-        out.push({...b, __left:from+b.__col*w, __width:w});
-      });
+      const colEnds=[];                          // last drawn end per level
+      [...cluster]
+        .sort((a,b)=>rankOf(a)-rankOf(b)||a.s-b.s||a.pe-b.pe)
+        .forEach(b=>{
+          let c=colEnds.findIndex(end=>end<=b.s); // first level free by then
+          if(c===-1) c=colEnds.length;
+          colEnds[c]=b.pe;
+          b.__depth=c;
+        });
+      cluster.forEach(b=>out.push({...b, __left:Math.min(b.__depth*INDENT_PCT,MAX_INDENT)}));
       cluster=[];
     };
     sorted.forEach(b=>{
@@ -2422,10 +2439,11 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
     return out;
   };
 
-  const blocks=[
-    ...packLane(shaped(entries.map(e=>({...e,kind:"entry"}))), 0, 62),
-    ...packLane(shaped([...daySessions,...dayBreaks]), 64, 100),
-  ];
+  const blocks = packCascade(shaped([
+    ...entries.map(e=>({...e,kind:"entry"})),
+    ...daySessions,
+    ...dayBreaks,
+  ]));
 
   return (
     <div className="page">
@@ -2469,9 +2487,10 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
             <div key={i} className={"cal__line"+(i%2?" cal__line--half":"")} style={{top:minToY(i*30)}}/>
           ))}
           {blocks.map(b=>(
-            <div key={b.id} className={"cal__block cal__block--"+b.kind}
+            <div key={b.id} className={"cal__block cal__block--"+b.kind+(b.__depth>0?" cal__block--stacked":"")+(raised===b.id?" cal__block--raised":"")}
+              onPointerDown={()=>setRaised(b.id)}
               style={{top:minToY(b.s),height:Math.max(MIN_BLOCK_PX,minToY(b.e-b.s)),
-                      left:`${b.__left}%`,width:`calc(${b.__width}% - 4px)`}}
+                      left:`${b.__left}%`,zIndex:1+b.__depth}}
               title={`${b.startTime} — ${b.endTime} · ${b.duration!=null?fmtMins(b.duration):""}\n${b.text}`}>
               <div className="cal__block__text">
                 {b.kind==="session"&&<Icon name="timer" size={10}/>}
@@ -2507,7 +2526,7 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
         <span className="cal-key__item"><span className="cal-key__swatch cal-key__swatch--entry"/>what you logged</span>
         <span className="cal-key__item"><span className="cal-key__swatch cal-key__swatch--session"/>focus sessions</span>
         <span className="cal-key__item"><span className="cal-key__swatch cal-key__swatch--break"/>breaks</span>
-        <span className="cal-key__note">Sessions are drawn from your focus history — they are never written into the log.</span>
+        <span className="cal-key__note">Overlapping blocks stack — hover one to bring it forward. Sessions come from your focus history and are never written into the log.</span>
       </div>
 
       {entries.length===0&&(
