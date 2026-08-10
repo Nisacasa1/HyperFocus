@@ -353,18 +353,15 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .cal__grid { flex:1; position:relative; border-left:1px solid var(--hf-border); cursor:crosshair; }
 .cal__line { position:absolute; left:0; right:0; border-top:1px solid var(--hf-border); pointer-events:none; }
 .cal__line--half { opacity:.35; }
-/* `left` and `z-index` are set inline per block. Everything runs to the right
-   edge; an overlapping block is indented and drawn on top, leaving a strip of
-   the one beneath visible — the calendar cascade. Hover lifts a block above the
-   stack so the one underneath is always reachable. */
-.cal__block { position:absolute; right:8px; background:var(--hf-sand-50); border:1px solid var(--hf-sand-200); border-left:3px solid var(--hf-sand-400);
-  border-radius:5px; padding:2px 8px; overflow:hidden; cursor:default;
-  transition:box-shadow 140ms var(--hf-ease-out); }
+/* One column, full width. The day is a partition, so blocks never overlap —
+   only `top` and `height` vary per block. */
+.cal__block { position:absolute; left:6px; right:8px; background:var(--hf-sand-50); border:1px solid var(--hf-sand-200); border-left:3px solid var(--hf-sand-400);
+  border-radius:5px; padding:2px 8px; overflow:hidden; cursor:default; }
 .cal__block--entry { padding-right:26px; }
-.cal__block--stacked { box-shadow:-3px 0 8px -2px rgba(18,17,14,.22); }
-[data-theme="dark"] .cal__block--stacked { box-shadow:-3px 0 8px -2px rgba(0,0,0,.5); }
-.cal__block:hover,
-.cal__block--raised { border-color:var(--hf-sand-300); z-index:40 !important; box-shadow:var(--hf-shadow-md); }
+.cal__block:hover { border-color:var(--hf-sand-300); }
+/* The piece of a session that resumed after an interruption cut into it. */
+.cal__block__cont { color:var(--hf-fg-subtle); font-size:11px; flex-shrink:0; }
+.cal__block--session .cal__block__cont { color:var(--hf-bone-400); }
 .cal__block__text { font-size:11.5px; color:var(--hf-fg); line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   display:flex; align-items:center; gap:4px; }
 .cal__block__text svg { flex-shrink:0; opacity:.7; }
@@ -2347,10 +2344,6 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
 
   const [drag,  setDrag]  = useState(null);   // {a,b} minutes while dragging
   const [draft, setDraft] = useState(null);   // {start,end} → entry form open
-  /* Hover lifts a buried block on a mouse, but a phone has no hover — so a tap
-     raises it too. Without this, the delete button of a block under the stack
-     is physically unreachable on touch. */
-  const [raised, setRaised] = useState(null);
   const gridRef   = useRef(null);
   const scrollRef = useRef(null);
   const dragRef   = useRef(null);
@@ -2386,64 +2379,57 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
     setDraft(en-s>=CAL_SNAP ? {start:s,end:en} : {start:s,end:Math.min(s+30,24*60)});
   };
 
-  /* A five-minute block is 4px tall at this scale — unreadable — so short blocks
-     are drawn at a floor of MIN_BLOCK_PX. `pe` is the end they *appear* to have
-     once that floor is applied; packing has to use it, or two blocks that don't
-     overlap in time still collide on screen. */
-  const MIN_BLOCK_MIN = Math.ceil(MIN_BLOCK_PX/HOUR_PX*60);
   const shaped = (list) => list
     .filter(e=>e.startTime&&e.endTime)
     .map(e=>{
       const s=minOfDay(e.startTime);
-      const end=Math.max(minOfDay(e.endTime),s+CAL_SNAP);
-      return {...e, s, e:end, pe:Math.max(end,s+MIN_BLOCK_MIN)};
+      return {...e, s, e:Math.max(minOfDay(e.endTime), s+1)};
     });
 
-  /* Overlap layout, the way a calendar does it: one full-width column, and
-     anything that overlaps cascades on top of what it overlaps — indented from
-     the left, still running to the right edge, so the block underneath keeps a
-     visible strip. Alone on its stretch, a block takes the whole width.
+  /* One column, one activity at a time — the day is a strict partition, never a
+     stack. Painter's algorithm: sessions and breaks go down first as the base
+     layer, then each logged entry is painted over them in the order it was
+     written, cutting out the stretch it covers.
 
-     Depth comes from the classic greedy column assignment, so a block reuses a
-     level as soon as the one occupying it has ended. Sessions and breaks are
-     placed first, which puts them at the back: they are the context your logged
-     time sits inside, not another note competing with it. */
-  const INDENT_PCT = 13;   // per level of overlap
-  const MAX_INDENT = 65;   // never push a block past this, however deep it goes
-  const rankOf = (b) => b.kind==="entry" ? 1 : 0;
-
-  const packCascade = (list) => {
-    const sorted=[...list].sort((a,b)=>a.s-b.s||a.pe-b.pe);
-    const out=[];
-    let cluster=[], clusterEnd=-1;
-    const flush=()=>{
-      if(!cluster.length) return;
-      const colEnds=[];                          // last drawn end per level
-      [...cluster]
-        .sort((a,b)=>rankOf(a)-rankOf(b)||a.s-b.s||a.pe-b.pe)
-        .forEach(b=>{
-          let c=colEnds.findIndex(end=>end<=b.s); // first level free by then
-          if(c===-1) c=colEnds.length;
-          colEnds[c]=b.pe;
-          b.__depth=c;
-        });
-      cluster.forEach(b=>out.push({...b, __left:Math.min(b.__depth*INDENT_PCT,MAX_INDENT)}));
-      cluster=[];
-    };
-    sorted.forEach(b=>{
-      if(!cluster.length){ cluster=[b]; clusterEnd=b.pe; return; }
-      if(b.s>=clusterEnd){ flush(); cluster=[b]; clusterEnd=b.pe; return; }
-      cluster.push(b); clusterEnd=Math.max(clusterEnd,b.pe);
+     So a quick log made during a session doesn't sit on top of it: it splits it.
+     The session becomes "before the interruption", the interruption, and "after
+     the interruption" — which is what actually happened. A later entry also cuts
+     into an earlier one, because the later one is the correction. */
+  const partition = (base, overlays) => {
+    let segs = base.map(b=>({...b}));
+    overlays.forEach(o=>{
+      const next=[];
+      segs.forEach(seg=>{
+        if(o.e<=seg.s || o.s>=seg.e){ next.push(seg); return; }   // untouched
+        if(o.s>seg.s) next.push({...seg, e:o.s});                 // piece before
+        if(o.e<seg.e) next.push({...seg, s:o.e, __cont:true});    // piece after
+        // fully covered → the segment disappears
+      });
+      next.push({...o});
+      segs=next;
     });
-    flush();
-    return out;
+    return segs
+      .filter(x=>x.e-x.s>=1)          // drop slivers left by an exact overlap
+      .sort((a,b)=>a.s-b.s);
   };
 
-  const blocks = packCascade(shaped([
-    ...entries.map(e=>({...e,kind:"entry"})),
-    ...daySessions,
-    ...dayBreaks,
-  ]));
+  const segments = partition(
+    shaped([...daySessions, ...dayBreaks]).sort((a,b)=>a.s-b.s),
+    shaped(entries.map(e=>({...e,kind:"entry"}))),   // insertion order = paint order
+  );
+
+  /* A five-minute block is 4px tall at this scale, so short blocks are drawn at
+     a floor of MIN_BLOCK_PX or their label is unreadable. That inflation would
+     land on whatever comes next, so the run is pushed down by the overflow — a
+     partition must never show two blocks on top of each other. Any gap in the
+     day puts the run back on the true grid. */
+  let flow=-Infinity;
+  const blocks = segments.map(b=>{
+    const h=Math.max(MIN_BLOCK_PX, minToY(b.e-b.s));
+    const top=Math.max(minToY(b.s), flow);
+    flow=top+h;
+    return {...b, __top:top, __h:h};
+  });
 
   return (
     <div className="page">
@@ -2486,33 +2472,37 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
           {Array.from({length:47},(_,i)=>i+1).map(i=>(
             <div key={i} className={"cal__line"+(i%2?" cal__line--half":"")} style={{top:minToY(i*30)}}/>
           ))}
-          {blocks.map(b=>(
-            <div key={b.id} className={"cal__block cal__block--"+b.kind+(b.__depth>0?" cal__block--stacked":"")+(raised===b.id?" cal__block--raised":"")}
-              onPointerDown={()=>setRaised(b.id)}
-              style={{top:minToY(b.s),height:Math.max(MIN_BLOCK_PX,minToY(b.e-b.s)),
-                      left:`${b.__left}%`,zIndex:1+b.__depth}}
-              title={`${b.startTime} — ${b.endTime} · ${b.duration!=null?fmtMins(b.duration):""}\n${b.text}`}>
-              <div className="cal__block__text">
-                {b.kind==="session"&&<Icon name="timer" size={10}/>}
-                {b.kind==="break"&&<Icon name="coffee" size={10}/>}
-                {b.text}
-              </div>
-              {b.e-b.s>=25&&(
-                <div className="cal__block__time">
-                  {b.startTime} — {b.endTime} · {fmtMins(b.duration||b.e-b.s)}
-                  {b.quality?` · ${"★".repeat(b.quality)}`:""}
+          {blocks.map(b=>{
+            /* A split piece shows its own span, not the original's — the point
+               is to read what actually happened between the interruptions. */
+            const mins=b.e-b.s, from=hhmmOfMin(b.s), to=hhmmOfMin(b.e);
+            return (
+              <div key={`${b.id}-${b.s}`} className={"cal__block cal__block--"+b.kind+(b.__cont?" cal__block--cont":"")}
+                style={{top:b.__top,height:b.__h}}
+                title={`${from} — ${to} · ${fmtMins(mins)}\n${b.text}`}>
+                <div className="cal__block__text">
+                  {b.kind==="session"&&<Icon name="timer" size={10}/>}
+                  {b.kind==="break"&&<Icon name="coffee" size={10}/>}
+                  {b.__cont&&<span className="cal__block__cont" title="Resumed after the interruption">↳</span>}
+                  {b.text}
                 </div>
-              )}
-              {/* Only manual entries can be deleted here. A session is history —
-                  it is removed from Today, not from the calendar. */}
-              {b.kind==="entry"&&(
-                <button className="cal__block__del" title="Delete entry" aria-label={`Delete entry: ${b.text}`}
-                  onPointerDown={e=>e.stopPropagation()} onClick={()=>onDeleteEntry(b.id)}>
-                  <Icon name="x" size={11}/>
-                </button>
-              )}
-            </div>
-          ))}
+                {mins>=25&&(
+                  <div className="cal__block__time">
+                    {from} — {to} · {fmtMins(mins)}
+                    {b.quality?` · ${"★".repeat(b.quality)}`:""}
+                  </div>
+                )}
+                {/* Only manual entries can be deleted here. A session is history —
+                    it is removed from Today, not from the calendar. */}
+                {b.kind==="entry"&&(
+                  <button className="cal__block__del" title="Delete entry" aria-label={`Delete entry: ${b.text}`}
+                    onPointerDown={e=>e.stopPropagation()} onClick={()=>onDeleteEntry(b.id)}>
+                    <Icon name="x" size={11}/>
+                  </button>
+                )}
+              </div>
+            );
+          })}
           {drag&&(()=>{ const s=Math.min(drag.a,drag.b), en=Math.max(drag.a,drag.b); return (
             <div className="cal__ghost" style={{top:minToY(s),height:Math.max(10,minToY(en-s))}}>
               {hhmmOfMin(s)} — {hhmmOfMin(en)}{en>s?` · ${fmtMins(en-s)}`:""}
@@ -2526,7 +2516,7 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
         <span className="cal-key__item"><span className="cal-key__swatch cal-key__swatch--entry"/>what you logged</span>
         <span className="cal-key__item"><span className="cal-key__swatch cal-key__swatch--session"/>focus sessions</span>
         <span className="cal-key__item"><span className="cal-key__swatch cal-key__swatch--break"/>breaks</span>
-        <span className="cal-key__note">Overlapping blocks stack — hover one to bring it forward. Sessions come from your focus history and are never written into the log.</span>
+        <span className="cal-key__note">One activity at a time: anything you log during a session splits it, and the session resumes (↳) after the interruption.</span>
       </div>
 
       {entries.length===0&&(
