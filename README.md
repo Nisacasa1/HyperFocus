@@ -19,25 +19,23 @@ The compass the rest of the app points at.
 - **Goals** with an hour target. Every session is attributed to the current goal, so progress is measured in hours actually focused, not intentions.
 
 ### ☀️ The Day
-Two rituals, because a timer alone never made anyone come back.
+One ritual, at the start. The written reflection lives in Notion — this page is
+the anchor, not the journal.
 - **Opening** — the app lands here until you've opened the day: your streak, your North Star, and your three priorities. Ten seconds, and you're anchored.
-- **Closing** — the day's numbers, then three questions (*what moved forward · what pulled you away · one line for tomorrow*) and a rating. A gentle prompt appears in the topbar after 7pm.
-- Every closed day is kept, so you can read the last two weeks back before planning the next one.
-- **The closing metric** — two badges answered from data, never asked: did you do the deep block (any session ≥ 50 min), and did you actually rest or just stop working (from your classified breaks).
-- **How can I improve?** — three concrete slots at every close, straight from the Daily Planner format.
-- **Send to second brain** — exports the closed day as a markdown file matching the vault's daily template (simplified 2026-08-01: free capture · something I learned · how can I improve ×3 · phrase of the day). The app's own reflection questions live in a dedicated Hyper Focus section, so the export is a genuine daily journal entry. Drop it into your vault's `journal/entries/`.
+- **Today so far** — hours focused, sessions, priorities closed, practices done, and the shape of the day (Use · Fill · Empty).
+- **Recent plans** — the three things of previous days, and whether they happened.
 
 ### 📅 The Week
 The vault's weekly protocol, composed from data the app already has.
 - **Measured backwards** — this week against last week, never against the ideal.
-- **Accumulated evidence** — the votes cast this week for the identity you declared, plus every closed day at a glance.
+- **Accumulated evidence** — the votes cast this week for the identity you declared, plus every day you showed up and the hours it held.
 - **Deliberate emptiness** — whether the week held any Empty sessions or real rest at all.
-- **Leak audit** — open loops, sustained judgments, draining relations. Named, so they stop being ambient.
-- **Send seed to second brain** — exports `YYYY-WW-hyperfocus.md`, a data seed for the vault's weekly synthesis.
+- **Where the week went** — computed from the tracker, never typed. Hours logged outside focus against last week, how many entries were under fifteen minutes, the heaviest day, and your own labels ranked by the time they actually took. Plus how the week was captured: quick logs vs check-ins vs entries drawn by hand.
+- **Send seed to second brain** — exports `YYYY-WW-hyperfocus.md`, a data seed for your weekly synthesis.
 
 ### 🗺 War Map
 The year at war-room altitude — twelve months on one screen.
-- Every day is colored by the focus it actually held (nothing is painted by hand — the color **is** the data), with a dot for closed days and today outlined.
+- Every day is colored by the focus it actually held (nothing is painted by hand — the color **is** the data), with a dot for days you opened and today outlined.
 - **Main objective** per month, one line each.
 - **Rules of engagement** — five standing rules for the year, so they never have to be re-decided.
 - Objectives and rules survive "Clear all data", like the Purpose page.
@@ -61,11 +59,13 @@ Lives inside **The Day** — one place to decide, one place to review.
 - Past days' plans preserved for review at the bottom of The Day
 
 ### ⏱ Time Tracker
+- **Quick log** — a button on every screen. Two taps: pick a length (5 · 10 · 15 · 30 · 45 · 60 min) and tap a label. It logs backwards from now, which is how you actually notice a derail — after it. Your own recent labels come first.
 - **The day as a calendar** — a 24-hour vertical grid. Drag from any start to any end to log a block of **any length, down to 5 minutes**; a plain click proposes a 30-minute block. Entries render as blocks with a red now-line, and delete on hover.
 - **New entry** opens the same form with free start/end time pickers (this is also the mobile path, where dragging is left to scrolling)
 - Automatic **30-min check-in prompts** at :00 and :30 of every hour
-- **Never interrupts a focus session** — if the mark passes while you're focusing or on a break, the block is logged automatically under the session's task, silently
-- Can be switched **off entirely** in Settings
+- **The tracker and your sessions complement each other, they never mix.** A focus session is never written into the tracker log — it is drawn on the calendar straight from your focus history, in its own lane, so a manual entry covering the same stretch never hides it. The summary counts **Tracked** and **Focused** separately.
+- **A session is never interrupted.** If a check-in comes due while you're focusing or on a break, nothing happens — no prompt, no sound. Once the session ends, the question is asked once, and only about the untracked gap *before* the session.
+- Can be switched **off entirely** in Settings — the calendar, quick log and **Log now** all keep working; only the automatic prompt stops.
 - Wall-clock based countdown, fires OS notifications even when on another page/app
 
 ### 📊 Stats
@@ -196,7 +196,7 @@ The legacy `/assets` and `*.jsx` files are early-stage design drafts and are not
 
 | Shortcut | Action |
 |---|---|
-| `Space` | Begin / pause the current session |
+| `Space` | Begin / pause the current session (Session screen only) |
 | `Ctrl K` | Open command palette |
 | `Escape` | Close command palette / cancel prompts |
 
