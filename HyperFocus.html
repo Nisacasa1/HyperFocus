@@ -2305,6 +2305,7 @@ const TrackerEntryForm = ({ start, end, onSave, onClose }) => {
    the same form with free start/end times. */
 const HOUR_PX = 48;         // one hour of the day, in pixels
 const CAL_SNAP = 5;         // minutes
+const MIN_BLOCK_PX = 14;    // a block never draws shorter than this, or its label is unreadable
 const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, onLogNow, onAddEntry, onDeleteEntry }) => {
   const fmtC=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
   const now=new Date();
@@ -2375,14 +2376,56 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
     setDraft(en-s>=CAL_SNAP ? {start:s,end:en} : {start:s,end:Math.min(s+30,24*60)});
   };
 
-  const blocks=[...entries.map(e=>({...e,kind:"entry"})), ...daySessions, ...dayBreaks]
+  /* A five-minute block is 4px tall at this scale — unreadable — so short blocks
+     are drawn at a floor of MIN_BLOCK_PX. `pe` is the end they *appear* to have
+     once that floor is applied; packing has to use it, or two blocks that don't
+     overlap in time still collide on screen. */
+  const MIN_BLOCK_MIN = Math.ceil(MIN_BLOCK_PX/HOUR_PX*60);
+  const shaped = (list) => list
     .filter(e=>e.startTime&&e.endTime)
-    .map(e=>({...e, s:minOfDay(e.startTime), e:Math.max(minOfDay(e.endTime),minOfDay(e.startTime)+CAL_SNAP)}))
-    .sort((a,b)=>a.s-b.s);
+    .map(e=>{
+      const s=minOfDay(e.startTime);
+      const end=Math.max(minOfDay(e.endTime),s+CAL_SNAP);
+      return {...e, s, e:end, pe:Math.max(end,s+MIN_BLOCK_MIN)};
+    });
 
-  /* Sessions sit in their own lane on the right so a manual entry covering the
-     same stretch never hides them — the two layers are read side by side. */
-  const laneOf = (b) => b.kind==="entry" ? {left:0,right:"38%"} : {left:"64%",right:0};
+  /* Sessions keep their own lane on the right, so a manual entry covering the
+     same stretch never hides them. Within each lane, blocks that overlap in
+     time are packed into side-by-side columns — a five-minute quick log dropped
+     inside a half-hour check-in has to stay readable, not sit on top of it. */
+  const packLane = (list, from, to) => {
+    const sorted=[...list].sort((a,b)=>a.s-b.s||a.pe-b.pe);
+    const out=[];
+    let cluster=[], clusterEnd=-1;
+    const flush=()=>{
+      if(!cluster.length) return;
+      const colEnds=[];                         // last drawn end per column
+      cluster.forEach(b=>{
+        let c=colEnds.findIndex(end=>end<=b.s); // first column this fits after
+        if(c===-1){ c=colEnds.length; }
+        colEnds[c]=b.pe;
+        b.__col=c;
+      });
+      const cols=colEnds.length;
+      cluster.forEach(b=>{
+        const w=(to-from)/cols;
+        out.push({...b, __left:from+b.__col*w, __width:w});
+      });
+      cluster=[];
+    };
+    sorted.forEach(b=>{
+      if(!cluster.length){ cluster=[b]; clusterEnd=b.pe; return; }
+      if(b.s>=clusterEnd){ flush(); cluster=[b]; clusterEnd=b.pe; return; }
+      cluster.push(b); clusterEnd=Math.max(clusterEnd,b.pe);
+    });
+    flush();
+    return out;
+  };
+
+  const blocks=[
+    ...packLane(shaped(entries.map(e=>({...e,kind:"entry"}))), 0, 62),
+    ...packLane(shaped([...daySessions,...dayBreaks]), 64, 100),
+  ];
 
   return (
     <div className="page">
@@ -2427,7 +2470,8 @@ const Tracker = ({ allEntries, sessions=[], breaks=[], countdown, enabled=true, 
           ))}
           {blocks.map(b=>(
             <div key={b.id} className={"cal__block cal__block--"+b.kind}
-              style={{top:minToY(b.s),height:Math.max(14,minToY(b.e-b.s)),...laneOf(b)}}
+              style={{top:minToY(b.s),height:Math.max(MIN_BLOCK_PX,minToY(b.e-b.s)),
+                      left:`${b.__left}%`,width:`calc(${b.__width}% - 4px)`}}
               title={`${b.startTime} — ${b.endTime} · ${b.duration!=null?fmtMins(b.duration):""}\n${b.text}`}>
               <div className="cal__block__text">
                 {b.kind==="session"&&<Icon name="timer" size={10}/>}
@@ -3926,6 +3970,9 @@ const App = () => {
       text,
       source:    "manual",
     }]);
+    // Same rule as the quick log: an entry drawn up to now closes that stretch,
+    // so the next check-in must not ask about it again. Past days never count.
+    if(e<=new Date()) advancePeriodTo(e);
   };
   const onDeleteEntry = (id) => setTrackerEntries(es=>es.filter(e=>e.id!==id));
 
@@ -3962,6 +4009,15 @@ const App = () => {
     }]);
   };
 
+  /* Any entry that reaches up to now also answers the pending check-in for that
+     stretch. Move the period forward so the next :00/:30 asks about what is
+     still unaccounted for, and nothing gets logged twice: quick-log at 19:05 and
+     the 19:30 check-in covers 19:05 — 19:30, not 19:00 — 19:30.
+     Never moves backwards, so a long entry cannot rewind the clock. */
+  const advancePeriodTo = (when) => {
+    setTrackerPeriodStart(prev => (when>prev ? when : prev));
+  };
+
   /* Quick log — the whole point is that it costs one tap. Logs the last N
      minutes, ending now, so a five-minute derail can be captured the moment it
      ends without opening a form or doing arithmetic. */
@@ -3969,6 +4025,7 @@ const App = () => {
     const end = new Date();
     const start = new Date(end.getTime() - mins*60000);
     writeEntry(text, start, end, "quick");
+    advancePeriodTo(end);
     setQuickLog(false);
   };
 
