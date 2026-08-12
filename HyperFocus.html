@@ -2782,7 +2782,13 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
   const greeting = hour<5 ? "Still awake." : hour<12 ? "Good morning." : hour<19 ? "Good afternoon." : "Good evening.";
 
   const plan     = mits[today] || {tasks:["","",""],done:[false,false,false]};
-  const setTask  = (i,val) => setMits(m=>({...m,[today]:{...plan,tasks:plan.tasks.map((t,j)=>j===i?val:t)}}));
+  // Emptying a slot also clears its tick, or the next thing typed there arrives
+  // already crossed out.
+  const setTask  = (i,val) => setMits(m=>({...m,[today]:{
+    ...plan,
+    tasks: plan.tasks.map((t,j)=>j===i?val:t),
+    done:  plan.done.map((d,j)=>j===i&&!val.trim()?false:d),
+  }}));
   const toggle   = (i) => { if(!plan.tasks[i]) return; setMits(m=>({...m,[today]:{...plan,done:plan.done.map((d,j)=>j===i?!d:d)}})); };
 
   /* Tomorrow's three things, decided tonight. Same store, next key — so come
@@ -2882,16 +2888,20 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
               </p>
             </div>
 
-            {mitsTotal>0&&(
-              <div style={{marginTop:24,borderTop:"1px solid var(--hf-border)",paddingTop:6}}>
-                {plan.tasks.map((t,i)=>t?(
-                  <div key={i} className="mit-row">
-                    <input type="checkbox" className="mit-check" checked={plan.done[i]} onChange={()=>toggle(i)}/>
-                    <input className={"mit-input"+(plan.done[i]?" mit-input--done":"")} value={t} onChange={e=>setTask(i,e.target.value)}/>
-                  </div>
-                ):null)}
-              </div>
-            )}
+            {/* All three rows, always. Rendering only the filled ones meant that
+                clearing a task deleted the field you were typing in, and clearing
+                all three removed the section with no way to get it back. */}
+            <div style={{marginTop:24,borderTop:"1px solid var(--hf-border)",paddingTop:6}}>
+              {[0,1,2].map(i=>(
+                <div key={i} className="mit-row">
+                  <input type="checkbox" className="mit-check" checked={!!(plan.done[i]&&plan.tasks[i])}
+                    onChange={()=>toggle(i)} aria-label={`Mark priority ${i+1} done`}/>
+                  <input className={"mit-input"+(plan.done[i]&&plan.tasks[i]?" mit-input--done":"")}
+                    placeholder={["Most important task…","Second priority…","Third priority…"][i]}
+                    value={plan.tasks[i]||""} onChange={e=>setTask(i,e.target.value)}/>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
