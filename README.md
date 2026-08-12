@@ -22,6 +22,7 @@ The compass the rest of the app points at.
 One ritual, at the start. The written reflection lives in Notion — this page is
 the anchor, not the journal.
 - **Opening** — the app lands here until you've opened the day: your streak, your North Star, and your three priorities. Ten seconds, and you're anchored.
+- **Tomorrow** — set tomorrow's three things tonight, while today is still fresh and you know what it cost. They are waiting at the top of the page when you open the next day, so morning-you never has to invent it.
 - **Today so far** — hours focused, sessions, priorities closed, practices done, and the shape of the day (Use · Fill · Empty).
 - **Recent plans** — the three things of previous days, and whether they happened.
 
@@ -42,8 +43,10 @@ The year at war-room altitude — twelve months on one screen.
 
 ### 🎯 Focus Timer
 - Three modes: **Pomodoro** (25 min), **Deep Work** (90 min), **Flowmodoro** (50 min)
+- **The timer is a target, not a guillotine.** When it reaches zero it chimes and then keeps counting — upwards, showing how far past the target you are. You end the session with **Done**, so what gets recorded is the time the work actually took, not the time you happened to be at the keyboard when it ran out. Both numbers are kept: the real duration and the target you aimed at.
+- **Set the real time** — if the timer ran on after you stopped, correct the duration right on the completion screen. A wrong number is worse than no number.
 - Wall-clock based timer — never drifts even if the tab is backgrounded or the computer sleeps
-- **+5 min** button to extend a session on the fly without restarting
+- **+5 min** button to extend the target on the fly without restarting
 - Pre-focus **breathing exercise** (1, 2, or 3 min) before starting
 - **Preload** (10, 15, or 20 min) — deliberate nothing before the work. An empty screen and a countdown: no input, so the work becomes the most stimulating option available. Phase 1 of the focus protocol.
 - **Fill / Empty / Use** — tag what kind of mental work a session is: creating, learning, or letting the mind idle. The Day shows whether the day had all three; a day that is only ever Use is the shape that burns out.

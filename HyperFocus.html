@@ -235,6 +235,8 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .mit-input { border:0; background:transparent; font-size:15px; color:var(--hf-fg); outline:none; flex:1; line-height:1.4; padding:0; }
 .mit-input::placeholder { color:var(--hf-fg-subtle); font-style:italic; }
 .mit-input--done { text-decoration:line-through; color:var(--hf-fg-subtle); }
+/* Tomorrow's rows carry a numeral, not a checkbox — nothing is done yet. */
+.mit-num { width:16px; flex-shrink:0; text-align:center; font-family:var(--hf-font-mono); font-size:12px; color:var(--hf-fg-subtle); }
 .plan-history { display:flex; flex-direction:column; gap:0; }
 .plan-day { padding:16px 0; border-bottom:1px solid var(--hf-border); }
 .plan-day__date { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--hf-fg-muted); font-weight:500; margin-bottom:8px; }
@@ -540,6 +542,10 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .ring--live .ring__fg { filter:drop-shadow(0 0 6px rgba(200,169,126,.5)); }
 [data-theme="dark"] .ring--live .ring__fg { filter:drop-shadow(0 0 8px rgba(211,184,135,.45)); }
 .ring__timer { transition:letter-spacing 600ms var(--hf-ease-out), opacity 400ms var(--hf-ease-out); }
+/* Past the target the clock counts up, and says so without shouting. */
+.ring__timer--over { color:var(--hf-sand-600); }
+[data-theme="dark"] .ring__timer--over { color:var(--hf-accent); }
+.fix-dur { display:flex; align-items:center; gap:8px; justify-content:center; flex-wrap:wrap; }
 
 /* ── Session complete ── */
 .seal { display:flex; align-items:center; justify-content:center; margin-bottom:26px; }
@@ -1183,13 +1189,22 @@ const StarRating = ({ rated, onRate, label="How focused were you?", captions }) 
   );
 };
 
-const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onPreload, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0, protocols=[], kind, setKind, onLogBreak }) => {
+const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onFixDur, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onPreload, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0, protocols=[], kind, setKind, onLogBreak }) => {
   const R=46, CIRC=2*Math.PI*R;
   const [editDur, setEditDur] = useState(false);
   const [durVal,  setDurVal]  = useState("");
   const [rated,   setRated]   = useState(null);
+  const [fixDur,  setFixDur]  = useState(false);   // correcting the recorded time
+  const [fixVal,  setFixVal]  = useState("");
   const isIdle=phase==="idle", isFocusing=phase==="focusing", isBreak=phase==="break";
   const isPaused=isIdle&&session.remaining<session.total;
+  const over=session.over||0;                      // seconds past the target
+  const isOver=isFocusing&&session.remaining===0&&over>0;
+  const applyFix=()=>{
+    const m=parseInt(fixVal);
+    if(m>=1&&m<=600) onFixDur(m*60);
+    setFixDur(false);
+  };
   const ringRemaining=isBreak?breakRemaining:session.remaining;
   const ringTotal=isBreak?(MODES.find(m=>m.id===session.mode)?.breakDur||300):session.total;
   const ringPct=ringTotal>0?(ringTotal-ringRemaining)/ringTotal:0;
@@ -1225,8 +1240,30 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
           </div>
 
           <div className="rise" style={{animationDelay:"900ms"}}>
-            <div className="complete-figure">{mins}<small>min</small></div>
-            <div className="session-complete__label" style={{marginTop:14}}>of focus, held.</div>
+            {fixDur ? (
+              /* If the timer ran on while you were away, the number is wrong and
+                 no amount of good design fixes a wrong number. Correct it here. */
+              <div className="fix-dur">
+                <input className="input" type="number" min="1" max="600" autoFocus
+                  value={fixVal} onChange={e=>setFixVal(e.target.value)}
+                  onKeyDown={e=>{ if(e.key==="Enter") applyFix(); if(e.key==="Escape") setFixDur(false); }}
+                  style={{width:110,fontFamily:"var(--hf-font-mono)",fontSize:22,textAlign:"center"}}/>
+                <span style={{color:"var(--hf-fg-muted)",fontSize:14}}>min</span>
+                <button className="btn btn--primary" onClick={applyFix}>Save</button>
+                <button className="btn btn--ghost" onClick={()=>setFixDur(false)}>Cancel</button>
+              </div>
+            ) : (
+              <>
+                <div className="complete-figure">{mins}<small>min</small></div>
+                <div className="session-complete__label" style={{marginTop:14}}>of focus, held.</div>
+                {onFixDur&&(
+                  <button className="btn btn--ghost" style={{padding:"2px 8px",fontSize:11.5,marginTop:8}}
+                    onClick={()=>{ setFixVal(String(mins)); setFixDur(true); }}>
+                    Not right? Set the real time
+                  </button>
+                )}
+              </>
+            )}
           </div>
 
           <div className="session-complete__task rise" style={{animationDelay:"1000ms",marginTop:18}}>{task||"Untitled session."}</div>
@@ -1324,8 +1361,14 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
           <circle className={"ring__fg"+(isBreak?" ring__fg--break":"")} cx="50" cy="50" r={R} strokeDasharray={CIRC} strokeDashoffset={ringOffset}/>
         </svg>
         <div className="ring__inner">
-          <div className="ring__timer">{fmt(ringRemaining)}</div>
-          <div className="ring__label">{isBreak?"Break":isFocusing?"Focusing":isPaused?"Paused":"Ready"}</div>
+          {/* Past the target the clock turns around and counts up, so what you
+              read is the time the work is actually taking. */}
+          <div className={"ring__timer"+(isOver?" ring__timer--over":"")}>
+            {isOver ? "+"+fmt(over) : fmt(ringRemaining)}
+          </div>
+          <div className="ring__label">
+            {isBreak?"Break":isOver?`Past your ${Math.round(session.total/60)}m target`:isFocusing?"Focusing":isPaused?"Paused":"Ready"}
+          </div>
         </div>
       </div>
 
@@ -1342,14 +1385,19 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
             <button className="btn btn--primary btn--xl" onClick={onBegin}><Icon name="play" size={14}/> Begin</button>
           </>
         )}
-        {isFocusing&&(<>
+        {/* Done is what ends a session, at any point. The timer only ever set
+            the target; you decide when the work is finished. */}
+        {isFocusing&&(isOver?(<>
+          <button className="btn btn--primary btn--xl" onClick={onEnd}><Icon name="check" size={14}/> Done</button>
+          <button className="btn btn--ghost btn--lg" onClick={onPause}><Icon name="pause" size={14}/> Pause</button>
+        </>):(<>
           <button className="btn btn--secondary btn--lg" onClick={onPause}><Icon name="pause" size={14}/> Pause</button>
           <button className="btn btn--ghost btn--lg" onClick={onAdd5min}><Icon name="plus" size={14}/> +5 min</button>
-          <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="stop" size={14}/> End session</button>
-        </>)}
+          <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="check" size={14}/> Done</button>
+        </>))}
         {isPaused&&(<>
           <button className="btn btn--primary btn--lg" onClick={onBegin}><Icon name="play" size={14}/> Return</button>
-          <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="stop" size={14}/> End session</button>
+          <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="check" size={14}/> Done</button>
         </>)}
         {isBreak&&<button className="btn btn--ghost btn--lg" onClick={onNewSession}>Skip break</button>}
       </div>
@@ -2737,6 +2785,15 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
   const setTask  = (i,val) => setMits(m=>({...m,[today]:{...plan,tasks:plan.tasks.map((t,j)=>j===i?val:t)}}));
   const toggle   = (i) => { if(!plan.tasks[i]) return; setMits(m=>({...m,[today]:{...plan,done:plan.done.map((d,j)=>j===i?!d:d)}})); };
 
+  /* Tomorrow's three things, decided tonight. Same store, next key — so come
+     morning they are already waiting at the top of this page and the day opens
+     with the deciding done. Morning-you should not have to invent the day. */
+  const tomorrow = (()=>{ const d=new Date(); d.setDate(d.getDate()+1); return localDate(d); })();
+  const nextPlan = mits[tomorrow] || {tasks:["","",""],done:[false,false,false]};
+  const setNextTask = (i,val) => setMits(m=>({...m,[tomorrow]:{...nextPlan,tasks:nextPlan.tasks.map((t,j)=>j===i?val:t)}}));
+  const nextCount = nextPlan.tasks.filter(t=>t.trim()).length;
+  const fmtTomorrow = new Date(tomorrow+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+
   const focusedSecs = sessions.reduce((a,s)=>a+(s.dur||0),0);
   const mitsDone    = plan.tasks.filter((t,i)=>t&&plan.done[i]).length;
   const mitsTotal   = plan.tasks.filter(t=>t).length;
@@ -2745,8 +2802,9 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
 
   const openDay  = () => { setRituals(r=>({...r,[today]:{...(r[today]||{}),openedAt:new Date().toISOString()}})); onEnterDay(); };
   // Past plans (absorbed from the old Planning page — one place to decide, one to review)
+  // Strictly BEFORE today: tomorrow's plan is not history, it has its own section.
   const pastPlans = Object.entries(mits)
-    .filter(([d,plan])=>d!==today && (plan.tasks||[]).some(t=>t))
+    .filter(([d,plan])=>d<today && (plan.tasks||[]).some(t=>t))
     .sort((a,b)=>b[0].localeCompare(a[0]))
     .slice(0,7);
   const fmtPlanDay = (d) => new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
@@ -2834,6 +2892,32 @@ const TheDay = ({ rituals, setRituals, purpose, mits, setMits, sessions, practic
                 ):null)}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Tomorrow ── */}
+      {opened&&(
+        <div className="day-section">
+          <h2 className="day-section__title">Tomorrow</h2>
+          <p className="day-section__note">
+            Decide it tonight, while today is still fresh and you know what it cost.
+            These three are waiting for you when you open {fmtTomorrow.split(",")[0]}.
+          </p>
+          <div className="card-s">
+            {[0,1,2].map(i=>(
+              <div key={i} className="mit-row">
+                <span className="mit-num">{i+1}</span>
+                <input className="mit-input"
+                  placeholder={["Tomorrow's most important task…","Second priority…","Third priority…"][i]}
+                  value={nextPlan.tasks[i]||""} onChange={e=>setNextTask(i,e.target.value)}/>
+              </div>
+            ))}
+            <p style={{fontSize:12,color:"var(--hf-fg-subtle)",lineHeight:1.6,margin:"14px 0 0"}}>
+              {nextCount===0
+                ? <>Nothing set for {fmtTomorrow}. Leave it blank and morning-you decides instead.</>
+                : <><b>{nextCount}</b> {nextCount===1?"thing":"things"} set for {fmtTomorrow}.</>}
+            </p>
           </div>
         </div>
       )}
@@ -3656,6 +3740,7 @@ const App = () => {
   const deferredCheckInRef  = useRef(false);  // a mark passed during a session — ask once it ends
   const sessionStartedAtRef = useRef(null);   // Date the current session actually began
   const viewRef             = useRef("day");  // current view, readable from timer closures
+  const targetHitRef        = useRef(false);  // the target chime fires once per session
 
   // Tracker
   const [trackerEntries,   setTrackerEntries]   = useState(()=>loadLS("hf_tracker",[]));
@@ -3736,7 +3821,8 @@ const App = () => {
         setSession(s=>{
           const elapsed=focusElapsedRef.current+Math.floor((Date.now()-focusTsRef.current)/1000);
           const rem=Math.max(0,s.total-elapsed);
-          return rem===s.remaining?s:{...s,remaining:rem};
+          const over=Math.max(0,elapsed-s.total);   // keeps counting past the target
+          return (rem===s.remaining&&over===(s.over||0))?s:{...s,remaining:rem,over};
         });
       } else if(phaseRef.current==="break"){
         setBreakRem(()=>Math.max(0,breakTotalRef.current-Math.floor((Date.now()-breakTsRef.current)/1000)));
@@ -3745,17 +3831,15 @@ const App = () => {
     return ()=>clearInterval(tick);
   },[phase]);
 
-  /* Session complete */
+  /* Target reached — the timer is a target, not a guillotine.
+     It says so and then keeps counting, so the session records the time the work
+     actually took rather than the time you happened to be at the keyboard when
+     it ran out. You end it with Done. */
   useEffect(()=>{
-    if(phase==="focusing"&&session.remaining===0){
+    if(phase==="focusing"&&session.remaining===0&&!targetHitRef.current){
+      targetHitRef.current=true;
       playChime();
-      sendNotif("Hyper Focus · Session complete", task||"Session finished. Time for a break.");
-      const id=newId();
-      lastSessionIdRef.current=id;
-      setLastDur(session.total);
-      setHistory(h=>[...h,{id,startTime:sessionStartRef.current||nowTime(),time:nowTime(),date:new Date().toISOString(),task:task||"Untitled session.",mode:session.mode,dur:session.total,goalId:activeGoalId,kind}]);
-      setPhase("complete");
-      settleAfterSession();
+      sendNotif("Hyper Focus · Target reached", task||"Still going? Hit Done when you actually finish.");
     }
   },[session.remaining,phase]);
 
@@ -3844,7 +3928,7 @@ const App = () => {
       if(phaseRef.current==="focusing"){
         setSession(s=>{
           const elapsed=focusElapsedRef.current+Math.floor((Date.now()-focusTsRef.current)/1000);
-          return {...s,remaining:Math.max(0,s.total-elapsed)};
+          return {...s,remaining:Math.max(0,s.total-elapsed),over:Math.max(0,elapsed-s.total)};
         });
       }
       // Break timer catch-up
@@ -3860,11 +3944,11 @@ const App = () => {
 
   /* Document title */
   useEffect(()=>{
-    if     (phase==="focusing") document.title=`${fmt(session.remaining)} · Hyper Focus`;
+    if     (phase==="focusing") document.title=`${session.over>0?"+"+fmt(session.over):fmt(session.remaining)} · Hyper Focus`;
     else if(phase==="break")    document.title=`Break ${fmt(breakRem)} · Hyper Focus`;
     else if(phase==="complete") document.title=`Done · Hyper Focus`;
     else                        document.title="Hyper Focus";
-  },[phase,session.remaining,breakRem]);
+  },[phase,session.remaining,session.over,breakRem]);
 
   /* Global keys */
   useEffect(()=>{
@@ -3895,7 +3979,7 @@ const App = () => {
     focusTsRef.current = Date.now();
     sessionStartRef.current = nowTime();
     // Only on a true start, not on resume — the tracker needs the real boundary.
-    if(!sessionStartedAtRef.current) sessionStartedAtRef.current = new Date();
+    if(!sessionStartedAtRef.current){ sessionStartedAtRef.current = new Date(); targetHitRef.current=false; }
     // Asking for notification permission the moment the app opens is noise, and
     // Safari refuses it outside a gesture. The first Begin is that gesture.
     if("Notification" in window && Notification.permission==="default"){
@@ -3914,8 +3998,8 @@ const App = () => {
     const elapsed = phase==="focusing"
       ? focusElapsedRef.current + Math.floor((Date.now()-focusTsRef.current)/1000)
       : focusElapsedRef.current;
-    focusElapsedRef.current=0; focusTsRef.current=0;
-    setSession(s=>({...s,remaining:s.total}));
+    focusElapsedRef.current=0; focusTsRef.current=0; targetHitRef.current=false;
+    setSession(s=>({...s,remaining:s.total,over:0}));
     if(elapsed>=60){
       // Save with real elapsed duration and show the complete/rating screen
       const id=newId();
@@ -3928,7 +4012,8 @@ const App = () => {
         date:      new Date().toISOString(),
         task:      task||"Untitled session.",
         mode:      session.mode,
-        dur:       elapsed,
+        dur:       elapsed,          // what it actually took
+        target:    session.total,    // what you aimed at
         goalId:    activeGoalId,
         kind,
       }]);
@@ -3948,14 +4033,21 @@ const App = () => {
     setBreakRem(dur); setPhase("break");
   };
   const onNewSession = () => {
-    focusElapsedRef.current=0; focusTsRef.current=0;
-    setSession(s=>({...s,remaining:s.total,index:s.index+1}));
+    focusElapsedRef.current=0; focusTsRef.current=0; targetHitRef.current=false;
+    setSession(s=>({...s,remaining:s.total,over:0,index:s.index+1}));
     setQuote(randQuote()); setPhase("idle");
   };
   const onBreathe       = (mins) => { setBreathDuration(mins*60); setView("breath"); };
   // Rate by id, not by position — deleting a row in Today must not shift the target
   const rateSession     = (q)    => { const id=lastSessionIdRef.current; if(id==null) return; setHistory(h=>h.map(s=>s.id===id?{...s,quality:q}:s)); };
   const onMitClick      = (text) => { setTask(text); };
+  /* Correct the duration of the session just finished — for when the timer kept
+     running after the work stopped. Rewrites the record, not just the display. */
+  const onFixDur        = (secs) => {
+    const id=lastSessionIdRef.current; if(id==null) return;
+    setHistory(h=>h.map(s=>s.id===id?{...s,dur:secs,adjusted:true}:s));
+    setLastDur(secs);
+  };
   const onRenameSession = (id,newTask) => { setHistory(h=>h.map(s=>s.id===id?{...s,task:newTask}:s)); };
   const onDeleteSession = (id) => { setHistory(h=>h.filter(s=>s.id!==id)); };
   const onAdd5min       = ()     => { setSession(s=>({...s,total:s.total+300,remaining:s.remaining+300})); };
@@ -4151,7 +4243,7 @@ const App = () => {
       <Rail current={view} onNav={v=>{ setView(v); setMenuOpen(false); }} sounds={soundLabel} theme={theme} northStar={purpose.northStar} open={menuOpen}/>
       {menuOpen && <div className="rail-backdrop" onClick={()=>setMenuOpen(false)}/>}
       <main className="canvas">
-        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={fmt(session.remaining)} onMenu={()=>setMenuOpen(true)}/>
+        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={session.over>0?"+"+fmt(session.over):fmt(session.remaining)} onMenu={()=>setMenuOpen(true)}/>
 
         {recovery && (
           <div className="page" style={{paddingBottom:0}}>
@@ -4174,7 +4266,7 @@ const App = () => {
           </div>
         )}
 
-        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
+        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onFixDur={onFixDur} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
                                 lastDur={lastDur} streak={calcStreak(history)} todaySecs={todayHistory.reduce((a,s)=>a+(s.dur||0),0)}
                                 goalHours={activeGoalId?history.reduce((a,s)=>a+(s.goalId===activeGoalId?(s.dur||0):0),0)/3600:0}
                                 protocols={purpose.protocols} kind={kind} setKind={setKind} onPreload={(mins)=>{ setPreloadDuration(mins*60); setView("preload"); }}/>}
