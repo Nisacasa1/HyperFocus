@@ -8,6 +8,18 @@ A single-file, offline-first productivity app built with React (Babel standalone
 
 ---
 
+## How it's organised
+
+Four places, one loop — everything else waits under **Más** in the sidebar, closed by default.
+
+| | |
+|---|---|
+| **Hoy** | Where the app opens. Your North Star, three priorities (▶ starts a focus session on one), **today's bottlenecks** — what took the time you didn't spend focused, how many sessions were interrupted, how fragmented the day was — and the day as a calendar. Today's sessions and past plans fold away underneath. |
+| **Foco** | The timer, stripped to the task, the ring and **Begin**. Mode, Crear/Aprender/Vaciar (Use/Fill/Empty), Respirar and Precarga live behind one **Opciones** toggle. The whole interface is in Spanish, set in Poppins. |
+| **Semana** | The weekly review, with a **Tendencias** tab for the long-range stats. |
+| **Propósito** | North Star, anti-vision, identity, protocols and goals. |
+| *Más* | Mapa del año, Prácticas diarias, Estoicismo, Sonidos, Ajustes. |
+
 ## Features
 
 ### 🧭 Purpose
@@ -159,7 +171,7 @@ Or just **double-click `HyperFocus.html`** in your file manager.
 | Audio | Web Audio API (procedural synthesis, zero audio files) |
 | Notifications | Web Notifications API |
 | Storage | `localStorage` (all data stays on your device) |
-| Fonts | Instrument Serif · Geist · JetBrains Mono (Google Fonts) |
+| Fonts | Poppins · JetBrains Mono (self-hosted Google Fonts) |
 
 ---
 

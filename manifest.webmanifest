@@ -1,7 +1,8 @@
 {
   "name": "Hyper Focus",
   "short_name": "Hyper Focus",
-  "description": "A quiet, offline-first place to hold your focus and remember your purpose.",
+  "description": "Un lugar tranquilo, sin conexión, para sostener tu foco y recordar tu propósito.",
+  "lang": "es",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

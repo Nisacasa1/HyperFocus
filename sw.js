@@ -1,7 +1,7 @@
 /* Hyper Focus service worker.
    Goal: after one online visit the app opens with no network at all — including
    on a phone in airplane mode. Bump CACHE when you ship a new HyperFocus.html. */
-const CACHE = "hyperfocus-v2";
+const CACHE = "hyperfocus-v3";
 
 // Same-origin files that make up the app shell. Fonts (woff2) are picked up by
 // the runtime cache on first render rather than listed one by one here.
