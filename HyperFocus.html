@@ -336,6 +336,15 @@ body { font-family:var(--hf-font-sans); background:var(--hf-bg); color:var(--hf-
 .quick-chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
 .quick-chip { font-size:12px; padding:5px 11px; border-radius:20px; border:1px solid var(--hf-border); color:var(--hf-fg-muted);
   transition:all 140ms var(--hf-ease-out); }
+.quick-chip--on { border-color:var(--hf-sand-400); color:var(--hf-sand-700); background:var(--hf-sand-50); }
+/* Clock type sits on its own row above Empezar. */
+.clock-type { flex-basis:100%; margin-bottom:8px; }
+.clock-type .kind { font-size:12px; padding:5px 14px; }
+/* The paused state of a session: name the distraction while it is fresh. */
+.pause-card { width:100%; max-width:440px; margin-top:26px; padding:18px 20px; border:1px solid var(--hf-border); border-radius:12px; background:var(--hf-bg-raised); box-shadow:var(--hf-shadow-sm); text-align:left; position:relative; z-index:1; }
+.pause-card__head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:13px; font-weight:500; color:var(--hf-fg); margin-bottom:6px; }
+.pause-card__since { font-family:var(--hf-font-mono); font-size:11px; font-weight:400; color:var(--hf-fg-muted); }
+.pause-card__note { font-size:11.5px; color:var(--hf-fg-subtle); line-height:1.55; margin:12px 0 0; }
 .quick-chip:hover { border-color:var(--hf-sand-400); color:var(--hf-fg); background:var(--hf-bone-100); }
 [data-theme="dark"] .quick-chip:hover { background:#2A2823; }
 
@@ -868,7 +877,10 @@ const MODES = [
   { id:"pomodoro", label:"Pomodoro",          dur:25*60, breakDur:5*60  },
   { id:"deep",     label:"Trabajo profundo",  dur:90*60, breakDur:15*60 },
   { id:"flow",     label:"Flowmodoro",        dur:50*60, breakDur:10*60 },
+  // No target at all: counts up from zero. dur 0 is what marks it everywhere.
+  { id:"count",    label:"Contador",          dur:0,     breakDur:5*60  },
 ];
+const TIMER_MODES = MODES.filter(m=>m.dur>0);
 
 const PHILOSOPHER_DATA = [
   { id:"marcus", name:"Marco Aurelio", dates:"121 — 180 d. C.", role:"Emperador romano · Rey filósofo", work:"Meditaciones",
@@ -1218,7 +1230,7 @@ const StarRating = ({ rated, onRate, label="¿Qué tan enfocado estuviste?", cap
   );
 };
 
-const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onFixDur, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onPreload, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0, protocols=[], kind, setKind, onLogBreak }) => {
+const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, onEnd, onFixDur, pausedAt=null, pauseLabel="", setPauseLabel, pauseChips=[], lastPauses=null, onAdd5min, onStartBreak, onNewSession, breakRemaining, quote, mits, onBreathe, onPreload, onRate, onMitClick, northStar, activeGoal, onOpenPurpose, lastDur, streak=0, todaySecs=0, goalHours=0, protocols=[], kind, setKind, onLogBreak }) => {
   const R=46, CIRC=2*Math.PI*R;
   const [editDur, setEditDur] = useState(false);
   const [durVal,  setDurVal]  = useState("");
@@ -1228,9 +1240,12 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
   const [fixDur,  setFixDur]  = useState(false);   // correcting the recorded time
   const [fixVal,  setFixVal]  = useState("");
   const isIdle=phase==="idle", isFocusing=phase==="focusing", isBreak=phase==="break";
-  const isPaused=isIdle&&session.remaining<session.total;
+  const isPaused=isIdle&&(pausedAt!=null||session.remaining<session.total);
   const over=session.over||0;                      // seconds past the target
-  const isOver=isFocusing&&session.remaining===0&&over>0;
+  const isCount=session.total===0;                 // Contador: no target, counts up
+  const isOver=!isCount&&isFocusing&&session.remaining===0&&over>0;
+  const pickMode=(m)=>setSession(s=>({...s,mode:m.id,total:m.dur,remaining:m.dur}));
+  const lastTimerMode=()=>{ let id="pomodoro"; try { id=localStorage.getItem("hf_timer_mode")||id; } catch(e){} return TIMER_MODES.find(m=>m.id===id)||TIMER_MODES[0]; };
   const applyFix=()=>{
     const m=parseInt(fixVal);
     if(m>=1&&m<=600) onFixDur(m*60);
@@ -1238,7 +1253,8 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
   };
   const ringRemaining=isBreak?breakRemaining:session.remaining;
   const ringTotal=isBreak?(MODES.find(m=>m.id===session.mode)?.breakDur||300):session.total;
-  const ringPct=ringTotal>0?(ringTotal-ringRemaining)/ringTotal:0;
+  // The counter has no end to fill toward, so its ring laps once an hour.
+  const ringPct=isCount&&!isBreak?(over%3600)/3600:ringTotal>0?(ringTotal-ringRemaining)/ringTotal:0;
   const ringOffset=CIRC*(1-ringPct);
   const applyDur=()=>{ const mins=parseInt(durVal); if(mins>=1&&mins<=480) setSession(s=>({...s,total:mins*60,remaining:mins*60})); setEditDur(false); };
   const hasMits = mits && mits.tasks && mits.tasks.some(t=>t);
@@ -1300,6 +1316,7 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
           <div className="session-complete__task rise" style={{animationDelay:"1000ms",marginTop:18}}>{task||"Sesión sin título."}</div>
 
           <div className="complete-meta rise" style={{animationDelay:"1100ms"}}>
+            {lastPauses&&lastPauses.n>0&&<span className="badge badge--neutral"><Icon name="pause" size={11}/>{lastPauses.n} {lastPauses.n===1?"distracción":"distracciones"} · {fmtDur(lastPauses.secs)} fuera</span>}
             {streak>0&&<span className="badge badge--accent"><Icon name="zap" size={11}/>Día {streak} de la racha</span>}
             {todaySecs>0&&<span className="badge badge--neutral"><Icon name="timer" size={11}/>{fmtDur(todaySecs)} hoy</span>}
           </div>
@@ -1343,12 +1360,12 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
         <span>·</span>
         <span>MODO <b>{MODES.find(m=>m.id===session.mode)?.label}</b></span>
         <span>·</span>
-        <span>DURACIÓN{" "}
+        {isCount ? <span>SIN LÍMITE</span> : <span>DURACIÓN{" "}
           {editDur
             ? <input className="dur-edit" type="number" min="1" max="480" value={durVal} onChange={e=>setDurVal(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"||e.key==="Escape")applyDur();}} onBlur={applyDur} autoFocus/>
             : <b className={isIdle&&!isPaused?"dur-target":""} onClick={()=>{if(isIdle&&!isPaused){setDurVal(String(Math.floor(session.total/60)));setEditDur(true);}}}>{fmt(session.total)}</b>
           }
-        </span>
+        </span>}
       </div>
 
       {/* Why you're here, before what you're doing */}
@@ -1395,21 +1412,32 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
           {/* Past the target the clock turns around and counts up, so what you
               read is the time the work is actually taking. */}
           <div className={"ring__timer"+(isOver?" ring__timer--over":"")}>
-            {isOver ? "+"+fmt(over) : fmt(ringRemaining)}
+            {isBreak ? fmt(ringRemaining) : isCount ? fmt(over) : isOver ? "+"+fmt(over) : fmt(ringRemaining)}
           </div>
           <div className="ring__label">
-            {isBreak?"Descanso":isOver?`Pasaste tu meta de ${Math.round(session.total/60)}m`:isFocusing?"En foco":isPaused?"En pausa":"Listo"}
+            {isBreak?"Descanso":isOver?`Pasaste tu meta de ${Math.round(session.total/60)}m`:isFocusing?(isCount?"Trabajando":"En foco"):isPaused?"En pausa":isCount?"Contador":"Listo"}
           </div>
         </div>
       </div>
 
       <div className="focus-actions">
-        {isIdle&&!isPaused&&(
+        {isIdle&&!isPaused&&(<>
+          {/* Countdown to a target, or a plain counter of the work actually done. */}
+          <div className="kinds clock-type" role="group" aria-label="Tipo de reloj">
+            <button className={"kind"+(!isCount?" kind--on":"")} onClick={()=>{ if(isCount) pickMode(lastTimerMode()); }}>Temporizador</button>
+            <button className={"kind"+(isCount?" kind--on":"")} onClick={()=>pickMode(MODES.find(m=>m.id==="count"))}>Contador</button>
+          </div>
           <button className="btn btn--primary btn--xl" onClick={onBegin}><Icon name="play" size={14}/> Empezar</button>
-        )}
+        </>)}
+        {/* The counter's whole point: stop the clock the moment attention leaves,
+            so what it adds up is only the work. */}
+        {isFocusing&&isCount&&(<>
+          <button className="btn btn--primary btn--xl" onClick={onPause}><Icon name="pause" size={14}/> Me distraje</button>
+          <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="check" size={14}/> Terminar</button>
+        </>)}
         {/* Terminar is what ends a session, at any point. The timer only ever set
             the target; you decide when the work is finished. */}
-        {isFocusing&&(isOver?(<>
+        {isFocusing&&!isCount&&(isOver?(<>
           <button className="btn btn--primary btn--xl" onClick={onEnd}><Icon name="check" size={14}/> Terminar</button>
           <button className="btn btn--ghost btn--lg" onClick={onPause}><Icon name="pause" size={14}/> Pausar</button>
         </>):(<>
@@ -1418,11 +1446,31 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
           <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="check" size={14}/> Terminar</button>
         </>))}
         {isPaused&&(<>
-          <button className="btn btn--primary btn--lg" onClick={onBegin}><Icon name="play" size={14}/> Continuar</button>
+          <button className="btn btn--primary btn--lg" onClick={onBegin}><Icon name="play" size={14}/> Volver al trabajo</button>
           <button className="btn btn--ghost btn--lg" onClick={onEnd}><Icon name="check" size={14}/> Terminar</button>
         </>)}
         {isBreak&&<button className="btn btn--ghost btn--lg" onClick={onNewSession}>Saltar descanso</button>}
       </div>
+
+      {/* While paused: name what pulled you out. It lands on the calendar and in
+          the bottlenecks when you come back — the clock only kept the work. */}
+      {isPaused&&pausedAt&&setPauseLabel&&(
+        <div className="pause-card">
+          <div className="pause-card__head">
+            <span>¿Qué te sacó del foco?</span>
+            <span className="pause-card__since">desde {formatHHMM(pausedAt)}</span>
+          </div>
+          <input className="tracker-toast__input" placeholder="Distracción" value={pauseLabel}
+            onChange={e=>setPauseLabel(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter") onBegin(); }}/>
+          <div className="quick-chips">
+            {pauseChips.map(c=>(
+              <button key={c} className={"quick-chip"+(pauseLabel===c?" quick-chip--on":"")} onClick={()=>setPauseLabel(c)}>{c}</button>
+            ))}
+          </div>
+          <p className="pause-card__note">Se registra al volver (si pasó al menos un minuto). El reloj ya no cuenta este tiempo.</p>
+        </div>
+      )}
 
       {/* Real rest is the absence of input — not the presence of pleasure. */}
       {isBreak&&(
@@ -1454,8 +1502,8 @@ const Session = ({ session, setSession, task, setTask, phase, onBegin, onPause, 
 
       {isIdle && !isPaused && showOpts && (
         <div style={{marginTop:16,display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center"}}>
-          {MODES.map(m=>(
-            <button key={m.id} className={"btn "+(session.mode===m.id?"btn--secondary":"btn--ghost")} style={session.mode===m.id?{borderColor:"var(--hf-sand-400)"}:{}} onClick={()=>setSession(s=>({...s,mode:m.id,total:m.dur,remaining:m.dur}))}>
+          {(isCount?[]:TIMER_MODES).map(m=>(
+            <button key={m.id} className={"btn "+(session.mode===m.id?"btn--secondary":"btn--ghost")} style={session.mode===m.id?{borderColor:"var(--hf-sand-400)"}:{}} onClick={()=>{ try { localStorage.setItem("hf_timer_mode",m.id); } catch(e){} pickMode(m); }}>
               {m.label}
             </button>
           ))}
@@ -3186,7 +3234,7 @@ const leakStats = (entries, from, to) => {
   });
   const labels=[...byLabel.values()].sort((a,b)=>b.mins-a.mins);
 
-  const bySource = {quick:0, checkin:0, manual:0, other:0};
+  const bySource = {quick:0, checkin:0, manual:0, pause:0, other:0};
   inWeek.forEach(e=>{ bySource[e.source in bySource ? e.source : "other"]+=1; });
 
   // Short entries are the texture of a scattered week, not its total.
@@ -3286,7 +3334,7 @@ ${dayLines||"- (ninguno)"}
 
 ## A dónde se fue la semana
 - **Registrado fuera del foco:** ${leaksNow.n?fmtMins(leaksNow.mins):"—"} en ${leaksNow.n} ${leaksNow.n===1?"registro":"registros"} (${leaksNow.fragments} de menos de 15 min)
-- **Capturado como:** ${leaksNow.bySource.quick} registros rápidos · ${leaksNow.bySource.checkin} check-ins · ${leaksNow.bySource.manual} a mano
+- **Capturado como:** ${leaksNow.bySource.quick} registros rápidos · ${leaksNow.bySource.checkin} check-ins · ${leaksNow.bySource.manual} a mano · ${leaksNow.bySource.pause} pausas en foco
 ${leakLines||"- (nada registrado)"}
 
 ## Nota de la semana
@@ -3436,6 +3484,7 @@ ${note||"—"}
                 <span className="badge badge--neutral">{leaksNow.bySource.quick} {leaksNow.bySource.quick===1?"registro rápido":"registros rápidos"}</span>
                 <span className="badge badge--neutral">{leaksNow.bySource.checkin} check-{leaksNow.bySource.checkin===1?"in":"ins"}</span>
                 <span className="badge badge--neutral">{leaksNow.bySource.manual} a mano</span>
+                {leaksNow.bySource.pause>0&&<span className="badge badge--neutral">{leaksNow.bySource.pause} {leaksNow.bySource.pause===1?"pausa":"pausas"} en foco</span>}
                 {leaksNow.bySource.other>0&&<span className="badge badge--neutral">{leaksNow.bySource.other} sin etiqueta</span>}
               </div>
             </div>
@@ -3795,7 +3844,19 @@ const App = () => {
   const [cmdk,    setCmdk]    = useState(false);
   const [menuOpen,setMenuOpen]= useState(false);
   const [phase,   setPhase]   = useState("idle");
-  const [session, setSession] = useState({index:1, mode:"pomodoro", total:25*60, remaining:25*60});
+  const [session, setSession] = useState(()=>{
+    // Start in the clock you used last — Contador or a timer.
+    const m=MODES.find(x=>x.id===loadLS("hf_mode","pomodoro"))||MODES[0];
+    return {index:1, mode:m.id, total:m.dur, remaining:m.dur};
+  });
+  useEffect(()=>{ saveLS("hf_mode", session.mode); },[session.mode]);
+  /* A pause is a distraction until proven otherwise: it is timed, named, and
+     written to the tracker when you come back, so the session keeps only the
+     work and the calendar shows what cut into it. */
+  const [pausedAt,   setPausedAt]   = useState(null);
+  const [pauseLabel, setPauseLabel] = useState("");
+  const [lastPauses, setLastPauses] = useState(null);
+  const pauseStatsRef = useRef({n:0, secs:0});
   const [breakRem,setBreakRem]= useState(5*60);
   const [history,     setHistory]     = useState(()=>loadLS("hf_history",[]));
   const [quote,       setQuote]       = useState(()=>randQuote());
@@ -3927,7 +3988,7 @@ const App = () => {
      actually took rather than the time you happened to be at the keyboard when
      it ran out. You end it with Terminar. */
   useEffect(()=>{
-    if(phase==="focusing"&&session.remaining===0&&!targetHitRef.current){
+    if(phase==="focusing"&&session.total>0&&session.remaining===0&&!targetHitRef.current){
       targetHitRef.current=true;
       playChime();
       sendNotif("Hyper Focus · Meta alcanzada", task||"¿Sigues? Toca Terminar cuando de verdad acabes.");
@@ -3974,7 +4035,8 @@ const App = () => {
       setTimeout(()=>{ trackerFiredRef.current=false; },4000);
       if(!trackerOnRef.current){
         setTrackerPeriodStart(new Date());
-      } else if(phaseRef.current==="focusing"||phaseRef.current==="break"){
+      } else if(phaseRef.current==="focusing"||phaseRef.current==="break"||sessionStartedAtRef.current){
+        // A paused session is still a session: its gap gets named on the pause card.
         deferredCheckInRef.current=true;   // ask after the session, not now
       } else {
         setTrackerPrompt(true);
@@ -4035,7 +4097,7 @@ const App = () => {
 
   /* Document title */
   useEffect(()=>{
-    if     (phase==="focusing") document.title=`${session.over>0?"+"+fmt(session.over):fmt(session.remaining)} · Hyper Focus`;
+    if     (phase==="focusing") document.title=`${liveClock} · Hyper Focus`;
     else if(phase==="break")    document.title=`Descanso ${fmt(breakRem)} · Hyper Focus`;
     else if(phase==="complete") document.title=`Listo · Hyper Focus`;
     else                        document.title="Hyper Focus";
@@ -4066,11 +4128,16 @@ const App = () => {
 
   const onBegin = () => {
     // elapsed before this period = total − current remaining (handles resume after pause)
-    focusElapsedRef.current = session.total - session.remaining;
+    // …plus whatever ran past the target, or the counter's whole count.
+    focusElapsedRef.current = session.total - session.remaining + (session.over||0);
     focusTsRef.current = Date.now();
-    sessionStartRef.current = nowTime();
-    // Only on a true start, not on resume — the tracker needs the real boundary.
-    if(!sessionStartedAtRef.current){ sessionStartedAtRef.current = new Date(); targetHitRef.current=false; }
+    // Only on a true start, not on resume — the tracker needs the real boundary,
+    // and the calendar block must begin when the session did, not at the last resume.
+    if(!sessionStartedAtRef.current){
+      sessionStartedAtRef.current = new Date(); sessionStartRef.current = nowTime();
+      targetHitRef.current=false; pauseStatsRef.current={n:0,secs:0};
+    }
+    closePause(new Date());
     // Asking for notification permission the moment the app opens is noise, and
     // Safari refuses it outside a gesture. The first Begin is that gesture.
     if("Notification" in window && Notification.permission==="default"){
@@ -4081,7 +4148,17 @@ const App = () => {
   const onPause = () => {
     // freeze elapsed so the resume can pick up exactly where we left off
     focusElapsedRef.current += Math.floor((Date.now()-focusTsRef.current)/1000);
+    setPausedAt(new Date()); setPauseLabel("");
     setPhase("idle");
+  };
+  /* Ends a pause: counts it, and if it lasted a minute or more writes it to the
+     tracker, where it splits the session on the calendar and feeds the bottlenecks. */
+  const closePause = (now) => {
+    if(!pausedAt) return;
+    const secs=Math.floor((now-pausedAt)/1000);
+    pauseStatsRef.current={n:pauseStatsRef.current.n+1, secs:pauseStatsRef.current.secs+secs};
+    if(secs>=60) writeEntry(pauseLabel.trim()||"Distracción", pausedAt, now, "pause");
+    setPausedAt(null); setPauseLabel("");
   };
   const onEnd = () => {
     // Compute how many seconds were actually focused
@@ -4091,6 +4168,9 @@ const App = () => {
       : focusElapsedRef.current;
     focusElapsedRef.current=0; focusTsRef.current=0; targetHitRef.current=false;
     setSession(s=>({...s,remaining:s.total,over:0}));
+    if(phase==="idle") closePause(new Date());   // ended while paused
+    const pauses=pauseStatsRef.current; pauseStatsRef.current={n:0,secs:0};
+    setLastPauses(pauses);
     if(elapsed>=60){
       // Save with real elapsed duration and show the complete/rating screen
       const id=newId();
@@ -4104,7 +4184,9 @@ const App = () => {
         task:      task||"Sesión sin título.",
         mode:      session.mode,
         dur:       elapsed,          // what it actually took
-        target:    session.total,    // what you aimed at
+        target:    session.total||null, // what you aimed at (none for the counter)
+        pauses:    pauses.n,         // times you stopped the clock
+        pausedSecs:pauses.secs,
         goalId:    activeGoalId,
         kind,
       }]);
@@ -4319,6 +4401,10 @@ const App = () => {
     }
     return seen;
   })();
+  const pauseChips = [...recentLabels, ...QUICK_SUGGESTIONS.filter(x=>!recentLabels.includes(x))].slice(0,6);
+  // What the clock shows anywhere outside the ring: a count, a countdown, or time past the target.
+  const liveClock = session.total===0 ? fmt(session.over||0)
+    : session.over>0 ? "+"+fmt(session.over) : fmt(session.remaining);
 
   const today       = dayStamp;
   const todayHistory = history.filter(s=>s.date&&localDate(new Date(s.date))===today);
@@ -4333,7 +4419,7 @@ const App = () => {
       <Rail current={view} onNav={v=>{ setView(v); setMenuOpen(false); }} sounds={soundLabel} theme={theme} northStar={purpose.northStar} open={menuOpen}/>
       {menuOpen && <div className="rail-backdrop" onClick={()=>setMenuOpen(false)}/>}
       <main className="canvas">
-        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={session.over>0?"+"+fmt(session.over):fmt(session.remaining)} onMenu={()=>setMenuOpen(true)}/>
+        <Topbar crumbs={crumbArr} onCmdk={()=>setCmdk(true)} onTheme={()=>setTheme(t=>t==="light"?"dark":"light")} theme={theme} running={phase==="focusing"} timeStr={liveClock} onMenu={()=>setMenuOpen(true)}/>
 
         {recovery && (
           <div className="page" style={{paddingBottom:0}}>
@@ -4356,7 +4442,7 @@ const App = () => {
           </div>
         )}
 
-        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onFixDur={onFixDur} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
+        {view==="session"  && <Session session={session} setSession={setSession} task={task} setTask={setTask} phase={phase} onBegin={onBegin} onPause={onPause} onEnd={onEnd} onFixDur={onFixDur} pausedAt={pausedAt} pauseLabel={pauseLabel} setPauseLabel={setPauseLabel} pauseChips={pauseChips} lastPauses={lastPauses} onAdd5min={onAdd5min} onStartBreak={onStartBreak} onNewSession={onNewSession} breakRemaining={breakRem} quote={quote} mits={todayMit} onBreathe={onBreathe} onRate={rateSession} onMitClick={onMitClick} northStar={purpose.northStar} activeGoal={activeGoal} onOpenPurpose={()=>setView("purpose")}
                                 lastDur={lastDur} streak={calcStreak(history)} todaySecs={todayHistory.reduce((a,s)=>a+(s.dur||0),0)}
                                 goalHours={activeGoalId?history.reduce((a,s)=>a+(s.goalId===activeGoalId?(s.dur||0):0),0)/3600:0}
                                 protocols={purpose.protocols} kind={kind} setKind={setKind} onPreload={(mins)=>{ setPreloadDuration(mins*60); setView("preload"); }}/>}

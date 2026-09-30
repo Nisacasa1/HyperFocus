@@ -15,7 +15,7 @@ Four places, one loop — everything else waits under **Más** in the sidebar, c
 | | |
 |---|---|
 | **Hoy** | Where the app opens. Your North Star, three priorities (▶ starts a focus session on one), **today's bottlenecks** — what took the time you didn't spend focused, how many sessions were interrupted, how fragmented the day was — and the day as a calendar. Today's sessions and past plans fold away underneath. |
-| **Foco** | The timer, stripped to the task, the ring and **Begin**. Mode, Crear/Aprender/Vaciar (Use/Fill/Empty), Respirar and Precarga live behind one **Opciones** toggle. The whole interface is in Spanish, set in Poppins. |
+| **Foco** | **Temporizador** (countdown to a target) or **Contador** (counts up, no target). In Contador, **Me distraje** stops the clock the moment attention leaves; you name what pulled you out, and when you come back that stretch is written to the tracker — so the session keeps only the work, the calendar shows what cut into it, and Hoy's bottlenecks rank it. Otherwise stripped to the task, the ring and **Empezar**. Mode, Crear/Aprender/Vaciar (Use/Fill/Empty), Respirar and Precarga live behind one **Opciones** toggle. The whole interface is in Spanish, set in Poppins. |
 | **Semana** | The weekly review, with a **Tendencias** tab for the long-range stats. |
 | **Propósito** | North Star, anti-vision, identity, protocols and goals. |
 | *Más* | Mapa del año, Prácticas diarias, Estoicismo, Sonidos, Ajustes. |
